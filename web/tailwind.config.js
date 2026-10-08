@@ -1,20 +1,18 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
+  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
       colors: {
-    
+        app: "var(--bg-app)",
+        surface: "var(--bg-card)",
+        primary: "var(--text-primary)",
+        secondary: "var(--text-secondary)",
         brand: {
-          50: '#f0fdf4',
-          100: '#dcfce7',
-          500: '#22c55e',
-          700: '#15803d',
-          900: '#14532d',
+          DEFAULT: "var(--brand-primary)",
+          hover: "var(--brand-hover)",
         },
+        borderCustom: "var(--border-color)",
       },
     },
   },

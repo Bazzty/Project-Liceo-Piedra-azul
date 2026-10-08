@@ -1,0 +1,32 @@
+/* Tema por Defecto: Calma Azul */
+:root, [data-theme="calma-azul"] {
+  --bg-app: #f0f9ff;          /* Fondo suave de la app */
+  --bg-card: #ffffff;         /* Tarjeta central de lectura */
+  --text-primary: #0c4a6e;    /* Texto principal alto contraste */
+  --text-secondary: #0369a1;  /* Subtítulos */
+  --brand-primary: #0284c7;   /* Botones e interactivos */
+  --brand-hover: #0369a1;
+  --border-color: #bae6fd;
+}
+
+/* Tema Alto Contraste (Discapacidad Visual / NEE) */
+[data-theme="alto-contraste"] {
+  --bg-app: #000000;
+  --bg-card: #121212;
+  --text-primary: #ffff00;    /* Amarillo sobre negro */
+  --text-secondary: #ffffff;
+  --brand-primary: #ffff00;
+  --brand-hover: #e6e600;
+  --border-color: #ffffff;
+}
+
+/* Tema Verde Bosque */
+[data-theme="verde-bosque"] {
+  --bg-app: #f0fdf4;
+  --bg-card: #ffffff;
+  --text-primary: #14532d;
+  --text-secondary: #15803d;
+  --brand-primary: #16a34a;
+  --brand-hover: #15803d;
+  --border-color: #bbf7d0;
+}
