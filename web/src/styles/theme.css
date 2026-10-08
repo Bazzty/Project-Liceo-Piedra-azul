@@ -28,3 +28,13 @@ html[data-theme="verde-bosque"] {
   --brand-hover: #15803d;
   --border-color: #bbf7d0;
 }
+/* Tema Profesional Exclusivo para el Panel Docente */
+html[data-theme="admin"] {
+  --bg-app: #f8fafc;          /* Gris muy claro neutral */
+  --bg-card: #ffffff;         /* Tarjeta blanca limpia */
+  --text-primary: #0f172a;    /* Texto gris oscuro profesional */
+  --text-secondary: #475569;  /* Texto secundario slate */
+  --brand-primary: #1e40af;   /* Azul institucional oscuro */
+  --brand-hover: #1e3a8a;
+  --border-color: #e2e8f0;    /* Bordes sutiles */
+}
