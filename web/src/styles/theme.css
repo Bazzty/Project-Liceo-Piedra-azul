@@ -1,32 +1,30 @@
-/* Tema por Defecto: Calma Azul */
-:root, [data-theme="calma-azul"] {
-  --bg-app: #f0f9ff;          /* Fondo suave de la app */
-  --bg-card: #ffffff;         /* Tarjeta central de lectura */
-  --text-primary: #0c4a6e;    /* Texto principal alto contraste */
-  --text-secondary: #0369a1;  /* Subtítulos */
-  --brand-primary: #0284c7;   /* Botones e interactivos */
+/* Variables de Colores Globales por Tema */
+:root, html[data-theme="calma-azul"] {
+  --bg-app: #f0f9ff;          /* Azul suave de fondo */
+  --bg-card: #ffffff;         /* Tarjeta blanca */
+  --text-primary: #0c4a6e;    /* Texto azul oscuro */
+  --text-secondary: #0369a1;  /* Texto azul medio */
+  --brand-primary: #0284c7;   /* Botón azul */
   --brand-hover: #0369a1;
   --border-color: #bae6fd;
 }
 
-/* Tema Alto Contraste (Discapacidad Visual / NEE) */
-[data-theme="alto-contraste"] {
-  --bg-app: #000000;
-  --bg-card: #121212;
-  --text-primary: #ffff00;    /* Amarillo sobre negro */
-  --text-secondary: #ffffff;
-  --brand-primary: #ffff00;
-  --brand-hover: #e6e600;
-  --border-color: #ffffff;
+html[data-theme="alto-contraste"] {
+  --bg-app: #000000;          /* Fondo negro */
+  --bg-card: #1a1a1a;         /* Tarjeta gris muy oscura */
+  --text-primary: #ffff00;    /* Texto amarillo alto contraste */
+  --text-secondary: #ffffff;  /* Texto blanco */
+  --brand-primary: #facc15;   /* Botón amarillo brillante */
+  --brand-hover: #eab308;
+  --border-color: #ffffff;    /* Borde blanco puro */
 }
 
-/* Tema Verde Bosque */
-[data-theme="verde-bosque"] {
-  --bg-app: #f0fdf4;
-  --bg-card: #ffffff;
-  --text-primary: #14532d;
-  --text-secondary: #15803d;
-  --brand-primary: #16a34a;
+html[data-theme="verde-bosque"] {
+  --bg-app: #f0fdf4;          /* Verde menta suave */
+  --bg-card: #ffffff;         /* Tarjeta blanca */
+  --text-primary: #14532d;    /* Texto verde oscuro */
+  --text-secondary: #15803d;  /* Texto verde medio */
+  --brand-primary: #16a34a;   /* Botón verde */
   --brand-hover: #15803d;
   --border-color: #bbf7d0;
 }
