@@ -1,90 +1,108 @@
-import { useState, useEffect } from 'react';
-import { Login } from './pages/Login';
+import React, { useState } from 'react';
+import { useAuthStore } from './store/useAuthStore';
+import { SelectorInicioView } from './pages/SelectorInicioView';
+import { PortalInicioView } from './pages/PortalInicioView';
+import { LoginProfesorView } from './pages/LoginProfesorView';
+import { ControlAulaView } from './pages/ControlAulaView';
+import { EsperaAulaView } from './pages/EsperaAulaView';
+import { LoginAlumnoCasaView } from './pages/LoginAlumnoCasaView';
 import { MosaicoAlumnos } from './pages/MosaicoAlumnos';
-import { VistaPrincipal } from './pages/VistaPrincipal';
 import { NivelesView } from './pages/NivelesView';
 import { CatalogoCuentos } from './pages/CatalogoCuentos';
 import { LecturaView } from './pages/LecturaView';
-import { useAuthStore } from './store/useAuthStore';
-import { seedDatabase } from './db/seed';
 
-export function App() {
-  const { isAuthenticated, activeStudentId, checkSessionTimeout } = useAuthStore();
-  const [currentScreen, setCurrentScreen] = useState<'login' | 'mosaico' | 'home' | 'niveles' | 'catalogo' | 'lectura'>('login');
-  const [selectedNivelId, setSelectedNivelId] = useState('nivel-a');
-  const [selectedCuentoId, setSelectedCuentoId] = useState('');
+export const App: React.FC = () => {
+  const { modoInicio, vistaInicio1, setVistaInicio1, isClassroomSessionActive, sessionType, setActiveStudentId } = useAuthStore();
 
-  // Poblamiento inicial de IndexedDB
-  useEffect(() => {
-    seedDatabase();
-  }, []);
+  const [currentScreen, setCurrentScreen] = useState<'niveles' | 'catalogo' | 'lectura'>('niveles');
+  const [selectedNivelId, setSelectedNivelId] = useState<string | null>(null);
+  const [selectedCuentoId, setSelectedCuentoId] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (checkSessionTimeout()) {
-      setCurrentScreen('mosaico');
-    } else if (isAuthenticated && !activeStudentId) {
-      setCurrentScreen('mosaico');
-    } else if (isAuthenticated && activeStudentId) {
-      setCurrentScreen('home');
+  // 1. Selector Inicial de Modo Demo
+  if (modoInicio === 'selector') {
+    return <SelectorInicioView />;
+  }
+
+  // 2. Modo Inicio 2 (Demostración Directa)
+  if (modoInicio === 'inicio-2') {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen bg-app p-6 text-center gap-4">
+        <div className="bg-surface border-4 border-borderCustom rounded-3xl p-8 max-w-md w-full shadow-2xl flex flex-col items-center gap-4">
+          <h2 className="text-2xl font-black text-primary">Inicio 2 (Modo Directo)</h2>
+          <p className="text-secondary text-sm">
+            Este modo de inicio está siendo integrado por el segundo equipo de desarrollo.
+          </p>
+          <button
+            onClick={() => useAuthStore.getState().setModoInicio('selector')}
+            className="px-6 py-3 rounded-2xl bg-brand text-white font-black shadow-lg hover:opacity-90 active:scale-95 transition-all cursor-pointer"
+          >
+            VOLVER AL SELECTOR
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // 3. Sub-rutas de Inicio 1
+  if (vistaInicio1 === 'portal') return <PortalInicioView />;
+  if (vistaInicio1 === 'profesor-login') return <LoginProfesorView />;
+  if (vistaInicio1 === 'control-aula') return <ControlAulaView />;
+  if (vistaInicio1 === 'aula-espera') return <EsperaAulaView />;
+  if (vistaInicio1 === 'alumno-casa') return <LoginAlumnoCasaView />;
+
+  // 4. Mosaico de Alumnos
+  if (vistaInicio1 === 'aula-mosaico') {
+    if (!isClassroomSessionActive && sessionType !== 'casa') {
+      return <EsperaAulaView />;
     }
-  }, [isAuthenticated, activeStudentId, checkSessionTimeout]);
-
-  const handleTimeoutRedirect = () => {
-    setCurrentScreen('mosaico');
-  };
-
-  if (currentScreen === 'login') {
-    return <Login onLoginSuccess={() => setCurrentScreen('mosaico')} />;
+    return (
+      <MosaicoAlumnos
+        onSelectStudent={(studentId) => {
+          setActiveStudentId(studentId);
+          setSelectedNivelId('nivel-a');
+          setCurrentScreen('niveles');
+          setVistaInicio1('aprender');
+        }}
+      />
+    );
   }
 
-  if (currentScreen === 'mosaico') {
-    return <MosaicoAlumnos onSelectStudent={() => setCurrentScreen('home')} />;
-  }
+  // 5. Navegación en el Módulo Aprender
+  if (vistaInicio1 === 'aprender') {
+    if (currentScreen === 'lectura' && selectedCuentoId) {
+      return (
+        <LecturaView
+          cuentoId={selectedCuentoId}
+          onBack={() => setCurrentScreen('catalogo')}
+        />
+      );
+    }
 
-  if (currentScreen === 'niveles') {
+    if (currentScreen === 'catalogo' && selectedNivelId) {
+      return (
+        <CatalogoCuentos
+          nivelId={selectedNivelId}
+          onSelectCuento={(cuentoId) => {
+            setSelectedCuentoId(cuentoId);
+            setCurrentScreen('lectura');
+          }}
+          onBack={() => setCurrentScreen('niveles')}
+        />
+      );
+    }
+
     return (
       <NivelesView
         onSelectNivel={(nivelId) => {
           setSelectedNivelId(nivelId);
           setCurrentScreen('catalogo');
         }}
-        onBack={() => setCurrentScreen('home')}
-        onSessionTimeoutRedirect={handleTimeoutRedirect}
+        onBack={() => setVistaInicio1('portal')}
       />
     );
   }
 
-  if (currentScreen === 'catalogo') {
-    return (
-      <CatalogoCuentos
-        nivelId={selectedNivelId}
-        onSelectCuento={(cuentoId) => {
-          setSelectedCuentoId(cuentoId);
-          setCurrentScreen('lectura');
-        }}
-        onBack={() => setCurrentScreen('niveles')}
-        onSessionTimeoutRedirect={handleTimeoutRedirect}
-      />
-    );
-  }
-
-  if (currentScreen === 'lectura') {
-    return (
-      <LecturaView
-        cuentoId={selectedCuentoId}
-        onBack={() => setCurrentScreen('catalogo')}
-        onSessionTimeoutRedirect={handleTimeoutRedirect}
-      />
-    );
-  }
-
-  return (
-    <VistaPrincipal
-      onNavigateToAprender={() => setCurrentScreen('niveles')}
-      onOpenHablar={() => alert('💬 ¡El tablero SAAC se conectará en la Fase 5!')}
-      onSessionTimeoutRedirect={handleTimeoutRedirect}
-    />
-  );
-}
+  return <PortalInicioView />;
+};
 
 export default App;

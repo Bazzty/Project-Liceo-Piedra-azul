@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, MessageSquare, Settings, User as UserIcon, Sparkles } from 'lucide-react';
+import { MessageSquare, Settings, User as UserIcon, Sparkles } from 'lucide-react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Button } from './Button';
 import { Modal } from './Modal';
@@ -16,7 +16,7 @@ export const Header: React.FC = () => {
   const { activeStudentId } = useAuthStore();
   const { currentTheme, setTheme, showCharacterBackground, toggleCharacterBackground } = useThemeStore();
 
-  // Consulta reactiva del alumno activo en IndexedDB (SSOT)
+  // Consulta reactiva del alumno activo en IndexedDB
   const alumnoActivo = useLiveQuery(
     async () => {
       if (!activeStudentId) return null;
@@ -25,26 +25,13 @@ export const Header: React.FC = () => {
     [activeStudentId]
   );
 
-  const handleBack = () => {
-    window.history.back();
-  };
-
   return (
     <>
       <header className="bg-surface/90 backdrop-blur-md border-b-2 border-borderCustom px-4 sm:px-6 py-3 flex items-center justify-between sticky top-0 z-30 shadow-sm">
         
-        {/* 1. Botón Volver */}
-        <button
-          onClick={handleBack}
-          className="flex items-center gap-2 px-3 py-2 bg-app hover:bg-borderCustom/40 text-primary font-bold rounded-2xl border-2 border-borderCustom transition-colors cursor-pointer text-sm"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span className="hidden sm:inline">Atrás</span>
-        </button>
-
-        {/* 2. Identificador del Alumno Activo */}
+        {/* 1. Identificador del Alumno Activo */}
         <div className="flex items-center gap-2.5 bg-app px-4 py-2 rounded-2xl border-2 border-borderCustom shadow-inner">
-          <div className="w-12 h-12 rounded-full overflow-hidden bg-brand/10 text-brand flex items-center justify-center border border-brand/30 shrink-0">
+          <div className="w-8 h-8 rounded-full overflow-hidden bg-brand/10 text-brand flex items-center justify-center border border-brand/30 shrink-0">
             {alumnoActivo?.avatarUrl ? (
               <img src={alumnoActivo.avatarUrl} alt={alumnoActivo.nombre} className="w-full h-full object-cover" />
             ) : alumnoActivo?.nombre ? (
@@ -58,9 +45,9 @@ export const Header: React.FC = () => {
           </span>
         </div>
 
-        {/* 3. Acciones Principales */}
+        {/* 2. Acciones Principales */}
         <div className="flex items-center gap-2">
-          {/* Botón Destacado "HABLAR" (Módulo SAAC) */}
+          {/* Botón Destacado "HABLAR" */}
           <button
             onClick={() => setIsHablarOpen(true)}
             aria-label="Abrir tablero de comunicación aumentativa SAAC"
@@ -70,7 +57,7 @@ export const Header: React.FC = () => {
             <span>HABLAR</span>
           </button>
 
-          {/* Engranaje de Opciones de Accesibilidad */}
+          {/* Opciones de Accesibilidad */}
           <button
             onClick={() => setIsOptionsOpen(true)}
             aria-label="Opciones de accesibilidad y paleta de colores"
@@ -82,11 +69,11 @@ export const Header: React.FC = () => {
 
       </header>
 
-      {/* Modal de Opciones de Accesibilidad (Ley TEA) */}
+      {/* Modal de Accesibilidad */}
       <Modal isOpen={isOptionsOpen} onClose={() => setIsOptionsOpen(false)} title="Opciones de Accesibilidad">
         <div className="flex flex-col gap-6 p-2">
           
-          {/* Selector de Temas Cromáticos */}
+          {/* Paleta de Colores */}
           <div className="flex flex-col gap-3">
             <label className="text-sm font-extrabold text-primary flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-brand" />
@@ -110,7 +97,7 @@ export const Header: React.FC = () => {
             </div>
           </div>
 
-          {/* Alternar Personajes de Fondo */}
+          {/* Personajes de Fondo */}
           <div className="flex items-center justify-between p-4 bg-app rounded-2xl border-2 border-borderCustom">
             <div className="flex flex-col">
               <span className="text-sm font-extrabold text-primary">Personajes de Fondo</span>
@@ -131,7 +118,7 @@ export const Header: React.FC = () => {
         </div>
       </Modal>
 
-      {/* Modal del Tablero de Comunicación SAAC (Fase 5 Integrada) */}
+      {/* Modal del Tablero SAAC */}
       <Modal isOpen={isHablarOpen} onClose={() => setIsHablarOpen(false)} title="Tablero de Comunicación (SAAC)" size="full">
         <TableroSAAC />
       </Modal>

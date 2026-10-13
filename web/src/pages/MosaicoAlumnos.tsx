@@ -2,58 +2,72 @@ import React from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Sparkles } from 'lucide-react';
 import { db, type Alumno } from '../db/db';
-import { useAuthStore } from '../store/useAuthStore';
-import { useThemeStore, type ThemeId } from '../store/useThemeStore';
 import { MainLayout } from '../layouts/MainLayout';
 
-interface MosaicoAlumnosProps {
-  onSelectStudent: () => void;
+export interface MosaicoAlumnosProps {
+  onSelectStudent?: (studentId: string) => void;
+  selectStudent?: (studentId: string) => void;
 }
 
-export const MosaicoAlumnos: React.FC<MosaicoAlumnosProps> = ({ onSelectStudent }) => {
-  // Carga reactiva tipada explícitamente como Alumno[] desde IndexedDB
-  const alumnos = useLiveQuery<Alumno[]>(() => db.alumnos.toArray());
-  const { selectStudent, startCourseSession } = useAuthStore();
-  const { setTheme } = useThemeStore();
+export const MosaicoAlumnos: React.FC<MosaicoAlumnosProps> = ({
+  onSelectStudent,
+  selectStudent,
+}) => {
+  const alumnos = useLiveQuery(() => db.alumnos.toArray(), []);
 
-  const handleStudentClick = (alumnoId: string, temaId: string) => {
-    selectStudent(alumnoId);
-    setTheme(temaId as ThemeId);
-    startCourseSession(); // Inicia el conteo de 1.5 horas de la sesión
-    onSelectStudent();
+  // Manejador resiliente que ejecuta la función sin importar cuál prop se usó
+  const handleStudentClick = (id: string) => {
+    const callback = onSelectStudent || selectStudent;
+    if (typeof callback === 'function') {
+      callback(id);
+    }
   };
 
   return (
-    <MainLayout>
-      <div className="space-y-6">
-        <div className="text-center space-y-2">
-          <div className="inline-flex items-center gap-2 bg-surface px-4 py-2 rounded-full border-2 border-borderCustom text-sm font-extrabold text-primary">
-            <Sparkles className="w-5 h-5 text-brand" />
-            <span>Sala de Clases • Liceo Piedra Azul</span>
+    <MainLayout allowScroll={true}>
+      <div className="flex flex-col gap-8 w-full max-w-5xl mx-auto py-8 px-4 items-center justify-center h-full">
+        
+        {/* Encabezado Directo para Niños */}
+        <div className="flex flex-col items-center text-center gap-2 bg-surface/90 backdrop-blur-md p-6 rounded-3xl shadow-xl border-4 border-borderCustom w-full">
+          <div className="flex items-center gap-2 bg-brand/10 text-brand px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider border border-brand/30">
+            <Sparkles className="w-4 h-4 animate-pulse" />
+            <span>SALA DE CLASES</span>
           </div>
-          <h1 className="text-3xl md:text-4xl font-black text-primary">¿Quién va a leer hoy?</h1>
-          <p className="text-secondary text-lg font-bold">
-            Toca tu foto o avatar para entrar a tus lecturas
+          
+          <h2 className="text-3xl sm:text-4xl font-black text-primary tracking-tight">
+            ¿Quién eres hoy?
+          </h2>
+          
+          <p className="text-secondary text-base font-medium">
+            Toca tu foto para comenzar a leer
           </p>
         </div>
 
-        {/* Mosaico de Tarjetas de Alumnos */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 md:gap-6 pt-4">
-          {alumnos?.map((alumno: Alumno) => (
-            <button
-              key={alumno.id}
-              onClick={() => handleStudentClick(alumno.id!, alumno.temaId)}
-              className="bg-surface p-6 rounded-3xl border-4 border-borderCustom hover:border-brand shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-2 active:scale-95 flex flex-col items-center gap-4 group"
+        {/* Mosaico de Estudiantes */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 w-full">
+          {alumnos?.map((a: Alumno) => (
+            <div
+              key={a.id}
+              onClick={() => a.id && handleStudentClick(a.id)}
+              className="bg-surface rounded-3xl border-4 border-borderCustom p-5 shadow-xl hover:border-brand hover:scale-105 active:scale-95 transition-all flex flex-col items-center gap-3 cursor-pointer group"
             >
-              <div className="w-24 h-24 md:w-28 md:h-28 rounded-full bg-brand/20 border-4 border-brand flex items-center justify-center text-4xl font-black text-brand group-hover:bg-brand group-hover:text-white transition-colors shadow-inner">
-                {alumno.nombre.charAt(0).toUpperCase()}
+              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-brand/10 border-4 border-brand/30 overflow-hidden flex items-center justify-center shadow-inner group-hover:border-brand transition-colors">
+                {a.avatarUrl ? (
+                  <img src={a.avatarUrl} alt={a.nombre} className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-4xl font-black text-brand">
+                    {a.nombre.charAt(0).toUpperCase()}
+                  </span>
+                )}
               </div>
-              <span className="text-2xl font-black text-primary group-hover:text-brand truncate max-w-full">
-                {alumno.nombre}
+
+              <span className="text-lg font-black text-primary group-hover:text-brand transition-colors tracking-wide">
+                {a.nombre}
               </span>
-            </button>
+            </div>
           ))}
         </div>
+
       </div>
     </MainLayout>
   );

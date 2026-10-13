@@ -1,25 +1,19 @@
 import { useEffect } from 'react';
 import { useAuthStore } from '../store/useAuthStore';
 
-export const useSessionTimeout = (onTimeout?: () => void) => {
-  const { checkSessionTimeout, activeStudentId } = useAuthStore();
+export const useSessionTimeout = (_options?: any) => {
+  const { checkSessionTimeout, checkClassroomStatus } = useAuthStore();
 
   useEffect(() => {
-    if (!activeStudentId) return;
-
-    // 1. Chequeo inmediato al montar
-    if (checkSessionTimeout()) {
-      if (onTimeout) onTimeout();
-      return;
-    }
-
-    // 2. Monitoreo activo cada 1 minuto (60.000 ms)
     const interval = setInterval(() => {
-      if (checkSessionTimeout()) {
-        if (onTimeout) onTimeout();
+      if (typeof checkSessionTimeout === 'function') {
+        checkSessionTimeout();
       }
-    }, 60000);
+      if (typeof checkClassroomStatus === 'function') {
+        checkClassroomStatus();
+      }
+    }, 5000);
 
     return () => clearInterval(interval);
-  }, [activeStudentId, checkSessionTimeout, onTimeout]);
+  }, [checkSessionTimeout, checkClassroomStatus]);
 };

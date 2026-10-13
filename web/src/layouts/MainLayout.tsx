@@ -17,11 +17,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
 }) => {
   const { currentTheme, showCharacterBackground } = useThemeStore();
 
-  useSessionTimeout(() => {
-    if (onSessionTimeoutRedirect) {
-      onSessionTimeoutRedirect();
-    }
-  });
+  useSessionTimeout();
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', currentTheme);
