@@ -1,6 +1,7 @@
 import React from 'react';
 import { Volume2 } from 'lucide-react';
-import type { CuentoPalabra } from '../../db/db';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { db, type CuentoPalabra } from '../../db/db';
 
 export interface PictogramaCardProps {
   palabra: CuentoPalabra;
@@ -15,6 +16,18 @@ export const PictogramaCard: React.FC<PictogramaCardProps> = ({
   onClick,
   className = '',
 }) => {
+  // Búsqueda automática en IndexedDB si la palabra del cuento no trae pictogramaUrl explícito
+  const picEnDb = useLiveQuery(
+    async () => {
+      if (palabra.pictogramaUrl) return null;
+      const cleanText = palabra.texto.toLowerCase().trim();
+      return await db.pictogramas.where('palabra').equalsIgnoreCase(cleanText).first();
+    },
+    [palabra.texto, palabra.pictogramaUrl]
+  );
+
+  const finalImageUrl = palabra.pictogramaUrl || picEnDb?.imagenUrl;
+
   return (
     <div
       role="button"
@@ -28,15 +41,15 @@ export const PictogramaCard: React.FC<PictogramaCardProps> = ({
       }}
       className={`flex flex-col items-center gap-2 cursor-pointer group transform hover:scale-105 active:scale-95 transition-all bg-app p-4 rounded-3xl border-4 shadow-md ${
         isHighlighted 
-          ? 'border-brand bg-brand/10 ring-4 ring-brand/30 scale-105' 
+          ? 'border-brand bg-brand/15 ring-4 ring-brand/30 scale-105' 
           : 'border-borderCustom hover:border-brand'
       } ${className}`}
     >
-      {/* Marco del Pictograma con Fallback Resiliente */}
+      {/* Marco del Pictograma */}
       <div className="w-20 h-20 sm:w-24 sm:h-24 bg-surface rounded-2xl p-2 border-2 border-borderCustom flex items-center justify-center overflow-hidden shadow-inner relative">
-        {palabra.pictogramaUrl ? (
+        {finalImageUrl ? (
           <img 
-            src={palabra.pictogramaUrl} 
+            src={finalImageUrl} 
             alt={palabra.texto} 
             className="w-full h-full object-contain group-hover:scale-110 transition-transform" 
           />
