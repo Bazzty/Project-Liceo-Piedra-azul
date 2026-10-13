@@ -27,6 +27,7 @@ export interface Pictograma {
   categoria: 'necesidades' | 'emociones' | 'personas' | 'acciones' | 'objetos';
   imagenUrl: string;
   audioUrl?: string;
+  silabasAudioUrls?: string[];
   esFotoReal: boolean;
 }
 
