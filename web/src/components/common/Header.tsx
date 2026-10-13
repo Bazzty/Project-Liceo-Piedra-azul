@@ -41,9 +41,13 @@ export const Header: React.FC = () => {
             {/* Botón Destacado "HABLAR" */}
             <Button
               variant="accent"
+              style={{
+              backgroundColor: 'var(--btn-colores-bg)',
+              color: 'var(--btn-colores-text)',
+              borderColor: 'var(--btn-colores-border)',
+            }}
               onClick={() => setIsHablarOpen(true)}
               aria-label="Abrir tablero de comunicación"
-              className="text-yellow-950 font-black animate-pulse"
             >
               <MessageSquare className="w-6 h-6 mr-1 sm:mr-2" />
               <span>HABLAR</span>

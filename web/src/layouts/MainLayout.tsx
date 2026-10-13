@@ -2,18 +2,25 @@ import React, { useEffect } from 'react';
 import { Header } from '../components/common/Header';
 import { useThemeStore } from '../store/useThemeStore';
 import { useSessionTimeout } from '../hooks/useSessionTimeout';
+import { SessionTimeoutModal } from '../components/common/SessionTimeoutModal';
 
-interface MainLayoutProps {
+export interface MainLayoutProps {
   children: React.ReactNode;
+  onSessionTimeoutRedirect?: () => void;
+  allowScroll?: boolean; // Permite habilitar scroll solo en vistas con mucho contenido
 }
 
-export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
+export const MainLayout: React.FC<MainLayoutProps> = ({
+  children,
+  onSessionTimeoutRedirect,
+  allowScroll = false,
+}) => {
   const { currentTheme, showCharacterBackground } = useThemeStore();
 
-  // Si la sesión de 1.5 horas expira mientras el niño lee, recarga para ir al Mosaico
   useSessionTimeout(() => {
-    alert('⏱️ La sesión de laboratorio (1.5h) ha finalizado.');
-    window.location.reload();
+    if (onSessionTimeoutRedirect) {
+      onSessionTimeoutRedirect();
+    }
   });
 
   useEffect(() => {
@@ -21,23 +28,39 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   }, [currentTheme]);
 
   return (
-    <div className="min-h-screen bg-app text-primary flex flex-col font-sans transition-colors duration-300 relative overflow-x-hidden">
-      <Header />
+    <div className="min-h-screen h-screen bg-app text-primary flex flex-col relative overflow-hidden transition-colors duration-300">
       
+      {/* Header Fijo */}
+      <Header />
+
+      {/* Área Principal: Sin scroll por defecto, o con scroll si allowScroll es true */}
+      <main className={`flex-1 flex flex-col p-4 sm:p-6 max-w-7xl mx-auto w-full z-10 ${allowScroll ? 'overflow-y-auto' : 'h-[calc(100vh-4rem)] overflow-hidden'}`}>
+        {children}
+      </main>
+
+      {/* Personajes flotantes en las esquinas inferiores sin interferir con los clics */}
       {showCharacterBackground && (
-        <div className="pointer-events-none fixed bottom-6 left-6 right-6 z-30 flex justify-between items-end">
-          <div className="bg-surface/90 border-4 border-borderCustom p-4 rounded-full shadow-2xl text-5xl sm:text-6xl animate-bounce">
+        <div className="absolute inset-0 pointer-events-none overflow-hidden z-40">
+          {/* Personaje Izquierdo */}
+          <div className="absolute bottom-6 left-6 text-6xl animate-bounce select-none opacity-40">
             🦕
           </div>
-          <div className="bg-surface/90 border-4 border-borderCustom p-4 rounded-full shadow-2xl text-5xl sm:text-6xl animate-pulse">
+          
+          {/* Personaje Derecho */}
+          <div className="absolute bottom-6 right-6 text-6xl animate-pulse select-none opacity-40">
             ⭐
           </div>
         </div>
       )}
 
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 z-10 pb-4">
-        {children}
-      </main>
+      {/* Modal de Expiración de Sesión */}
+      <SessionTimeoutModal 
+        onClose={() => {
+          if (onSessionTimeoutRedirect) {
+            onSessionTimeoutRedirect();
+          }
+        }}
+      />
     </div>
   );
 };

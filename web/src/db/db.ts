@@ -4,6 +4,7 @@ import Dexie, { type Table } from 'dexie';
 export interface Alumno {
   id?: string;
   nombre: string;
+  apellido: string;
   avatarUrl?: string;
   temaId: string;
   personajeId?: string;

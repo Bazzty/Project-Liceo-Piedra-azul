@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useAuthStore } from '../store/useAuthStore';
 
-export const useSessionTimeout = (onTimeout: () => void) => {
+export const useSessionTimeout = (onTimeout?: () => void) => {
   const { checkSessionTimeout, activeStudentId } = useAuthStore();
 
   useEffect(() => {
@@ -9,14 +9,14 @@ export const useSessionTimeout = (onTimeout: () => void) => {
 
     // 1. Chequeo inmediato al montar
     if (checkSessionTimeout()) {
-      onTimeout();
+      if (onTimeout) onTimeout();
       return;
     }
 
     // 2. Monitoreo activo cada 1 minuto (60.000 ms)
     const interval = setInterval(() => {
       if (checkSessionTimeout()) {
-        onTimeout();
+        if (onTimeout) onTimeout();
       }
     }, 60000);
 
