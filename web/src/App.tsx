@@ -7,6 +7,7 @@ import { ControlAulaView } from './pages/ControlAulaView';
 import { EsperaAulaView } from './pages/EsperaAulaView';
 import { LoginAlumnoCasaView } from './pages/LoginAlumnoCasaView';
 import { MosaicoAlumnos } from './pages/MosaicoAlumnos';
+import { VistaPrincipal } from './pages/VistaPrincipal';
 import { NivelesView } from './pages/NivelesView';
 import { CatalogoCuentos } from './pages/CatalogoCuentos';
 import { LecturaView } from './pages/LecturaView';
@@ -59,15 +60,27 @@ export const App: React.FC = () => {
       <MosaicoAlumnos
         onSelectStudent={(studentId) => {
           setActiveStudentId(studentId);
-          setSelectedNivelId('nivel-a');
-          setCurrentScreen('niveles');
-          setVistaInicio1('aprender');
+          setVistaInicio1('menu');
         }}
       />
     );
   }
 
-  // 5. Navegación en el Módulo Aprender
+  // 5. Menú Principal del Estudiante (VistaPrincipal)
+  if (vistaInicio1 === 'menu') {
+    return (
+      <VistaPrincipal
+        onNavigateToAprender={() => {
+          setSelectedNivelId(null);
+          setCurrentScreen('niveles');
+          setVistaInicio1('aprender');
+        }}
+        onSessionTimeoutRedirect={() => setVistaInicio1('portal')}
+      />
+    );
+  }
+
+  // 6. Navegación en el Módulo Aprender (Lectura)
   if (vistaInicio1 === 'aprender') {
     if (currentScreen === 'lectura' && selectedCuentoId) {
       return (
@@ -86,7 +99,10 @@ export const App: React.FC = () => {
             setSelectedCuentoId(cuentoId);
             setCurrentScreen('lectura');
           }}
-          onBack={() => setCurrentScreen('niveles')}
+          onBack={() => {
+            setSelectedNivelId(null);
+            setCurrentScreen('niveles');
+          }}
         />
       );
     }
@@ -97,7 +113,7 @@ export const App: React.FC = () => {
           setSelectedNivelId(nivelId);
           setCurrentScreen('catalogo');
         }}
-        onBack={() => setVistaInicio1('portal')}
+        onBack={() => setVistaInicio1('menu')}
       />
     );
   }

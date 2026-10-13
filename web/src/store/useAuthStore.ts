@@ -8,9 +8,17 @@ export type VistaInicio1 =
   | 'aula-mosaico'
   | 'aula-espera'
   | 'alumno-casa'
+  | 'menu'
   | 'aprender';
 export type Role = 'docente' | 'estudiante' | null;
 export type SessionType = 'aula' | 'casa' | null;
+
+export interface User {
+  id: string;
+  nombre: string;
+  email: string;
+  role: string;
+}
 
 export interface AuthState {
   modoInicio: ModoInicio;
@@ -18,8 +26,10 @@ export interface AuthState {
   activeStudentId: string | null;
   role: Role;
   sessionType: SessionType;
+  user: User | null;
   isClassroomSessionActive: boolean;
   classroomSessionExpiry: string | null;
+  isSessionExpiredModalOpen: boolean;
   setModoInicio: (modo: ModoInicio) => void;
   setVistaInicio1: (vista: VistaInicio1) => void;
   setActiveStudentId: (studentId: string | null) => void;
@@ -29,7 +39,10 @@ export interface AuthState {
   desactivarSesionAula: () => void;
   checkClassroomStatus: () => void;
   checkSessionTimeout: () => void;
+  login: (userData?: User) => void;
   logout: () => void;
+  openSessionExpiredModal: () => void;
+  closeSessionExpiredModal: () => void;
 }
 
 const getStoredSessionStatus = (): boolean => {
@@ -42,8 +55,10 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
   activeStudentId: null,
   role: null,
   sessionType: null,
+  user: { id: 'prof-1', nombre: 'Profesora PIE', email: 'profesora@piedraazul.cl', role: 'docente' },
   isClassroomSessionActive: getStoredSessionStatus(),
   classroomSessionExpiry: null,
+  isSessionExpiredModalOpen: false,
   setModoInicio: (modo) => set({ modoInicio: modo }),
   setVistaInicio1: (vista) => set({ vistaInicio1: vista }),
   setActiveStudentId: (studentId) => set({ activeStudentId: studentId }),
@@ -79,11 +94,20 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
       }
     }
   },
+  login: (userData) => {
+    set({
+      user: userData || { id: 'prof-1', nombre: 'Profesora PIE', email: 'profesora@piedraazul.cl', role: 'docente' },
+      role: 'docente',
+    });
+  },
   logout: () => {
     set({
       activeStudentId: null,
       role: null,
       sessionType: null,
+      user: null,
     });
   },
+  openSessionExpiredModal: () => set({ isSessionExpiredModalOpen: true }),
+  closeSessionExpiredModal: () => set({ isSessionExpiredModalOpen: false }),
 }));

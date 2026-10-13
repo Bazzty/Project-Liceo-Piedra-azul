@@ -1,5 +1,5 @@
 import React from 'react';
-import { Clock, ArrowRight, Sparkles, Info } from 'lucide-react';
+import { Clock, ArrowRight, Info } from 'lucide-react';
 import { Button } from './Button'; // Ajusta la ruta de importación de tu botón según corresponda
 import { useAuthStore } from '../../store/useAuthStore';
 

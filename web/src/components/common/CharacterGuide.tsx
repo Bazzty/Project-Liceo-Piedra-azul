@@ -138,7 +138,7 @@ export const CharacterGuide: React.FC<CharacterGuideProps> = ({
       utterance.rate = 0.85; // Velocidad de la voz
       
       utterance.onend = () => stopLipSync(); 
-      utterance.oncancel = () => stopLipSync();
+      (utterance as any).oncancel = () => stopLipSync();
       
       window.speechSynthesis.speak(utterance);
     }

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { MessageSquare, Settings, User as UserIcon, Sparkles } from 'lucide-react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { Button } from './Button';
 import { Modal } from './Modal';
 import { TableroSAAC } from '../tablero/TableroSAAC';
 import { useAuthStore } from '../../store/useAuthStore';

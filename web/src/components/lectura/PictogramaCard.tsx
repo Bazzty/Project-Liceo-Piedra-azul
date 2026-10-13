@@ -1,5 +1,4 @@
 import React from 'react';
-import { Volume2 } from 'lucide-react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db, type CuentoPalabra } from '../../db/db';
 

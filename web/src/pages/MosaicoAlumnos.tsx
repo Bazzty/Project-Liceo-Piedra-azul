@@ -3,6 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { Sparkles } from 'lucide-react';
 import { db, type Alumno } from '../db/db';
 import { MainLayout } from '../layouts/MainLayout';
+import { useAuthStore } from '../store/useAuthStore';
 
 export interface MosaicoAlumnosProps {
   onSelectStudent?: (studentId: string) => void;
@@ -14,9 +15,11 @@ export const MosaicoAlumnos: React.FC<MosaicoAlumnosProps> = ({
   selectStudent,
 }) => {
   const alumnos = useLiveQuery(() => db.alumnos.toArray(), []);
+  const { setActiveStudentId, setVistaInicio1 } = useAuthStore();
 
-  // Manejador resiliente que ejecuta la función sin importar cuál prop se usó
   const handleStudentClick = (id: string) => {
+    setActiveStudentId(id);
+    setVistaInicio1('menu');
     const callback = onSelectStudent || selectStudent;
     if (typeof callback === 'function') {
       callback(id);
@@ -39,7 +42,7 @@ export const MosaicoAlumnos: React.FC<MosaicoAlumnosProps> = ({
           </h2>
           
           <p className="text-secondary text-base font-medium">
-            Toca tu foto para comenzar a leer
+            Toca tu foto para comenzar
           </p>
         </div>
 

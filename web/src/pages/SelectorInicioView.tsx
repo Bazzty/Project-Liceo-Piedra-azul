@@ -1,5 +1,5 @@
 import React from 'react';
-import { School, Sparkles, Layout, ShieldCheck } from 'lucide-react';
+import { School, Sparkles, Layout } from 'lucide-react';
 import { MainLayout } from '../layouts/MainLayout';
 import { useAuthStore } from '../store/useAuthStore';
 
