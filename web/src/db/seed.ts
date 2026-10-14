@@ -1,9 +1,13 @@
 import { db } from './db';
 
+// Cada bloque de seedDatabase() solo puebla su tabla si está vacía (primer inicio).
+// Así, lo que el docente cree/edite/elimine desde el panel NO se pisa al recargar.
+// Para volver a los datos de demostración usar resetDemoData().
+
 export async function seedDatabase() {
  try {
  // 1. Niveles Pedagógicos
- await db.niveles.bulkPut([
+ if ((await db.niveles.count()) === 0) await db.niveles.bulkPut([
  {
  id: 'nivel-a',
  codigo: 'A',
@@ -21,7 +25,7 @@ export async function seedDatabase() {
  ]);
 
  // 2. TABLERO DE COMUNICACIÓN AUMENTATIVA SAAC ("HABLAR")
- await db.pictogramas.bulkPut([
+ if ((await db.pictogramas.count()) === 0) await db.pictogramas.bulkPut([
  // Necesidades
  { id: 'pic-agua', palabra: 'agua', categoria: 'necesidades', imagenUrl: '/pictogramas/arasaac/agua.png', audioUrl: '/audio/pictogramas/agua.mp3', esFotoReal: false },
  { id: 'pic-bano', palabra: 'baño', categoria: 'necesidades', imagenUrl: '/pictogramas/arasaac/bano.png', audioUrl: '/audio/pictogramas/bano.mp3', esFotoReal: false },
@@ -70,7 +74,7 @@ export async function seedDatabase() {
  ]);
 
  // 3. MÓDULO APRENDER: ACTIVIDADES NIVEL A Y CUENTOS NIVEL B
- await db.cuentos.bulkPut([
+ if ((await db.cuentos.count()) === 0) await db.cuentos.bulkPut([
  // NIVEL A: Ejercicios de Palabras y Sílabas Iniciales
  {
  id: 'actividad-palabras-m-l-s-p-d',
@@ -157,7 +161,7 @@ export async function seedDatabase() {
  ]);
 
  // 4. Alumnos de Prueba
- await db.alumnos.bulkPut([
+ if ((await db.alumnos.count()) === 0) await db.alumnos.bulkPut([
  {
  id: 'estudiante-mateo',
  nombre: 'Mateo',
@@ -169,8 +173,119 @@ export async function seedDatabase() {
  },
  ]);
 
+ await seedDemoDocente();
+
  console.log('✅ Base de datos inicializada correctamente.');
  } catch (error) {
  console.error('❌ Error al inicializar la base de datos:', error);
  }
+}
+
+// ---------------------------------------------------------------------------
+// DATOS SIMULADOS PARA EL PANEL DOCENTE
+// Simulan lo que en producción enviaría el backend (api/). Son datos de prueba:
+// nombres ficticios, NO corresponden a estudiantes reales.
+// ---------------------------------------------------------------------------
+
+// Fecha relativa a hoy: hace(2, 10, 40) = hace 2 días a las 10:40
+const hace = (dias: number, hora: number, minuto = 0): string => {
+  const d = new Date();
+  d.setDate(d.getDate() - dias);
+  d.setHours(hora, minuto, 0, 0);
+  return d.toISOString();
+};
+
+async function seedDemoDocente() {
+  // Solo se ejecuta una vez (si ya hay bitácora, no se vuelve a sembrar)
+  if ((await db.registros.count()) > 0) return;
+
+  const ahora = new Date().toISOString();
+
+  // Alumnos ficticios adicionales (Mateo ya existe en el seed base)
+  await db.alumnos.bulkPut([
+    { id: 'estudiante-sofia', nombre: 'Sofía', apellido: 'Rojas', temaId: 'verde-bosque', personajeId: 'princesa', vozId: 'catalina-cl', fechaCreacion: ahora },
+    { id: 'estudiante-benjamin', nombre: 'Benjamín', apellido: 'Soto', temaId: 'calma-azul', personajeId: 'superheroe', vozId: 'catalina-cl', fechaCreacion: ahora },
+    { id: 'estudiante-valentina', nombre: 'Valentina', apellido: 'Muñoz', temaId: 'alto-contraste', personajeId: 'animales', vozId: 'profesora-clonada', fechaCreacion: ahora },
+    { id: 'estudiante-joaquin', nombre: 'Joaquín', apellido: 'Díaz', temaId: 'calma-azul', personajeId: 'futbol', vozId: 'catalina-cl', fechaCreacion: ahora },
+    { id: 'estudiante-emilia', nombre: 'Emilia', apellido: 'Vera', temaId: 'verde-bosque', personajeId: 'dinosaurio', vozId: 'catalina-cl', fechaCreacion: ahora },
+  ]);
+  // Mateo: asignarle voz por defecto sin pisar sus demás datos
+  await db.alumnos.update('estudiante-mateo', { vozId: 'catalina-cl' });
+
+  // Progreso por alumno y cuento (los cuentos del seed base tienen 1 página)
+  const A = 'actividad-palabras-m-l-s-p-d';
+  const B1 = 'cuento-auto-ana';
+  const B2 = 'cuento-mi-mama';
+  const prog = (alumnoId: string, cuentoId: string, completado: boolean, dias: number, hora: number) => ({
+    alumnoId,
+    cuentoId,
+    completado,
+    paginaActual: completado ? 1 : 0,
+    fechaUltimoAcceso: hace(dias, hora, 15),
+  });
+  await db.progresos.bulkAdd([
+    prog('estudiante-mateo', A, true, 0, 10), prog('estudiante-mateo', B1, true, 1, 11), prog('estudiante-mateo', B2, false, 0, 10),
+    prog('estudiante-sofia', A, true, 1, 10), prog('estudiante-sofia', B1, true, 1, 10), prog('estudiante-sofia', B2, true, 2, 9),
+    prog('estudiante-benjamin', A, true, 2, 9), prog('estudiante-benjamin', B1, false, 0, 11),
+    prog('estudiante-valentina', A, false, 3, 10),
+    prog('estudiante-joaquin', A, true, 4, 11), prog('estudiante-joaquin', B1, false, 2, 10),
+    // Emilia aún no inicia ninguna lectura
+  ]);
+
+  // Bitácora de actividad (sesiones, lecturas y uso del tablero)
+  const reg = (
+    alumnoId: string,
+    tipo: 'sesion' | 'lectura' | 'tablero',
+    detalle: string,
+    lugar: 'liceo' | 'casa',
+    fecha: string,
+    extra: { palabrasEscuchadas?: number; pictogramaIds?: string[] } = {},
+  ) => ({ alumnoId, tipo, detalle, lugar, fecha, ...extra });
+
+  await db.registros.bulkAdd([
+    // Mateo
+    reg('estudiante-mateo', 'sesion', 'Sesión en el liceo', 'liceo', hace(0, 10, 0)),
+    reg('estudiante-mateo', 'lectura', 'Comenzó «Mi Mamá me Ama»', 'liceo', hace(0, 10, 40), { palabrasEscuchadas: 4 }),
+    reg('estudiante-mateo', 'tablero', 'Tablero: «yo quiero agua»', 'liceo', hace(0, 10, 55), { pictogramaIds: ['pic-yo', 'pic-quiero', 'pic-agua'] }),
+    reg('estudiante-mateo', 'sesion', 'Sesión en casa', 'casa', hace(1, 18, 10)),
+    reg('estudiante-mateo', 'lectura', 'Terminó «El Auto de Ana»', 'casa', hace(1, 18, 15), { palabrasEscuchadas: 5 }),
+    reg('estudiante-mateo', 'lectura', 'Terminó «Mis Primeras Palabras (M, L, S, P, D)»', 'liceo', hace(2, 10, 30), { palabrasEscuchadas: 18 }),
+    // Sofía
+    reg('estudiante-sofia', 'sesion', 'Sesión en el liceo', 'liceo', hace(1, 10, 0)),
+    reg('estudiante-sofia', 'lectura', 'Terminó «Mi Mamá me Ama»', 'liceo', hace(2, 9, 20), { palabrasEscuchadas: 4 }),
+    reg('estudiante-sofia', 'lectura', 'Terminó «El Auto de Ana»', 'liceo', hace(1, 10, 20), { palabrasEscuchadas: 5 }),
+    reg('estudiante-sofia', 'tablero', 'Tablero: «mamá feliz»', 'liceo', hace(1, 10, 45), { pictogramaIds: ['pic-mama', 'pic-feliz'] }),
+    // Benjamín
+    reg('estudiante-benjamin', 'sesion', 'Sesión en el liceo', 'liceo', hace(2, 9, 0)),
+    reg('estudiante-benjamin', 'lectura', 'Terminó «Mis Primeras Palabras (M, L, S, P, D)»', 'liceo', hace(2, 9, 30), { palabrasEscuchadas: 12 }),
+    reg('estudiante-benjamin', 'tablero', 'Tablero: «quiero jugar»', 'liceo', hace(0, 11, 20), { pictogramaIds: ['pic-quiero', 'pic-jugar'] }),
+    // Valentina
+    reg('estudiante-valentina', 'sesion', 'Sesión en el liceo', 'liceo', hace(3, 10, 0)),
+    reg('estudiante-valentina', 'lectura', 'Comenzó «Mis Primeras Palabras (M, L, S, P, D)»', 'liceo', hace(3, 10, 25), { palabrasEscuchadas: 7 }),
+    reg('estudiante-valentina', 'tablero', 'Tablero: «ayuda»', 'liceo', hace(3, 10, 50), { pictogramaIds: ['pic-ayuda'] }),
+    // Joaquín
+    reg('estudiante-joaquin', 'sesion', 'Sesión en el liceo', 'liceo', hace(4, 11, 0)),
+    reg('estudiante-joaquin', 'lectura', 'Terminó «Mis Primeras Palabras (M, L, S, P, D)»', 'liceo', hace(4, 11, 30), { palabrasEscuchadas: 9 }),
+    reg('estudiante-joaquin', 'sesion', 'Sesión en casa', 'casa', hace(2, 17, 30)),
+    reg('estudiante-joaquin', 'tablero', 'Tablero: «yo quiero comer»', 'casa', hace(2, 17, 40), { pictogramaIds: ['pic-yo', 'pic-quiero', 'pic-comer'] }),
+    // Emilia
+    reg('estudiante-emilia', 'sesion', 'Sesión en el liceo', 'liceo', hace(5, 10, 0)),
+    reg('estudiante-emilia', 'tablero', 'Tablero: «agua»', 'liceo', hace(5, 10, 10), { pictogramaIds: ['pic-agua'] }),
+  ]);
+}
+
+/**
+ * Borra TODAS las tablas locales y vuelve a cargar los datos de demostración.
+ * Útil para reiniciar la demo (se usa desde el botón del panel docente).
+ */
+export async function resetDemoData() {
+  await Promise.all([
+    db.alumnos.clear(),
+    db.niveles.clear(),
+    db.pictogramas.clear(),
+    db.cuentos.clear(),
+    db.progresos.clear(),
+    db.registros.clear(),
+  ]);
+  await seedDatabase();
 }

@@ -1,5 +1,8 @@
 import Dexie, { type Table } from 'dexie';
 
+// Voces disponibles (mismas opciones que usePlayerStore)
+export type VozId = 'catalina-cl' | 'profesora-clonada';
+
 // 1. Perfil del Estudiante
 export interface Alumno {
   id?: string;
@@ -8,6 +11,7 @@ export interface Alumno {
   avatarUrl?: string;
   temaId: string;
   personajeId?: string;
+  vozId?: VozId; // Voz asignada por el docente (si no existe, se usa la voz por defecto)
   fechaCreacion: string;
 }
 
@@ -63,7 +67,20 @@ export interface Progreso {
   alumnoId: string;
   cuentoId: string;
   completado: boolean;
+  paginaActual?: number; // Última página leída (para calcular el porcentaje de avance)
   fechaUltimoAcceso: string;
+}
+
+// 6. Bitácora de actividad (alimenta el panel docente: sesiones, palabras escuchadas, registro)
+export interface Registro {
+  id?: string;
+  alumnoId: string;
+  tipo: 'sesion' | 'lectura' | 'tablero';
+  detalle: string; // Ej: Leyó «El Auto de Ana» hasta la página 1
+  lugar: 'liceo' | 'casa';
+  fecha: string; // ISO
+  palabrasEscuchadas?: number;
+  pictogramaIds?: string[]; // Solo para tipo 'tablero'
 }
 
 // Clases e Inicialización de Dexie.js
@@ -73,6 +90,7 @@ export class LeerParaTodosDB extends Dexie {
   pictogramas!: Table<Pictograma>;
   cuentos!: Table<Cuento>;
   progresos!: Table<Progreso>;
+  registros!: Table<Registro>;
 
   constructor() {
     super('LeerParaTodosDB');
@@ -84,6 +102,11 @@ export class LeerParaTodosDB extends Dexie {
       pictogramas: '++id, palabra, categoria, esFotoReal',
       cuentos: '++id, nivelId, estado, fechaCreacion',
       progresos: '++id, alumnoId, cuentoId, completado, fechaUltimoAcceso',
+    });
+
+    // v2: bitácora de actividad para el panel docente (las demás tablas no cambian)
+    this.version(2).stores({
+      registros: '++id, alumnoId, tipo, fecha',
     });
   }
 }
