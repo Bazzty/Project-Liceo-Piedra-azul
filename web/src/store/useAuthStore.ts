@@ -5,6 +5,7 @@ export type VistaInicio1 =
   | 'portal'
   | 'profesor-login'
   | 'control-aula'
+  | 'panel-docente'
   | 'aula-mosaico'
   | 'aula-espera'
   | 'alumno-casa'
