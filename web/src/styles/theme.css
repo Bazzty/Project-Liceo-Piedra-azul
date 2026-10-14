@@ -19,6 +19,13 @@
   --btn-logros-bg: #059669;
   --btn-logros-text: #ffffff;
   --btn-logros-border: #047857;
+  /* Colores de estado del panel docente (modificables) */
+  --status-ok: #15803d;
+  --status-ok-bg: #dcfce7;
+  --status-warn: #b45309;
+  --status-warn-bg: #fef3c7;
+  --status-danger: #b91c1c;
+  --status-danger-bg: #fee2e2;
 }
 
 html[data-theme="alto-contraste"] {
@@ -87,4 +94,11 @@ html[data-theme="admin"] {
   --btn-logros-bg: #15803d;
   --btn-logros-text: #ffffff;
   --btn-logros-border: #166534;
+  /* Colores de estado del panel docente (modificables) */
+  --status-ok: #15803d;
+  --status-ok-bg: #dcfce7;
+  --status-warn: #b45309;
+  --status-warn-bg: #fef3c7;
+  --status-danger: #b91c1c;
+  --status-danger-bg: #fee2e2;
 }

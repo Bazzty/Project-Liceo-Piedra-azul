@@ -44,3 +44,34 @@ export const fetchArasaacPictogramId = async (palabra: string): Promise<number |
     return null;
   }
 };
+
+export interface ArasaacOpcion {
+  id: number;
+  url: string;
+}
+
+/**
+ * Busca varios pictogramas posibles para una palabra (para que el docente elija
+ * el que mejor corresponda). Requiere internet; si falla devuelve una lista vacía.
+ */
+export const searchArasaacPictograms = async (
+  palabra: string,
+  maxResultados = 8,
+): Promise<ArasaacOpcion[]> => {
+  try {
+    const cleanWord = palabra.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    if (!cleanWord) return [];
+    const response = await fetch(
+      `https://api.arasaac.org/v1/pictograms/es/search/${encodeURIComponent(cleanWord)}`
+    );
+    if (!response.ok) return [];
+    const data: ArasaacPictogramResponse[] = await response.json();
+    if (!Array.isArray(data)) return [];
+    return data.slice(0, maxResultados).map((item) => ({
+      id: item._id,
+      url: getArasaacImageUrl(item._id),
+    }));
+  } catch {
+    return [];
+  }
+};
