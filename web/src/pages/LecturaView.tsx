@@ -12,18 +12,19 @@ import { getPersonajeAudio } from '../config/audioConfig';
 export interface LecturaViewProps {
 	cuentoId?: string;
 	onVolver?: () => void;
+	onBack?: () => void;
 }
 
 export const LecturaView: React.FC<LecturaViewProps> = ({
 	cuentoId,
 	onVolver,
+	onBack,
 }) => {
 	const { playAudio } = usePlayerStore();
 	const { activeStudentId, setVistaInicio1 } = useAuthStore();
 	const [paginaActual, setPaginaActual] = useState(0);
 	const [actividadCompletada, setActividadCompletada] = useState(false);
 
-	// Carga de la actividad o cuento desde Dexie.js
 	const cuento = useLiveQuery(
 		async () => {
 			if (!cuentoId) {
@@ -37,8 +38,10 @@ export const LecturaView: React.FC<LecturaViewProps> = ({
 	const handleVolver = () => {
 		if (onVolver) {
 			onVolver();
+		} else if (onBack) {
+			onBack();
 		} else {
-			setVistaInicio1('portal');
+			setVistaInicio1('aula-mosaico');
 		}
 	};
 
@@ -51,10 +54,12 @@ export const LecturaView: React.FC<LecturaViewProps> = ({
 		return (
 			<MainLayout>
 				<div className="flex flex-col items-center justify-center min-h-[80vh] gap-4">
-					<div className="animate-spin text-brand">
+					<div className="animate-spin text-brand text-4xl">
 						📚
 					</div>
-					<p className="text-xl font-black text-secondary">Cargando actividad de lectura...</p>
+					<p className="text-xl font-black text-secondary">
+						Cargando actividad de lectura...
+					</p>
 				</div>
 			</MainLayout>
 		);
@@ -75,7 +80,6 @@ export const LecturaView: React.FC<LecturaViewProps> = ({
 	const handleSiguientePagina = async () => {
 		if (esUltimaPagina) {
 			setActividadCompletada(true);
-			// Guardar progreso del alumno en la base de datos
 			if (activeStudentId && cuento.id) {
 				await db.progresos.add({
 					alumnoId: activeStudentId,
@@ -95,7 +99,6 @@ export const LecturaView: React.FC<LecturaViewProps> = ({
 		}
 	};
 
-	// Pantalla de Felicitaciones / Finalización
 	if (actividadCompletada) {
 		return (
 			<MainLayout>
@@ -103,12 +106,14 @@ export const LecturaView: React.FC<LecturaViewProps> = ({
 					<div className="p-4 bg-brand/10 border-4 border-brand rounded-full text-brand animate-bounce">
 						<CheckCircle2 size={64} />
 					</div>
-					<h1 className="text-3xl font-black text-primary">¡Excelente trabajo!</h1>
+					<h1 className="text-3xl font-black text-primary">
+						¡Excelente trabajo!
+					</h1>
 					<p className="text-lg font-medium text-secondary max-w-md">
 						Has completado la actividad "{cuento.titulo}".
 					</p>
 					<CharacterGuide
-						mensaje="¡Lo has hecho excelente! Estoy muy orgulloso de tus avances."
+						mensaje="¡Lo has hecho genial! Completaste toda la lectura."
 						audioUrl={getPersonajeAudio('felicitaciones')}
 						variant="compact"
 					/>
@@ -151,15 +156,13 @@ export const LecturaView: React.FC<LecturaViewProps> = ({
 					)}
 				</div>
 
-				{/* Área Central: Tarjeta de Palabra (Nivel A) o Lista de Palabras (Nivel D) */}
+				{/* Área Central: Tarjeta Nivel A (palabra única) o Nivel D (frase) */}
 				<div className="flex-1 flex flex-col items-center justify-center w-full my-4">
 					{paginaData?.palabras && paginaData.palabras.length === 1 ? (
-						// Nivel A: Tarjeta centrada para palabra individual y sílabas
 						<div className="w-full max-w-xs sm:max-w-sm flex justify-center">
 							<PictogramaCard palabra={paginaData.palabras[0]} isHighlighted={true} className="w-full" />
 						</div>
 					) : (
-						// Nivel D: Trazado horizontal de la frase o cuento
 						<div className="flex flex-wrap items-center justify-center gap-4 w-full p-6 bg-surface border-4 border-borderCustom rounded-3xl shadow-lg">
 							{paginaData?.palabras?.map((p, idx) => (
 								<PictogramaCard key={idx} palabra={p} />
