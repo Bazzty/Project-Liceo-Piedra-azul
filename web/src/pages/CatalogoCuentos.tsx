@@ -1,157 +1,185 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowLeft, BookOpen, Sparkles, Star } from 'lucide-react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { MainLayout } from '../layouts/MainLayout';
 import { CharacterGuide } from '../components/common/CharacterGuide';
 import { useAuthStore } from '../store/useAuthStore';
 import { db, type Cuento, type Progreso } from '../db/db';
+import { resolverYGuardarPictograma } from '../services/arasaac';
+
+// Subcomponente interno para la portada de la tarjeta con fallback a ARASAAC
+const PortadaCuento: React.FC<{ cuento: Cuento }> = ({ cuento }) => {
+	const [imgSrc, setImgSrc] = useState(cuento.portadaUrl);
+	const [hasError, setHasError] = useState(false);
+
+	useEffect(() => {
+		setImgSrc(cuento.portadaUrl);
+		setHasError(false);
+	}, [cuento.portadaUrl, cuento.titulo]);
+
+	const handleImageError = async () => {
+		if (!hasError) {
+			// Intenta obtener la imagen desde ARASAAC si la ruta local no existe en /public/
+			const apiUrl = await resolverYGuardarPictograma(cuento.titulo);
+			if (apiUrl && apiUrl !== imgSrc) {
+				setImgSrc(apiUrl);
+			} else {
+				setHasError(true);
+			}
+		}
+	};
+
+	return (
+		<div className="w-full h-36 flex items-center justify-center bg-app rounded-2xl overflow-hidden p-2">
+			{imgSrc && !hasError ? (
+				<img
+					src={imgSrc}
+					alt={cuento.titulo}
+					onError={handleImageError}
+					className="w-full h-full object-contain group-hover:scale-105 transition-transform"
+				/>
+			) : (
+				<div className="flex flex-col items-center justify-center text-secondary gap-1">
+					<BookOpen size={36} />
+					<span className="text-xs font-bold text-center">{cuento.titulo}</span>
+				</div>
+			)}
+		</div>
+	);
+};
 
 export interface CatalogoCuentosProps {
-  nivelId: string;
-  onSelectCuento: (cuentoId: string) => void;
-  onBack: () => void;
-  onSessionTimeoutRedirect?: () => void;
+	nivelId: string;
+	onSelectCuento: (cuentoId: string) => void;
+	onBack: () => void;
+	onSessionTimeoutRedirect?: () => void;
 }
 
 export const CatalogoCuentos: React.FC<CatalogoCuentosProps> = ({
-  nivelId,
-  onSelectCuento,
-  onBack,
-  onSessionTimeoutRedirect,
+	nivelId,
+	onSelectCuento,
+	onBack,
+	onSessionTimeoutRedirect,
 }) => {
-  const { activeStudentId } = useAuthStore();
-  const nivel = useLiveQuery(() => db.niveles.get(nivelId), [nivelId]);
-  
-  const cuentos = useLiveQuery(
-    () => db.cuentos.where('nivelId').equals(nivelId).toArray(),
-    [nivelId]
-  );
+	const { activeStudentId } = useAuthStore();
+	const nivel = useLiveQuery(() => db.niveles.get(nivelId), [nivelId]);
+	const cuentos = useLiveQuery(
+		() => db.cuentos.where('nivelId').equals(nivelId).toArray(),
+		[nivelId]
+	);
+	const progresos = useLiveQuery(
+		async () => {
+			if (!activeStudentId) return [];
+			return await db.progresos.where('alumnoId').equals(activeStudentId).toArray();
+		},
+		[activeStudentId]
+	);
 
-  // Consulta corregida con retorno explícito de Progreso[]
-  const progresos = useLiveQuery(
-    async () => {
-      if (!activeStudentId) return [];
-      return await db.progresos.where('alumnoId').equals(activeStudentId).toArray();
-    },
-    [activeStudentId]
-  );
+	const cuentoEstaCompletado = (cuentoId?: string) => {
+		if (!cuentoId || !progresos) return false;
+		return progresos.some((p: Progreso) => p.cuentoId === cuentoId && p.completado);
+	};
 
-  const cuentoEstaCompletado = (cuentoId?: string) => {
-    if (!cuentoId || !progresos) return false;
-    return progresos.some((p: Progreso) => p.cuentoId === cuentoId && p.completado);
-  };
+	return (
+		<MainLayout>
+			<div className="flex flex-col gap-6 max-w-5xl mx-auto w-full p-4 min-h-[85vh]">
+				{/* Encabezado Fijo */}
+				<div className="flex items-center justify-between w-full bg-surface border-4 border-borderCustom rounded-3xl p-4 shadow-md">
+					<button
+						onClick={onBack}
+						className="flex items-center gap-2 bg-app px-4 py-2 rounded-2xl border-2 border-borderCustom font-black text-primary hover:border-brand transition-all active:scale-95 cursor-pointer shadow-sm"
+					>
+						<ArrowLeft size={20} />
+						VOLVER
+					</button>
 
-  return (
-    <MainLayout onSessionTimeoutRedirect={onSessionTimeoutRedirect} allowScroll={true}>
-      <div className="flex flex-col gap-6 w-full max-w-6xl mx-auto pb-8">
-        
-        {/* Encabezado Fijo */}
-        <div className="flex items-center justify-between bg-surface/90 backdrop-blur-md p-4 rounded-3xl shadow-md border-2 border-borderCustom sticky top-0 z-20">
-          <button
-            onClick={onBack}
-            className="flex items-center gap-2 px-4 py-2 bg-app hover:bg-borderCustom/40 text-primary font-bold rounded-2xl border-2 border-borderCustom transition-colors cursor-pointer"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            <span>VOLVER</span>
-          </button>
-          
-          <div className="text-center">
-            <span className="text-xs font-bold uppercase tracking-wider text-brand">
-              {nivel ? `NIVEL ${nivel.codigo}` : 'NIVEL DE LECTURA'}
-            </span>
-            <h2 className="text-lg sm:text-xl font-extrabold text-primary">
-              {nivel ? nivel.nombre : 'Catálogo de Cuentos'}
-            </h2>
-          </div>
+					<div className="text-center">
+						<span className="text-xs font-black text-brand tracking-wider uppercase">
+							{nivel ? `NIVEL ${nivel.codigo}` : 'NIVEL DE LECTURA'}
+						</span>
+						<h1 className="text-lg sm:text-2xl font-black text-primary">
+							{nivel ? nivel.nombre : 'Catálogo de Cuentos'}
+						</h1>
+					</div>
 
-          <div className="w-24" />
-        </div>
+					<div className="w-16 sm:w-24" />
+				</div>
 
-        {/* Guía en modo compacto */}
-        <div className="w-full bg-surface/90 backdrop-blur-md rounded-3xl p-4 sm:p-6 shadow-xl border-2 border-borderCustom">
-          <CharacterGuide 
-            mensaje="¡Elige un cuento para comenzar tu práctica de lectura!"
-            variant="compact"
-          />
-        </div>
+				{/* Guía en modo compacto */}
+				<CharacterGuide
+					mensaje="Elige una actividad o cuento para comenzar a practicar."
+					variant="compact"
+				/>
 
-        {/* Grilla de Cuentos */}
-        <div className="flex flex-col gap-4">
-          <h3 className="text-xl font-extrabold text-primary px-2">
-            Cuentos Disponibles
-          </h3>
+				{/* Grilla de Actividades */}
+				<div className="flex flex-col gap-4">
+					<h2 className="text-xl font-black text-primary flex items-center gap-2">
+						<Sparkles className="text-brand" size={24} />
+						Actividades Disponibles
+					</h2>
 
-          {!cuentos || cuentos.length === 0 ? (
-            <div className="bg-surface border-2 border-borderCustom rounded-3xl p-12 text-center flex flex-col items-center justify-center gap-3">
-              <BookOpen className="w-12 h-12 text-secondary animate-pulse" />
-              <p className="text-lg font-bold text-primary">
-                Aún no hay cuentos cargados para este nivel.
-              </p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {cuentos.map((cuento: Cuento) => {
-                const completado = cuentoEstaCompletado(cuento.id);
-                return (
-                  <div
-                    key={cuento.id}
-                    onClick={() => cuento.id && onSelectCuento(cuento.id)}
-                    className="bg-surface rounded-3xl border-4 border-borderCustom p-4 shadow-xl hover:border-brand transition-all active:scale-98 cursor-pointer flex flex-col justify-between gap-3 group relative overflow-hidden"
-                  >
-                    {/* Indicador ⭐ COMPLETADO */}
-                    {completado && (
-                      <div className="absolute top-3 right-3 bg-emerald-500 text-white px-3 py-1 rounded-full text-xs font-extrabold flex items-center gap-1 shadow-md z-10">
-                        <Star className="w-3.5 h-3.5 fill-current" />
-                        <span>COMPLETADO</span>
-                      </div>
-                    )}
+					{!cuentos || cuentos.length === 0 ? (
+						<div className="flex flex-col items-center justify-center p-12 bg-surface border-4 border-borderCustom rounded-3xl text-center gap-3">
+							<BookOpen size={48} className="text-secondary" />
+							<p className="text-lg font-bold text-secondary">
+								Aún no hay actividades cargadas para este nivel.
+							</p>
+						</div>
+					) : (
+						<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+							{cuentos.map((cuento: Cuento) => {
+								const completado = cuentoEstaCompletado(cuento.id);
+								return (
+									<div
+										key={cuento.id}
+										role="button"
+										tabIndex={0}
+										onClick={() => cuento.id && onSelectCuento(cuento.id)}
+										onKeyDown={(e) => {
+											if ((e.key === 'Enter' || e.key === ' ') && cuento.id) {
+												e.preventDefault();
+												onSelectCuento(cuento.id);
+											}
+										}}
+										className="bg-surface rounded-3xl border-4 border-borderCustom p-4 shadow-xl hover:border-brand transition-all active:scale-98 cursor-pointer flex flex-col justify-between gap-3 group relative overflow-hidden"
+									>
+										{/* Indicador ⭐ COMPLETADO */}
+										{completado && (
+											<div className="absolute top-3 right-3 bg-brand text-white px-3 py-1 rounded-full text-xs font-black flex items-center gap-1 shadow-md z-10">
+												<Star size={14} fill="currentColor" />
+												COMPLETADO
+											</div>
+										)}
 
-                    {/* Portada Resiliente */}
-                    <div className="w-full h-40 bg-brand/10 rounded-2xl overflow-hidden relative flex items-center justify-center border-2 border-borderCustom group-hover:bg-brand/20 transition-colors">
-                      {cuento.portadaUrl ? (
-                        <img 
-                          src={cuento.portadaUrl} 
-                          alt={cuento.titulo} 
-                          className="w-full h-full object-cover" 
-                        />
-                      ) : (
-                        <div className="flex flex-col items-center justify-center gap-2 text-brand">
-                          <Sparkles className="w-8 h-8 animate-pulse" />
-                          <span className="text-sm font-bold">Lectura Dual</span>
-                        </div>
-                      )}
-                    </div>
+										{/* Portada Resiliente con Fallback a ARASAAC */}
+										<PortadaCuento cuento={cuento} />
 
-                    {/* Título y Descripción */}
-                    <div className="flex flex-col gap-1.5 flex-1">
-                      <h4 className="text-xl font-extrabold text-primary group-hover:text-brand transition-colors">
-                        {cuento.titulo}
-                      </h4>
-                      <p className="text-sm text-secondary line-clamp-2">
-                        {cuento.descripcion}
-                      </p>
-                    </div>
+										{/* Título y Descripción */}
+										<div className="flex flex-col gap-1">
+											<h3 className="font-black text-lg text-primary group-hover:text-brand transition-colors">
+												{cuento.titulo}
+											</h3>
+											<p className="text-xs text-secondary line-clamp-2">
+												{cuento.descripcion}
+											</p>
+										</div>
 
-                    {/* Pie de Tarjeta */}
-                    <div className="flex items-center justify-between pt-2 border-t-2 border-borderCustom">
-                      <span className="text-xs font-bold text-secondary bg-app px-3 py-1.5 rounded-xl border border-borderCustom">
-                        {cuento.paginas?.length || 1} {cuento.paginas?.length === 1 ? 'Página' : 'Páginas'}
-                      </span>
-                      
-                      <span className={`px-4 py-2 font-bold text-sm rounded-xl shadow-md transition-opacity ${
-                        completado ? 'bg-emerald-600 text-white' : 'bg-brand text-white'
-                      } group-hover:opacity-90`}>
-                        {completado ? 'RELEER' : 'LEER'}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
-      </div>
-    </MainLayout>
-  );
+										{/* Pie de Tarjeta */}
+										<div className="flex items-center justify-between border-t-2 border-borderCustom pt-3 mt-1">
+											<span className="text-xs font-bold text-secondary">
+												{cuento.paginas?.length || 1} {cuento.paginas?.length === 1 ? 'Página' : 'Páginas'}
+											</span>
+											<span className="text-xs font-black text-brand bg-brand/10 px-3 py-1 rounded-xl">
+												{completado ? 'RELEER' : 'LEER'}
+											</span>
+										</div>
+									</div>
+								);
+							})}
+						</div>
+					)}
+				</div>
+			</div>
+		</MainLayout>
+	);
 };
