@@ -1,164 +1,139 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Volume2 } from 'lucide-react';
 import { usePlayerStore } from '../../store/usePlayerStore';
+import { getPersonajeAudio } from '../../config/audioConfig';
 
 // 1. DICCIONARIO DE FONEMAS A VISEMAS
 const MOUTH_MAP: Record<string, string> = {
-  a: 'AEI', e: 'AEI', i: 'AEI', á: 'AEI', é: 'AEI', í: 'AEI',
-  o: 'O', ó: 'O', u: 'U', ú: 'U',
-  b: 'BMP', m: 'BMP', p: 'BMP',
-  f: 'FV', v: 'FV',
-  l: 'L', r: 'L',
-  c: 'CDNS', d: 'CDNS', n: 'CDNS', s: 'CDNS', t: 'CDNS', z: 'CDNS', x: 'CDNS', y: 'CDNS',
-  g: 'GK', k: 'GK', q: 'WQ', w: 'WQ',
-  j: 'CH_J_SH',
-  ' ': 'NEUTRAL', '.': 'NEUTRAL', ',': 'NEUTRAL', '!': 'NEUTRAL', '?': 'NEUTRAL',
+	a: 'AEI', e: 'AEI', i: 'AEI', á: 'AEI', é: 'AEI', í: 'AEI',
+	o: 'O', ó: 'O', u: 'U', ú: 'U',
+	b: 'BMP', m: 'BMP', p: 'BMP',
+	f: 'FV', v: 'FV',
+	l: 'L', r: 'L',
+	c: 'CDNS', d: 'CDNS', n: 'CDNS', s: 'CDNS', t: 'CDNS', z: 'CDNS', x: 'CDNS', y: 'CDNS',
+	g: 'GK', k: 'GK', q: 'WQ', w: 'WQ',
+	j: 'CH_J_SH',
+	' ': 'NEUTRAL', '.': 'NEUTRAL', ',': 'NEUTRAL', '!': 'NEUTRAL', '?': 'NEUTRAL',
 };
 
 // 2. COORDENADAS DEL SPRITE SHEET (3 filas x 5 columnas)
 const SPRITE_MAP: Record<string, { x: number; y: number }> = {
-  'AEI': { x: 0, y: 0 },
-  'TH': { x: 1, y: 0 },
-  'O': { x: 2, y: 0 },
-  'EE': { x: 3, y: 0 },
-  'NEUTRAL': { x: 4, y: 0 },
-  'HAPPY': { x: 0, y: 1 },
-  'U': { x: 1, y: 1 },
-  'BMP': { x: 2, y: 1 },
-  'L': { x: 3, y: 1 },
-  'FV': { x: 4, y: 1 },
-  'CH_J_SH': { x: 0, y: 2 },
-  'CDNS': { x: 1, y: 2 },
-  'GK': { x: 2, y: 2 },
-  'WQ': { x: 3, y: 2 },
-  'REPOSO': { x: 4, y: 2 },
+	'AEI': { x: 0, y: 0 },
+	'TH': { x: 1, y: 0 },
+	'O': { x: 2, y: 0 },
+	'EE': { x: 3, y: 0 },
+	'NEUTRAL': { x: 4, y: 0 },
+	'HAPPY': { x: 0, y: 1 },
+	'U': { x: 1, y: 1 },
+	'BMP': { x: 2, y: 1 },
+	'L': { x: 3, y: 1 },
+	'FV': { x: 4, y: 1 },
+	'CH_J_SH': { x: 0, y: 2 },
+	'CDNS': { x: 1, y: 2 },
+	'GK': { x: 2, y: 2 },
+	'WQ': { x: 3, y: 2 },
+	'REPOSO': { x: 4, y: 2 },
 };
 
 const parseTextToMouthCues = (text: string, speedFactor: number = 1.0) => {
-  const normalized = text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-  const cues: { viseme: string; duration: number }[] = [];
-  
-  for (let i = 0; i < normalized.length; i++) {
-    const char = normalized[i];
-    const viseme = MOUTH_MAP[char] || 'NEUTRAL';
-    
-    // MEJORA DE FLUIDEZ: Subimos los tiempos base. 
-    // Si es muy rápido (ej. 40ms), se ve como un "glitch" o temblor.
-    let duration = 70 * speedFactor; // Mínimo 70ms para consonantes
-    
-    if (['a', 'e', 'i', 'o', 'u', 'á', 'é', 'í', 'ó', 'ú'].includes(char)) {
-      duration = 140 * speedFactor; // Vocales duran más, dando estabilidad
-    } else if (['.', '!', '?'].includes(char)) {
-      duration = 250 * speedFactor;
-    } else if ([',', ' '].includes(char)) {
-      duration = 100 * speedFactor;
-    }
-    
-    if (cues.length > 0 && cues[cues.length - 1].viseme === viseme) {
-      cues[cues.length - 1].duration += duration;
-    } else {
-      cues.push({ viseme, duration });
-    }
-  }
-  
-  cues.push({ viseme: 'NEUTRAL', duration: 100 });
-  return cues;
+	const normalized = text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+	const cues: { viseme: string; duration: number }[] = [];
+	for (let i = 0; i < normalized.length; i++) {
+		const char = normalized[i];
+		const viseme = MOUTH_MAP[char] || 'NEUTRAL';
+		let duration = 70 * speedFactor;
+		if (['a', 'e', 'i', 'o', 'u', 'á', 'é', 'í', 'ó', 'ú'].includes(char)) {
+			duration = 140 * speedFactor;
+		} else if (['.', '!', '?'].includes(char)) {
+			duration = 250 * speedFactor;
+		} else if ([',', ' '].includes(char)) {
+			duration = 100 * speedFactor;
+		}
+		if (cues.length > 0 && cues[cues.length - 1].viseme === viseme) {
+			cues[cues.length - 1].duration += duration;
+		} else {
+			cues.push({ viseme, duration });
+		}
+	}
+	cues.push({ viseme: 'NEUTRAL', duration: 100 });
+	return cues;
 };
 
 export interface CharacterGuideProps {
-  mensaje: string;
-  audioUrl?: string;
-  className?: string;
-  variant?: 'compact' | 'large';
+	mensaje: string;
+	audioUrl?: string;
+	className?: string;
+	variant?: 'compact' | 'large';
 }
 
 export const CharacterGuide: React.FC<CharacterGuideProps> = ({
-  mensaje,
-  audioUrl,
-  className = '',
-  variant = 'compact',
+	mensaje,
+	audioUrl,
+	className = '',
+	variant = 'compact',
 }) => {
-  const { playAudio, currentAudioUrl } = usePlayerStore();
-  const [currentViseme, setCurrentViseme] = useState('NEUTRAL');
-  const [imageError, setImageError] = useState(false);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+	const { playAudio, currentAudioUrl } = usePlayerStore();
+	const [currentViseme, setCurrentViseme] = useState('NEUTRAL');
+	const [imageError, setImageError] = useState(false);
+	const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const baseUrl = import.meta.env.BASE_URL || '/';
-  const cabezaUrl = `${baseUrl}assets/personajes/oso/cabeza_base.png`.replace(/\/\//g, '/');
-  const spriteUrl = `${baseUrl}assets/personajes/oso/bocas_sprite.png`.replace(/\/\//g, '/');
+	const baseUrl = import.meta.env.BASE_URL || '/';
+	const cabezaUrl = `${baseUrl}assets/personajes/oso/cabeza_base.png`.replace(/\/\//g, '/');
+	const spriteUrl = `${baseUrl}assets/personajes/oso/bocas_sprite.png`.replace(/\/\//g, '/');
 
-  const stopLipSync = useCallback(() => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-    }
-    setCurrentViseme('NEUTRAL');
-  }, []);
+	const stopLipSync = useCallback(() => {
+		if (timeoutRef.current) {
+			clearTimeout(timeoutRef.current);
+			timeoutRef.current = null;
+		}
+		setCurrentViseme('NEUTRAL');
+	}, []);
 
-  useEffect(() => {
-    return () => stopLipSync();
-  }, [stopLipSync]);
+	useEffect(() => {
+		return () => stopLipSync();
+	}, [stopLipSync]);
 
-  useEffect(() => {
-    if (audioUrl && currentAudioUrl !== audioUrl) {
-      stopLipSync();
-    }
-  }, [currentAudioUrl, audioUrl, stopLipSync]);
+	useEffect(() => {
+		if (audioUrl && currentAudioUrl !== audioUrl) {
+			stopLipSync();
+		}
+	}, [currentAudioUrl, audioUrl, stopLipSync]);
 
-  const runLipSync = useCallback((text: string) => {
-    stopLipSync();
-    
-    // Con los tiempos base reducidos, un speedFactor de 1.0 es ideal
-    const cues = parseTextToMouthCues(text, 1.0); 
-    let index = 0;
+	const runLipSync = useCallback((text: string) => {
+		stopLipSync();
+		const cues = parseTextToMouthCues(text, 1.0);
+		let index = 0;
 
-    const playNextCue = () => {
-      if (index >= cues.length) {
-        stopLipSync();
-        return;
-      }
-      const cue = cues[index];
-      setCurrentViseme(cue.viseme);
-      index++;
-      timeoutRef.current = setTimeout(playNextCue, cue.duration);
-    };
+		const playNextCue = () => {
+			if (index >= cues.length) {
+				stopLipSync();
+				return;
+			}
+			const cue = cues[index];
+			setCurrentViseme(cue.viseme);
+			index++;
+			timeoutRef.current = setTimeout(playNextCue, cue.duration);
+		};
 
-    playNextCue();
-  }, [stopLipSync]);
+		playNextCue();
+	}, [stopLipSync]);
 
-  const handleSpeak = () => {
-    runLipSync(mensaje);
-    
-    if (audioUrl) {
-      playAudio(audioUrl);
-    } else {
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(mensaje);
-      utterance.lang = 'es-CL';
-      utterance.rate = 0.85; // Velocidad de la voz
-      
-      utterance.onend = () => stopLipSync(); 
-      (utterance as any).oncancel = () => stopLipSync();
-      
-      window.speechSynthesis.speak(utterance);
-    }
-  };
+	const handleSpeak = () => {
+		runLipSync(mensaje);
+		const targetAudio = audioUrl || getPersonajeAudio('bienvenida');
+		playAudio(targetAudio);
+	};
 
-    // 3. MICRO-AJUSTES HORIZONTALES (en píxeles)
-  // Si una boca se mueve a la derecha, pon un valor negativo (ej: -2). 
-  // Si se mueve a la izquierda, pon un valor positivo (ej: 2).
-  const SPRITE_OFFSETS_X: Record<string, number> = {
-    'AEI': -3, 'TH': -2, 'O': 0, 'EE': -3, 'NEUTRAL': 0,
-    'HAPPY': 0, 'U': 0, 'BMP': 0, 'L': -4, 'FV': 0,
-    'CH_J_SH': 0, 'CDNS': 0, 'GK': -1, 'WQ': -2, 'REPOSO': 0,
-  };
+	const SPRITE_OFFSETS_X: Record<string, number> = {
+		'AEI': -3, 'TH': -2, 'O': 0, 'EE': -3, 'NEUTRAL': 0, 'HAPPY': 0, 'U': 0,
+		'BMP': 0, 'L': -4, 'FV': 0, 'CH_J_SH': 0, 'CDNS': 0, 'GK': -1, 'WQ': -2, 'REPOSO': 0,
+	};
 
-  const coords = SPRITE_MAP[currentViseme] || SPRITE_MAP['NEUTRAL'];
+	const coords = SPRITE_MAP[currentViseme] || SPRITE_MAP['NEUTRAL'];
 
-  const renderAvatar = (sizeClasses: string) => {
-    const offsetX = SPRITE_OFFSETS_X[currentViseme] || 0;
-
-    return (
+	const renderAvatar = (sizeClasses: string) => {
+		const offsetX = SPRITE_OFFSETS_X[currentViseme] || 0;
+		return (
       <div className={`relative rounded-full overflow-hidden shrink-0 ${sizeClasses} bg-brand/10 border-2 border-brand/30`}>
         {!imageError ? (
           <>
