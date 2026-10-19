@@ -59,7 +59,6 @@ export const CatalogoCuentos: React.FC<CatalogoCuentosProps> = ({
 	nivelId,
 	onSelectCuento,
 	onBack,
-	onSessionTimeoutRedirect,
 }) => {
 	const { activeStudentId } = useAuthStore();
 	const nivel = useLiveQuery(() => db.niveles.get(nivelId), [nivelId]);

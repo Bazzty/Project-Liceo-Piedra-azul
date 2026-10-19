@@ -18,7 +18,6 @@ export interface VistaPrincipalProps {
 export const VistaPrincipal: React.FC<VistaPrincipalProps> = ({
 	onNavigateToAprender,
 	onOpenHablar,
-	onSessionTimeoutRedirect,
 }) => {
 	const { activeStudentId } = useAuthStore();
 	const { currentTheme, setTheme } = useThemeStore();
