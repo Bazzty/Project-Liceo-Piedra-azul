@@ -4,7 +4,7 @@
 [![PWA](https://img.shields.io/badge/PWA-Offline--First-green.svg)]()
 [![WCAG 2.1 AA](https://img.shields.io/badge/Accesibilidad-WCAG%202.1%20AA-orange.svg)]()
 
-> **Ramas:** `main` (estable, vacía por ahora) · `develop` (estructura del proyecto, integración) · `prototipo-v2` / `prototipo` (prototipos de muestra, solo referencia). Ver `CONTRIBUTING.md`.
+> **Ramas:** `main` (estable, vacía por ahora) · `develop` (estructura del proyecto, integración) · `prototipo` (prototipo de muestra, solo referencia). Ver `CONTRIBUTING.md`.
 
 **Proyecto de Vinculación con el Medio**  
 * **Institución:** Universidad San Sebastián (Sede De la Patagonia, Puerto Montt)
