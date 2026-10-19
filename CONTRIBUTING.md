@@ -3,7 +3,7 @@
 ## Ramas
 - `main`: reservada para versiones estables. No se commitea directo.
 - `develop`: integración. Toda feature entra por PR.
-- `prototipo-v2` y `prototipo`: prototipos de muestra (congelados, solo referencia; no se mergean a develop).
+- `prototipo`: prototipo de muestra (congelado, solo referencia; no se mergea a develop).
 - `feature/PLPA-n-descripcion`, `fix/PLPA-n-descripcion`: ramas de trabajo, salen de `develop`.
 
 ## Commits
