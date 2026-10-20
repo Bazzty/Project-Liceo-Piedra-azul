@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Leaf, Settings } from 'lucide-react';
 import { useAlumno } from '@/api';
+import { useNavigate } from 'react-router-dom';
+import { ROUTES } from '@/app/routes';
 import { useAuthStore } from '@/features/acceso/useAuthStore';
 import { AjustesEstudiante } from '@/shared/components/AjustesEstudiante';
 import { AvisoInactividad } from '@/shared/components/AvisoInactividad';
@@ -28,6 +30,8 @@ export interface LayoutEstudianteProps {
 export const LayoutEstudiante: React.FC<LayoutEstudianteProps> = ({ children, onVolver, centro, fondo = 'paisaje' }) => {
   useAplicarTema();
   const activeStudentId = useAuthStore((s) => s.activeStudentId);
+  const supervision = useAuthStore((s) => s.supervision);
+  const navigate = useNavigate();
   const alumno = useAlumno(activeStudentId);
   const [ajustesAbierto, setAjustesAbierto] = useState(false);
   const [calmaAbierta, setCalmaAbierta] = useState(false);
@@ -37,6 +41,24 @@ export const LayoutEstudiante: React.FC<LayoutEstudianteProps> = ({ children, on
     <div className="relative overflow-hidden min-h-screen bg-app text-primary flex flex-col">
       <FondoPaisaje />
       {fondo === 'jardin' && <DecoracionJardin />}
+
+      {supervision && (
+        <div
+          role="status"
+          className="relative z-20 flex flex-wrap items-center justify-between gap-3 bg-statusWarn text-onStatus px-4 sm:px-8 py-2"
+        >
+          <p className="text-sm sm:text-base font-semibold">
+            Modo supervisión · Estás viendo la pantalla de {nombre}. Lo que hagas aquí no cuenta como su actividad.
+          </p>
+          <button
+            type="button"
+            onClick={() => navigate(`${ROUTES.profesorEstudiantes}${activeStudentId ? `?alumno=${activeStudentId}` : ''}`)}
+            className="min-h-12 px-5 rounded-control bg-surface text-primary text-sm font-bold cursor-pointer hover:bg-app"
+          >
+            Salir de la supervisión
+          </button>
+        </div>
+      )}
 
       <header className="relative z-10 bg-surface/95 border-b-2 border-borderCustom px-3 sm:px-8 py-2 sm:py-3 grid grid-cols-[1fr_auto_1fr] items-center gap-2">
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
@@ -75,7 +97,7 @@ export const LayoutEstudiante: React.FC<LayoutEstudianteProps> = ({ children, on
 
       <AjustesEstudiante isOpen={ajustesAbierto} onClose={() => setAjustesAbierto(false)} />
       <CalmaOverlay abierto={calmaAbierta} onCerrar={() => setCalmaAbierta(false)} />
-      <AvisoInactividad />
+      {!supervision && <AvisoInactividad />}
     </div>
   );
 };

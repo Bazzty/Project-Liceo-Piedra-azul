@@ -72,7 +72,7 @@ const Globo: React.FC<GloboProps> = ({ orden, estilo, icono, titulo, clave, onCl
 /** Inicio del estudiante: escena de jardín con el osito, globos para elegir y una puerta para salir. */
 export const VistaPrincipal: React.FC = () => {
   const navigate = useNavigate();
-  const { activeStudentId, logout } = useAuthStore();
+  const { activeStudentId, logout, supervision } = useAuthStore();
   const alumno = useAlumno(activeStudentId);
   const [hablarAbierto, setHablarAbierto] = useState(false);
   const [estrellasAbierto, setEstrellasAbierto] = useState(false);
@@ -82,6 +82,11 @@ export const VistaPrincipal: React.FC = () => {
   const hablar = useHablar();
 
   const salir = () => {
+    if (supervision) {
+      // La supervisión termina al volver al panel docente (así la guarda del alumno no redirige antes)
+      navigate(`${ROUTES.profesorEstudiantes}${activeStudentId ? `?alumno=${activeStudentId}` : ''}`);
+      return;
+    }
     hablar('Hasta pronto', 'despedida');
     logout();
     navigate(ROUTES.inicio);

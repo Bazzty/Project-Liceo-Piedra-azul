@@ -10,6 +10,7 @@ export interface Alumno {
   temaId: string;
   personajeId?: string;
   vozId?: VozId; // Voz asignada por el docente (si no existe, se usa la voz por defecto)
+  notaDocente?: string; // Observaciones de la docente (visibles solo para docentes y revisores)
   fechaCreacion: string;
 }
 

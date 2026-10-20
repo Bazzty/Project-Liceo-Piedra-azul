@@ -22,6 +22,7 @@ export const LecturaView: React.FC = () => {
   const { nivelId = '', cuentoId } = useParams();
   const navigate = useNavigate();
   const activeStudentId = useAuthStore((s) => s.activeStudentId);
+  const supervision = useAuthStore((s) => s.supervision);
   const progresos = useProgresosDeAlumno(activeStudentId);
   const cuento = useCuento(cuentoId);
 
@@ -119,10 +120,10 @@ export const LecturaView: React.FC = () => {
     sonarAcierto();
     const yaLeido = !!progresos?.some((p) => p.cuentoId === cuento?.id && p.completado);
     // El sticker nuevo es el siguiente del álbum, solo si es un cuento que no había completado
-    const indiceSticker = yaLeido ? null : contarCompletados(progresos) % STICKERS.length;
+    const indiceSticker = yaLeido || supervision ? null : contarCompletados(progresos) % STICKERS.length;
     setStickerNuevo(indiceSticker);
     setCompletada(true);
-    if (activeStudentId && cuento?.id) {
+    if (activeStudentId && cuento?.id && !supervision) {
       const ahora = new Date().toISOString();
       await registrarProgreso({ alumnoId: activeStudentId, cuentoId: cuento.id, completado: true, fechaUltimoAcceso: ahora });
       await crearRegistro({ alumnoId: activeStudentId, tipo: 'lectura', detalle: `Terminó «${cuento.titulo}»`, lugar: 'casa', fecha: ahora });

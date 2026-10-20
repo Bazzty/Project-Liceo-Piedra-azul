@@ -24,7 +24,7 @@ interface AdminLayoutProps {
 /** Marco del panel docente: riel azul oscuro numerado a la izquierda y contenido en "hojas". */
 export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activeSection }) => {
   const [menuAbierto, setMenuAbierto] = useState(false);
-  const { user, logout } = useAuthStore();
+  const { user, logout, terminarSupervision } = useAuthStore();
   const navigate = useNavigate();
 
   // Paleta sobria del panel docente; devuelve la del alumno al salir.
@@ -34,6 +34,11 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activeSectio
       document.documentElement.setAttribute('data-theme', useThemeStore.getState().currentTheme);
     };
   }, []);
+
+  // Si venía de acompañar a un niño, la supervisión termina al volver al panel
+  useEffect(() => {
+    terminarSupervision();
+  }, [terminarSupervision]);
 
   const cerrarSesion = () => {
     logout();

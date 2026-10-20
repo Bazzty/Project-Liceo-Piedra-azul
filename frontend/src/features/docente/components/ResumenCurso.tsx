@@ -1,16 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '@/app/routes';
+import { LibroDelCurso } from '@/features/docente/components/LibroDelCurso';
 import { BarrasPorDia } from '@/features/docente/components/BarrasPorDia';
 import { EncabezadoPagina, Hoja } from '@/features/docente/components/Hoja';
-import { formatearFecha } from '@/features/docente/components/format';
-import { useLibroCurso, type EstadoAlumno, type FilaLibro } from '@/features/docente/components/useLibroCurso';
-
-const ETIQUETAS_ESTADO: Record<EstadoAlumno, { texto: string; clases: string }> = {
-  al_dia: { texto: '● Al día', clases: 'bg-statusOk-bg text-statusOk' },
-  atencion: { texto: '▲ Atención', clases: 'bg-statusWarn-bg text-statusWarn' },
-  sin_actividad: { texto: '■ Sin actividad', clases: 'bg-statusDanger-bg text-statusDanger' },
-};
+import { useLibroCurso, type EstadoAlumno } from '@/features/docente/components/useLibroCurso';
 
 const COLOR_NUMERO: Record<EstadoAlumno, string> = {
   sin_actividad: 'text-statusDanger',
@@ -18,34 +12,11 @@ const COLOR_NUMERO: Record<EstadoAlumno, string> = {
   al_dia: 'text-statusOk',
 };
 
-const EtiquetaEstado: React.FC<{ estado: EstadoAlumno }> = ({ estado }) => (
-  <span className={`inline-flex px-2.5 py-0.5 rounded-sm text-xs font-semibold ${ETIQUETAS_ESTADO[estado].clases}`}>
-    {ETIQUETAS_ESTADO[estado].texto}
-  </span>
-);
-
 const Dato: React.FC<{ etiqueta: string; valor: React.ReactNode; nota?: React.ReactNode }> = ({ etiqueta, valor, nota }) => (
   <div className="px-5 py-4">
     <p className="text-[0.7rem] font-semibold uppercase tracking-[0.09em] text-secondary">{etiqueta}</p>
     <p className="mt-1 font-display text-5xl font-semibold leading-none text-primary">{valor}</p>
     {nota && <p className="mt-1.5 text-xs font-semibold text-secondary">{nota}</p>}
-  </div>
-);
-
-const SemanaEnCuadros: React.FC<{ fila: FilaLibro }> = ({ fila }) => (
-  <div
-    className="flex gap-1"
-    role="img"
-    aria-label={`${fila.semana.filter(Boolean).length} de 7 días con actividad en la última semana`}
-  >
-    {fila.semana.map((activo, i) => (
-      <span
-        key={i}
-        className={`w-[1.1rem] h-[1.1rem] rounded-[3px] box-border ${
-          activo ? 'bg-brand' : 'border-[1.5px] border-borderStrong'
-        } ${i === 6 ? 'outline outline-2 outline-offset-2 outline-primary' : ''}`}
-      />
-    ))}
   </div>
 );
 
@@ -98,48 +69,7 @@ export const ResumenCurso: React.FC = () => {
       </Hoja>
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1.75fr)_minmax(0,1fr)]">
-        <Hoja aria-label="Libro del curso" className="overflow-x-auto">
-          <div className="flex items-baseline justify-between gap-3">
-            <h2 className="font-display text-2xl font-semibold text-primary">Libro del curso</h2>
-            <p className="text-xs text-secondary">Cada cuadro es un día con actividad; el marcado es hoy</p>
-          </div>
-          <table className="mt-2 w-full text-left border-collapse">
-            <thead>
-              <tr className="text-[0.7rem] font-semibold uppercase tracking-[0.08em] text-secondary">
-                <th className="py-2 pr-3 font-semibold">Estudiante</th>
-                <th className="py-2 pr-3 font-semibold">Últimos 7 días</th>
-                <th className="py-2 pr-3 font-semibold">Cuentos</th>
-                <th className="py-2 pr-3 font-semibold">Último acceso</th>
-                <th className="py-2 font-semibold">Estado</th>
-              </tr>
-            </thead>
-            <tbody>
-              {libro.filas.map((fila) => (
-                <tr key={fila.alumno.id} className="border-t border-borderCustom">
-                  <td className="py-3 pr-3">
-                    <Link
-                      to={`${ROUTES.profesorEstudiantes}?alumno=${fila.alumno.id}`}
-                      className="block text-primary hover:text-brand"
-                    >
-                      <span className="font-display text-xl font-semibold">{fila.alumno.nombre}</span>
-                      <span className="block text-xs text-secondary">Nivel {fila.nivel}</span>
-                    </Link>
-                  </td>
-                  <td className="py-3 pr-3">
-                    <SemanaEnCuadros fila={fila} />
-                  </td>
-                  <td className="py-3 pr-3 text-base font-semibold">{fila.cuentos}</td>
-                  <td className="py-3 pr-3 text-sm text-secondary whitespace-nowrap">
-                    {fila.ultimoAcceso ? formatearFecha(fila.ultimoAcceso) : 'Nunca'}
-                  </td>
-                  <td className="py-3">
-                    <EtiquetaEstado estado={fila.estado} />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </Hoja>
+        <LibroDelCurso filas={libro.filas} />
 
         <div className="flex flex-col gap-5 min-w-0">
           <Hoja aria-label="Notas del día">

@@ -12,6 +12,8 @@ export interface User {
 
 export interface AuthState {
   activeStudentId: string | null;
+  /** La docente está viendo la pantalla de un niño para acompañarlo: no se registra actividad. */
+  supervision: boolean;
   role: Role;
   sessionType: SessionType;
   user: User | null;
@@ -19,6 +21,8 @@ export interface AuthState {
   classroomSessionExpiry: string | null;
   isSessionExpiredModalOpen: boolean;
   setActiveStudentId: (studentId: string | null) => void;
+  iniciarSupervision: (alumnoId: string) => void;
+  terminarSupervision: () => void;
   setRole: (role: Role) => void;
   setSessionType: (type: SessionType) => void;
   activarSesionAula: (horas?: number) => void;
@@ -37,6 +41,7 @@ const getStoredSessionStatus = (): boolean => {
 
 export const useAuthStore = create<AuthState>()((set, get) => ({
   activeStudentId: null,
+  supervision: false,
   role: null,
   sessionType: null,
   user: { id: 'prof-1', nombre: 'Profesora PIE', email: 'profesora@piedraazul.cl', role: 'docente' },
@@ -44,6 +49,8 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
   classroomSessionExpiry: null,
   isSessionExpiredModalOpen: false,
   setActiveStudentId: (studentId) => set({ activeStudentId: studentId }),
+  iniciarSupervision: (alumnoId) => set({ activeStudentId: alumnoId, supervision: true, sessionType: 'aula' }),
+  terminarSupervision: () => set({ activeStudentId: null, supervision: false, sessionType: null }),
   setRole: (role) => set({ role }),
   setSessionType: (type) => set({ sessionType: type }),
   activarSesionAula: (horas = 1.5) => {
@@ -85,6 +92,7 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
   logout: () => {
     set({
       activeStudentId: null,
+      supervision: false,
       role: null,
       sessionType: null,
       user: null,
