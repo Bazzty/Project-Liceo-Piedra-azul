@@ -1,8 +1,8 @@
-export { Avatar } from './Avatar';
-export { Badge, type BadgeTone } from './Badge';
-export { Button, type ButtonProps } from './Button';
-export { Card } from './Card';
-export { Modal } from './Modal';
-export { OptionButton } from './OptionButton';
-export { EmptyState, PageTitle, SectionTitle } from './SectionTitle';
-export { ProgressBar } from './ProgressBar';
+export { Avatar } from '@/shared/ui/Avatar';
+export { Badge, type BadgeTone } from '@/shared/ui/Badge';
+export { Button, type ButtonProps } from '@/shared/ui/Button';
+export { Card } from '@/shared/ui/Card';
+export { Modal } from '@/shared/ui/Modal';
+export { OptionButton } from '@/shared/ui/OptionButton';
+export { EmptyState, PageTitle, SectionTitle } from '@/shared/ui/SectionTitle';
+export { ProgressBar } from '@/shared/ui/ProgressBar';

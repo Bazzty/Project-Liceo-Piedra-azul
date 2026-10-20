@@ -1,9 +1,9 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import App from './App.tsx'
-import './index.css'
-import './styles/theme.css' 
-import { seedDatabase } from './db/seed.ts'
+import App from '@/app/App.tsx'
+import '@/index.css'
+import '@/styles/theme.css' 
+import { seedDatabase } from '@/db/seed.ts'
 
 // Ejecutar poblamiento inicial de la BD local
 seedDatabase();
