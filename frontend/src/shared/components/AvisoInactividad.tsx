@@ -40,7 +40,7 @@ export const AvisoInactividad: React.FC = () => {
           inicioAviso.current = ahora;
           setRestante(SEGUNDOS_CIERRE);
           setEnAviso(true);
-          hablar('¿Sigues ahí?');
+          hablar('¿Sigues ahí?', 'sigues_ahi');
         }
       } else {
         const faltan = SEGUNDOS_CIERRE - Math.floor((ahora - inicioAviso.current) / 1000);
@@ -48,6 +48,7 @@ export const AvisoInactividad: React.FC = () => {
         if (faltan <= 0) {
           avisoRef.current = false;
           setEnAviso(false);
+          hablar('Hasta pronto', 'despedida');
           logout();
           navigate(ROUTES.inicio);
         }

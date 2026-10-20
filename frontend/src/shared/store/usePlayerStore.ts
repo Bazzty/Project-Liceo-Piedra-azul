@@ -7,7 +7,8 @@ export interface PlayerState {
   playbackRate: number;
   selectedVoice: 'catalina-cl' | 'profesora-clonada';
   activeAudioInstance: HTMLAudioElement | null;
-  playAudio: (audioUrl: string) => void;
+  /** `alFallar` se llama si el archivo no existe o no se puede reproducir (p. ej. para usar otra voz). */
+  playAudio: (audioUrl: string, opciones?: { alFallar?: () => void }) => void;
   stopAudio: () => void;
   setPlaybackRate: (rate: number) => void;
   setSelectedVoice: (voice: 'catalina-cl' | 'profesora-clonada') => void;
@@ -19,7 +20,7 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
   playbackRate: 1.0, // 1.0x por defecto
   selectedVoice: 'catalina-cl',
   activeAudioInstance: null,
-  playAudio: (audioUrl: string) => {
+  playAudio: (audioUrl: string, opciones) => {
     if (!useAjustesStore.getState().sonido) return;
     const { activeAudioInstance, playbackRate } = get();
     // 1. Detener y limpiar cualquier instancia de audio que esté sonando previamente
@@ -38,12 +39,14 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
       set({ isPlaying: false, currentAudioUrl: null, activeAudioInstance: null });
     };
     newAudio.onerror = () => {
-      console.error(`❌ Error al cargar o reproducir el archivo de audio: ${audioUrl}`);
+      if (!opciones?.alFallar) console.error(`❌ Error al cargar o reproducir el archivo de audio: ${audioUrl}`);
       set({ isPlaying: false, currentAudioUrl: null, activeAudioInstance: null });
+      opciones?.alFallar?.();
     };
     // 4. Guardar la instancia y reproducir
     set({ activeAudioInstance: newAudio });
     newAudio.play().catch((err) => {
+      if (opciones?.alFallar) return; // onerror ya avisa cuando el archivo no existe
       console.error('❌ Error al iniciar la reproducción automática:', err);
     });
   },

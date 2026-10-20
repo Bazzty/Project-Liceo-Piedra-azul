@@ -14,7 +14,7 @@ export const CalmaOverlay: React.FC<{ abierto: boolean; onCerrar: () => void }> 
 
   useEffect(() => {
     if (!abierto) return;
-    hablar('Respira conmigo. Inhala... y exhala.');
+    hablar('Respira conmigo. Inhala... y exhala.', 'respira');
     const id = setInterval(() => setInhala((v) => !v), 4000);
     const alTeclear = (e: KeyboardEvent) => e.key === 'Escape' && onCerrar();
     window.addEventListener('keydown', alTeclear);

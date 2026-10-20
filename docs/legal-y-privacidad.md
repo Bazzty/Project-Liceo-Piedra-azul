@@ -11,7 +11,7 @@
 | Pictogramas ARASAAC | CC BY-NC-SA 4.0. Autor: Sergio Palao. Propiedad del Gobierno de Aragón | Citar siempre la fuente (visible en la app), **uso no comercial** y compartir igual cualquier obra derivada. Un uso comercial requiere autorización |
 | Tipografías Nunito e Inter | SIL Open Font License | Uso libre, incluida la redistribución con la app |
 | Íconos (lucide) | ISC | Uso libre |
-| Audios generados con IA (fonemas, palabras, narración, voz del personaje) | Depende de la herramienta | Guardar la licencia/términos de la herramienta y comprobar que permiten este uso |
+| Audios generados con IA (fonemas, palabras, narración, voz del personaje) | ElevenLabs, voz "Playful, High-pitched Friend" (voz de un tercero en la biblioteca) | Guardar los términos del plan y de **esa voz**; comprobar que permiten uso en un producto educativo (y si fuera comercial). Ver `docs/audios-interfaz.md` |
 | Voz "profesora-clonada" | Es la voz de una persona real | Requiere **consentimiento escrito** de la docente para clonar y usar su voz. Sin ese documento, no usarla |
 | Osito guía | Trabajo de otro integrante del equipo | Confirmar por escrito que es **creación propia** (o que existe cesión de derechos) y no deriva de un personaje ajeno |
 

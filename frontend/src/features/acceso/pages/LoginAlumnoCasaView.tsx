@@ -11,6 +11,7 @@ import { useAuthStore } from '@/features/acceso/useAuthStore';
 import { buscarTarjeta, LARGO_CODIGO, TARJETAS_DEMO } from '@/mocks/tarjetas';
 import { Creditos } from '@/shared/components/Creditos';
 import { FondoPaisaje } from '@/shared/components/FondoPaisaje';
+import type { ClaveAudio } from '@/shared/config/audiosInterfaz';
 import { LluviaEstrellas } from '@/shared/components/LluviaEstrellas';
 import { OsoBurbuja } from '@/shared/components/OsoBurbuja';
 import { useAplicarTema } from '@/shared/hooks/useAplicarTema';
@@ -174,6 +175,8 @@ export const LoginAlumnoCasaView: React.FC = () => {
         ? 'Intentemos otra vez.'
         : 'Toca los números de tu tarjeta.';
 
+  const claveOso: ClaveAudio = alumno ? 'hola' : bloqueado ? 'descansemos' : error ? 'intentemos' : 'toca_numeros';
+
   return (
     <div className="min-h-screen bg-app text-primary lg:grid lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
       {/* Panel de marca */}
@@ -201,7 +204,7 @@ export const LoginAlumnoCasaView: React.FC = () => {
 
         <div className="relative flex flex-col items-center gap-5">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-center">¡Vamos a leer!</h2>
-          <OsoBurbuja mensaje={mensajeOso} size="lg" />
+          <OsoBurbuja mensaje={mensajeOso} clave={claveOso} size="lg" />
         </div>
 
         <ul className="relative flex justify-center gap-2 sm:gap-3" aria-hidden>
@@ -257,7 +260,7 @@ export const LoginAlumnoCasaView: React.FC = () => {
                   </div>
                   <button
                     type="button"
-                    onClick={() => hablar('Toca los números de tu tarjeta. Después toca la palomita.')}
+                    onClick={() => hablar('Toca los números de tu tarjeta. Después toca la palomita.', 'toca_numeros')}
                     aria-label="Escuchar las instrucciones"
                     className="w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-full bg-accent text-onAccent border-2 border-borderStrong flex items-center justify-center cursor-pointer hover:bg-accent-hover transition-colors"
                   >

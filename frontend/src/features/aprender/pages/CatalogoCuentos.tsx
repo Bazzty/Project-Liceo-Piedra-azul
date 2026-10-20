@@ -9,6 +9,7 @@ import { sonarToque } from '@/shared/audio/sonidos';
 import { LayoutEstudiante } from '@/shared/components/LayoutEstudiante';
 import { OsoBurbuja } from '@/shared/components/OsoBurbuja';
 import { useHablar } from '@/shared/hooks/useHablar';
+import { usePlayerStore } from '@/shared/store/usePlayerStore';
 import type { Cuento } from '@/types';
 
 /** Portada con respaldo: si la imagen local no existe, la pide a ARASAAC una sola vez. */
@@ -56,6 +57,9 @@ interface TarjetaCuentoProps {
 /** Tarjeta grande de cuento: portada, título, estrella si ya se leyó y un parlante que dice el título. */
 const TarjetaCuento: React.FC<TarjetaCuentoProps> = ({ cuento, orden, completado, onElegir }) => {
   const hablar = useHablar();
+  const reproducir = usePlayerStore((s) => s.playAudio);
+  // Las actividades de una sola palabra ya tienen su audio grabado: se usa ese
+  const audioTitulo = cuento.paginas?.length === 1 ? cuento.paginas[0].palabras?.[0]?.audioUrl : undefined;
   return (
     <li className="relative animate-aparecer" style={{ animationDelay: `${Math.min(orden, 8) * 70}ms` }}>
       <button
@@ -90,7 +94,7 @@ const TarjetaCuento: React.FC<TarjetaCuentoProps> = ({ cuento, orden, completado
 
       <button
         type="button"
-        onClick={() => hablar(cuento.titulo)}
+        onClick={() => (audioTitulo ? reproducir(audioTitulo, { alFallar: () => hablar(cuento.titulo) }) : hablar(cuento.titulo))}
         aria-label={`Escuchar: ${cuento.titulo}`}
         className="absolute top-6 right-6 w-12 h-12 rounded-full bg-surface text-primary border-2 border-borderStrong flex items-center justify-center cursor-pointer hover:bg-app"
       >
@@ -122,7 +126,7 @@ export const CatalogoCuentos: React.FC = () => {
             {nivel?.codigo ?? '?'}
           </span>
           <h1 className="sr-only">Nivel {nivel?.codigo}</h1>
-          <OsoBurbuja mensaje="Elige tu cuento" voz="Elige el cuento que más te guste." size="md" />
+          <OsoBurbuja mensaje="Elige tu cuento" voz="Elige el cuento que más te guste." clave="elige_cuento" size="md" />
         </div>
 
         {!cuentos || cuentos.length === 0 ? (

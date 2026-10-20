@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Volume2 } from 'lucide-react';
 import { useHablar } from '@/shared/hooks/useHablar';
+import type { ClaveAudio } from '@/shared/config/audiosInterfaz';
 import { usePlayerStore } from '@/shared/store/usePlayerStore';
 
 const BASE = import.meta.env.BASE_URL || '/';
@@ -10,6 +11,8 @@ export interface OsoBurbujaProps {
   mensaje: string;
   /** Audio grabado a reproducir en lugar de la voz del navegador. */
   audioUrl?: string;
+  /** Clave de la grabación de la voz del proyecto (ver audiosInterfaz.ts). */
+  clave?: ClaveAudio;
   size?: 'md' | 'lg' | 'xl';
   /** Lo que dice en voz alta, si es distinto del texto de la burbuja. */
   voz?: string;
@@ -24,7 +27,7 @@ const TAMANOS = {
 };
 
 /** Osito guía con burbuja: al tocarlo dice el mensaje en voz alta. Pensado para quien aún no lee. */
-export const OsoBurbuja: React.FC<OsoBurbujaProps> = ({ mensaje, audioUrl, size = 'md', voz, className = '' }) => {
+export const OsoBurbuja: React.FC<OsoBurbujaProps> = ({ mensaje, audioUrl, clave, size = 'md', voz, className = '' }) => {
   const hablar = useHablar();
   const playAudio = usePlayerStore((s) => s.playAudio);
 
@@ -35,7 +38,7 @@ export const OsoBurbuja: React.FC<OsoBurbujaProps> = ({ mensaje, audioUrl, size 
     // Reinicia la animación aunque se toque varias veces seguidas
     requestAnimationFrame(() => setSaltando(true));
     if (audioUrl) playAudio(audioUrl);
-    else hablar(voz ?? mensaje);
+    else hablar(voz ?? mensaje, clave);
   };
 
   return (

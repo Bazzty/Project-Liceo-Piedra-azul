@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { BookOpen, LogOut, MessageCircle, Star, Volume2 } from 'lucide-react';
 import { useAlumno } from '@/api';
 import { sonarToque } from '@/shared/audio/sonidos';
+import type { ClaveAudio } from '@/shared/config/audiosInterfaz';
 import type { PasoAgenda } from '@/shared/store/useAjustesStore';
 import { ROUTES } from '@/app/routes';
 import { useAuthStore } from '@/features/acceso/useAuthStore';
@@ -25,11 +26,12 @@ interface GloboProps {
   estilo: keyof typeof ESTILOS_GLOBO;
   icono: React.ReactNode;
   titulo: string;
+  clave: ClaveAudio;
   onClick: () => void;
 }
 
 /** Globo grande para elegir: flota, aparece con un pequeño salto y dice su nombre al tocar el parlante. */
-const Globo: React.FC<GloboProps> = ({ orden, estilo, icono, titulo, onClick }) => {
+const Globo: React.FC<GloboProps> = ({ orden, estilo, icono, titulo, clave, onClick }) => {
   const hablar = useHablar();
   const { fondo, cuerda } = ESTILOS_GLOBO[estilo];
   return (
@@ -51,7 +53,7 @@ const Globo: React.FC<GloboProps> = ({ orden, estilo, icono, titulo, onClick }) 
         </button>
         <button
           type="button"
-          onClick={() => hablar(titulo)}
+          onClick={() => hablar(titulo, clave)}
           aria-label={`Escuchar: ${titulo}`}
           className="absolute top-[4%] right-[4%] w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-surface text-primary border-2 border-borderStrong flex items-center justify-center cursor-pointer hover:bg-app"
         >
@@ -77,7 +79,10 @@ export const VistaPrincipal: React.FC = () => {
 
   const nombre = alumno?.nombre ?? 'amigo';
 
+  const hablar = useHablar();
+
   const salir = () => {
+    hablar('Hasta pronto', 'despedida');
     logout();
     navigate(ROUTES.inicio);
   };
@@ -95,18 +100,19 @@ export const VistaPrincipal: React.FC = () => {
         <h1 className="sr-only">Menú de {nombre}</h1>
 
         <div className="flex items-start justify-center gap-3 sm:gap-10 lg:gap-16 w-full">
-          <Globo orden={0} estilo="leer" titulo="Leer" icono={<BookOpen strokeWidth={1.8} />} onClick={() => navigate(ROUTES.aprender)} />
-          <Globo orden={1} estilo="hablar" titulo="Hablar" icono={<MessageCircle strokeWidth={1.8} />} onClick={() => setHablarAbierto(true)} />
+          <Globo orden={0} estilo="leer" titulo="Leer" clave="leer" icono={<BookOpen strokeWidth={1.8} />} onClick={() => navigate(ROUTES.aprender)} />
+          <Globo orden={1} estilo="hablar" titulo="Hablar" clave="hablar" icono={<MessageCircle strokeWidth={1.8} />} onClick={() => setHablarAbierto(true)} />
           <Globo
             orden={2}
             estilo="estrellas"
             titulo="Estrellas"
+            clave="estrellas"
             icono={<Star strokeWidth={1.6} className="fill-accent" />}
             onClick={() => setEstrellasAbierto(true)}
           />
         </div>
 
-        <OsoBurbuja mensaje={`¡Hola, ${nombre}!`} voz={`Hola ${nombre}. ¿Qué quieres hacer?`} size="xl" />
+        <OsoBurbuja mensaje={`¡Hola, ${nombre}!`} voz={`Hola ${nombre}. ¿Qué quieres hacer?`} clave="hola" size="xl" />
       </main>
 
       {/* Puerta para salir: pequeña y apartada para que no se toque sin querer */}

@@ -4,6 +4,7 @@ import { Lock, Star, Volume2 } from 'lucide-react';
 import { useCuentosDeNivel, useProgresosDeAlumno } from '@/api';
 import { ROUTES } from '@/app/routes';
 import { useAuthStore } from '@/features/acceso/useAuthStore';
+import type { ClaveAudio } from '@/shared/config/audiosInterfaz';
 import { sonarToque } from '@/shared/audio/sonidos';
 import { LayoutEstudiante } from '@/shared/components/LayoutEstudiante';
 import { OsoBurbuja } from '@/shared/components/OsoBurbuja';
@@ -15,16 +16,17 @@ interface Parada {
   id: string;
   letra: string;
   nombre: string;
+  clave: ClaveAudio;
   /** Pictograma local que ilustra la parada. */
   imagen: string;
   color: string;
 }
 
 const PARADAS: Parada[] = [
-  { id: 'nivel-a', letra: 'A', nombre: 'Sílabas', imagen: 'escuchar', color: 'bg-btnAprender-bg text-btnAprender-text' },
-  { id: 'nivel-b', letra: 'B', nombre: 'Cuentos', imagen: 'libro', color: 'bg-btnHablar-bg text-btnHablar-text' },
-  { id: 'nivel-c', letra: 'C', nombre: 'Palabras', imagen: 'jugar', color: 'bg-btnColores-bg text-btnColores-text' },
-  { id: 'nivel-d', letra: 'D', nombre: 'Historias', imagen: 'colegio', color: 'bg-btnLogros-bg text-btnLogros-text' },
+  { id: 'nivel-a', letra: 'A', nombre: 'Sílabas', clave: 'nivel_a', imagen: 'escuchar', color: 'bg-btnAprender-bg text-btnAprender-text' },
+  { id: 'nivel-b', letra: 'B', nombre: 'Cuentos', clave: 'nivel_b', imagen: 'libro', color: 'bg-btnHablar-bg text-btnHablar-text' },
+  { id: 'nivel-c', letra: 'C', nombre: 'Palabras', clave: 'nivel_c', imagen: 'jugar', color: 'bg-btnColores-bg text-btnColores-text' },
+  { id: 'nivel-d', letra: 'D', nombre: 'Historias', clave: 'nivel_d', imagen: 'colegio', color: 'bg-btnLogros-bg text-btnLogros-text' },
 ];
 
 const ESTRELLAS_POR_NIVEL = 3;
@@ -45,7 +47,7 @@ const ParadaNivel: React.FC<ParadaNivelProps> = ({ parada, orden, completados, t
 
   const alTocar = () => {
     sonarToque();
-    if (bloqueada) hablar('Este nivel llega pronto.');
+    if (bloqueada) hablar('Este nivel llega pronto.', 'pronto');
     else onElegir();
   };
 
@@ -73,7 +75,7 @@ const ParadaNivel: React.FC<ParadaNivelProps> = ({ parada, orden, completados, t
         />
         <button
           type="button"
-          onClick={() => hablar(bloqueada ? `Nivel ${parada.letra}. Llega pronto.` : `Nivel ${parada.letra}. ${parada.nombre}.`)}
+          onClick={() => hablar(bloqueada ? `Nivel ${parada.letra}. Llega pronto.` : `Nivel ${parada.letra}. ${parada.nombre}.`, bloqueada ? 'pronto' : parada.clave)}
           aria-label={`Escuchar: nivel ${parada.letra}`}
           className="absolute -top-1 -right-1 w-11 h-11 rounded-full bg-surface text-primary border-2 border-borderStrong flex items-center justify-center cursor-pointer hover:bg-app"
         >
@@ -147,7 +149,7 @@ export const NivelesView: React.FC = () => {
           </ol>
         </div>
 
-        <OsoBurbuja mensaje="¿Dónde jugamos?" voz="Elige un nivel para empezar a leer." size="md" />
+        <OsoBurbuja mensaje="¿Dónde jugamos?" voz="Elige un nivel para empezar a leer." clave="elige_nivel" size="md" />
       </main>
     </LayoutEstudiante>
   );
