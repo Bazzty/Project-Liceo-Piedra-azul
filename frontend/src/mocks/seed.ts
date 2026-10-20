@@ -23,11 +23,11 @@ async function seedDemoDocente() {
 
 	// Alumnos ficticios adicionales (Mateo ya existe en el seed base)
 	await db.alumnos.bulkPut([
-		{ id: 'estudiante-sofia', nombre: 'Sofía', apellido: 'Rojas', temaId: 'calida', personajeId: 'princesa', vozId: 'catalina-cl', fechaCreacion: ahora },
-		{ id: 'estudiante-benjamin', nombre: 'Benjamín', apellido: 'Soto', temaId: 'suave', personajeId: 'superheroe', vozId: 'catalina-cl', fechaCreacion: ahora },
-		{ id: 'estudiante-valentina', nombre: 'Valentina', apellido: 'Muñoz', temaId: 'alto-contraste', personajeId: 'animales', vozId: 'profesora-clonada', fechaCreacion: ahora },
-		{ id: 'estudiante-joaquin', nombre: 'Joaquín', apellido: 'Díaz', temaId: 'suave', personajeId: 'futbol', vozId: 'catalina-cl', fechaCreacion: ahora },
-		{ id: 'estudiante-emilia', nombre: 'Emilia', apellido: 'Vera', temaId: 'calida', personajeId: 'dinosaurio', vozId: 'catalina-cl', fechaCreacion: ahora },
+		{ id: 'estudiante-sofia', nombre: 'Sofía', apellido: 'Rojas', temaId: 'calida', personajeId: 'oso', vozId: 'catalina-cl', fechaCreacion: ahora },
+		{ id: 'estudiante-benjamin', nombre: 'Benjamín', apellido: 'Soto', temaId: 'suave', personajeId: 'oso', vozId: 'catalina-cl', fechaCreacion: ahora },
+		{ id: 'estudiante-valentina', nombre: 'Valentina', apellido: 'Muñoz', temaId: 'alto-contraste', personajeId: 'oso', vozId: 'profesora-clonada', fechaCreacion: ahora },
+		{ id: 'estudiante-joaquin', nombre: 'Joaquín', apellido: 'Díaz', temaId: 'suave', personajeId: 'oso', vozId: 'catalina-cl', fechaCreacion: ahora },
+		{ id: 'estudiante-emilia', nombre: 'Emilia', apellido: 'Vera', temaId: 'calida', personajeId: 'oso', vozId: 'catalina-cl', fechaCreacion: ahora },
 	]);
 
 	// Mateo: asignarle voz por defecto sin pisar sus demás datos
@@ -117,6 +117,12 @@ export async function resetDemoData() {
 // Así, lo que el docente cree/edite/elimine desde el panel NO se pisa al recargar.
 export async function seedDatabase() {
 	try {
+		// Privacidad y derechos: ningún alumno usa fotos (se muestra su inicial o un pictograma).
+		// Limpia la foto de demostración que traían los datos guardados en versiones anteriores.
+		await db.alumnos.toCollection().modify((a) => {
+			if (a.avatarUrl) delete a.avatarUrl;
+		});
+
 		// 1. Niveles Pedagógicos
 		if ((await db.niveles.count()) === 0) {
 			await db.niveles.bulkPut([
@@ -195,9 +201,8 @@ export async function seedDatabase() {
 					id: 'estudiante-mateo',
 					nombre: 'Mateo',
 					apellido: 'Pérez',
-					avatarUrl: '/assets/avatars/estudiante_demo.jpg',
 					temaId: 'suave',
-					personajeId: 'dinosaurio',
+					personajeId: 'oso',
 					fechaCreacion: new Date().toISOString(),
 				},
 			]);

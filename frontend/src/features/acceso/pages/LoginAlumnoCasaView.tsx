@@ -9,6 +9,7 @@ import { TarjetaIlustrada } from '@/features/acceso/components/TarjetaIlustrada'
 import { TecladoCodigo } from '@/features/acceso/components/TecladoCodigo';
 import { useAuthStore } from '@/features/acceso/useAuthStore';
 import { buscarTarjeta, LARGO_CODIGO, TARJETAS_DEMO } from '@/mocks/tarjetas';
+import { Creditos } from '@/shared/components/Creditos';
 import { FondoPaisaje } from '@/shared/components/FondoPaisaje';
 import { LluviaEstrellas } from '@/shared/components/LluviaEstrellas';
 import { OsoBurbuja } from '@/shared/components/OsoBurbuja';
@@ -297,7 +298,10 @@ export const LoginAlumnoCasaView: React.FC = () => {
               </>
             )}
           </div>
-          <p className="text-center text-sm font-semibold text-secondary">Prototipo de demostración · Datos ficticios</p>
+          <div className="text-center text-sm font-semibold text-secondary">
+            <p>Prototipo de demostración · Datos ficticios</p>
+            <Creditos />
+          </div>
         </div>
       </main>
     </div>

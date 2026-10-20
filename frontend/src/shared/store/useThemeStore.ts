@@ -19,7 +19,7 @@ export const useThemeStore = create<ThemeState>()(
     (set) => ({
       currentTheme: 'suave',
       showCharacterBackground: true,
-      selectedCharacterId: 'dinosaurio',
+      selectedCharacterId: null,
 
       setTheme: (theme) => 
         set({ currentTheme: theme }),
