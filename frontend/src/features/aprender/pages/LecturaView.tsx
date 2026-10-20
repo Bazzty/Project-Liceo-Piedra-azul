@@ -97,12 +97,9 @@ export const LecturaView: React.FC = () => {
 						audioUrl={getPersonajeAudio('felicitaciones')}
 						variant="compact"
 					/>
-					<button
-						onClick={handleVolver}
-						className="px-6 py-3 bg-brand text-onBrand font-black rounded-2xl shadow-lg border-4 border-brand-hover hover:opacity-90 active:scale-95 transition-all cursor-pointer"
-					>
+					<Button size="lg" onClick={handleVolver}>
 						VOLVER AL INICIO
-					</button>
+					</Button>
 				</div>
 			</MainLayout>
 		);

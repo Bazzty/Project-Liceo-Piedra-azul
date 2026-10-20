@@ -3,6 +3,7 @@ import { ArrowLeft, ChevronRight, Pencil, Plus, Trash2, Upload } from 'lucide-re
 import type { Cuento, Nivel } from '@/types';
 import { CuentoForm } from '@/features/docente/components/CuentoForm';
 import { PictoImg } from '@/features/docente/components/widgets';
+import { Button } from '@/shared/ui';
 import { actualizarNivel, crearNivel, eliminarCuento, eliminarNivel as eliminarNivelConCuentos, useCuentos, useCuentosDeNivel, useNiveles } from '@/api';
 
 const campo =
@@ -63,12 +64,10 @@ const NivelForm: React.FC<{ nivel?: Nivel; niveles: Nivel[]; onListo: () => void
       </div>
       <input className={campo} placeholder="Descripción (opcional)" value={descripcion} onChange={(e) => setDescripcion(e.target.value)} aria-label="Descripción del nivel" />
       <div className="flex gap-3">
-        <button onClick={guardar} className="px-5 py-2.5 rounded-2xl bg-brand text-onBrand font-black text-sm cursor-pointer hover:bg-brand-hover">
-          Guardar
-        </button>
-        <button onClick={onListo} className="px-5 py-2.5 rounded-2xl text-secondary font-black text-sm cursor-pointer hover:text-primary">
+        <Button onClick={guardar}>Guardar</Button>
+        <Button variant="ghost" onClick={onListo}>
           Cancelar
-        </button>
+        </Button>
       </div>
     </div>
   );
@@ -96,12 +95,9 @@ const CuentosDeNivel: React.FC<{ nivel: Nivel; onVolver: () => void }> = ({ nive
           <p className="text-sm font-semibold text-secondary">{nivel.nombre}</p>
         </div>
         {modo === 'lista' && (
-          <button
-            onClick={() => setModo('nuevo')}
-            className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-brand text-onBrand font-black text-sm cursor-pointer hover:bg-brand-hover"
-          >
+          <Button onClick={() => setModo('nuevo')}>
             <Upload className="w-4 h-4" /> Subir cuento
-          </button>
+          </Button>
         )}
       </div>
 
@@ -198,12 +194,9 @@ export const NivelesPanel: React.FC = () => {
           </p>
         </div>
         {formulario === null && (
-          <button
-            onClick={() => setFormulario('nuevo')}
-            className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-brand text-onBrand font-black text-sm cursor-pointer hover:bg-brand-hover"
-          >
+          <Button onClick={() => setFormulario('nuevo')}>
             <Plus className="w-4 h-4" /> Nuevo nivel
-          </button>
+          </Button>
         )}
       </div>
 

@@ -4,6 +4,7 @@ import type { Cuento, CuentoPagina, CuentoPalabra } from '@/types';
 import { getArasaacImageUrl, fetchArasaacPictogramId, searchArasaacPictograms, type ArasaacOpcion } from '@/features/tablero/arasaac';
 import { normalizar } from '@/features/docente/components/format';
 import { PictoImg } from '@/features/docente/components/widgets';
+import { Button } from '@/shared/ui';
 import { actualizarCuento, crearCuento, listarPictogramas } from '@/api';
 
 // Palabras funcionales que NO reciben pictograma sugerido (igual que en los cuentos del seed).
@@ -190,20 +191,16 @@ export const CuentoForm: React.FC<CuentoFormProps> = ({ nivelId, cuento, onGuard
       </label>
 
       <div className="flex flex-wrap items-center gap-3">
-        <button
+        <Button
+          variant="secondary"
           onClick={sugerirPictogramas}
           disabled={sugiriendo || paginas.length === 0}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl border-2 border-brand text-brand font-black text-sm cursor-pointer hover:bg-surface disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Sparkles className="w-4 h-4" /> {sugiriendo ? 'Buscando…' : 'Sugerir pictogramas'}
-        </button>
-        <button
-          onClick={probarVoz}
-          disabled={paginas.length === 0}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl border-2 border-borderCustom text-primary font-black text-sm cursor-pointer hover:border-brand disabled:opacity-50 disabled:cursor-not-allowed"
-        >
+        </Button>
+        <Button variant="secondary" onClick={probarVoz} disabled={paginas.length === 0}>
           <Volume2 className="w-4 h-4" /> Probar voz
-        </button>
+        </Button>
       </div>
       <p className="text-xs font-semibold text-secondary">
         Cada palabra recibe un pictograma sugerido. Puedes cambiarlo antes de publicar. «Probar voz» usa la voz del
@@ -278,24 +275,13 @@ export const CuentoForm: React.FC<CuentoFormProps> = ({ nivelId, cuento, onGuard
       ))}
 
       <div className="flex flex-wrap gap-3">
-        <button
-          onClick={() => guardar('publicado')}
-          className="px-5 py-3 rounded-2xl bg-brand text-onBrand font-black text-sm cursor-pointer hover:bg-brand-hover"
-        >
-          Publicar
-        </button>
-        <button
-          onClick={() => guardar('borrador')}
-          className="px-5 py-3 rounded-2xl border-2 border-borderCustom text-primary font-black text-sm cursor-pointer hover:border-brand"
-        >
+        <Button onClick={() => guardar('publicado')}>Publicar</Button>
+        <Button variant="secondary" onClick={() => guardar('borrador')}>
           Guardar borrador
-        </button>
-        <button
-          onClick={onCancelar}
-          className="px-5 py-3 rounded-2xl text-secondary font-black text-sm cursor-pointer hover:text-primary"
-        >
+        </Button>
+        <Button variant="ghost" onClick={onCancelar}>
           Cancelar
-        </button>
+        </Button>
       </div>
     </div>
   );
