@@ -11,11 +11,6 @@ import { VistaPrincipal } from './pages/VistaPrincipal';
 import { NivelesView } from './pages/NivelesView';
 import { CatalogoCuentos } from './pages/CatalogoCuentos';
 import { LecturaView } from './pages/LecturaView';
-import { AdminDashboard } from './pages/admin/AdminDashboard';
-import { db } from './db/db';
-import { useThemeStore, type ThemeId } from './store/useThemeStore';
-import { usePlayerStore } from './store/usePlayerStore';
-import { THEMES_CONFIG } from './config/themes';
 
 export const App: React.FC = () => {
   const { modoInicio, vistaInicio1, setVistaInicio1, isClassroomSessionActive, sessionType, setActiveStudentId } = useAuthStore();
@@ -53,7 +48,6 @@ export const App: React.FC = () => {
   if (vistaInicio1 === 'portal') return <PortalInicioView />;
   if (vistaInicio1 === 'profesor-login') return <LoginProfesorView />;
   if (vistaInicio1 === 'control-aula') return <ControlAulaView />;
-  if (vistaInicio1 === 'panel-docente') return <AdminDashboard />;
   if (vistaInicio1 === 'aula-espera') return <EsperaAulaView />;
   if (vistaInicio1 === 'alumno-casa') return <LoginAlumnoCasaView />;
 
@@ -64,15 +58,9 @@ export const App: React.FC = () => {
     }
     return (
       <MosaicoAlumnos
-        onSelectStudent={async (studentId) => {
+        onSelectStudent={(studentId) => {
           setActiveStudentId(studentId);
           setVistaInicio1('menu');
-          // Aplica el color y la voz que el docente asignó a este alumno
-          const alumno = await db.alumnos.get(studentId);
-          if (alumno && THEMES_CONFIG.some((t) => t.id === alumno.temaId)) {
-            useThemeStore.getState().setTheme(alumno.temaId as ThemeId);
-          }
-          if (alumno?.vozId) usePlayerStore.getState().setSelectedVoice(alumno.vozId);
         }}
       />
     );

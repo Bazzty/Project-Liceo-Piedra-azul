@@ -1,172 +1,77 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { Volume2, Trash2 } from 'lucide-react';
+import { Volume2 } from 'lucide-react';
 import { db, type Pictograma } from '../../db/db';
+import { useSAACStore } from '../../store/useSAACStore';
 import { usePlayerStore } from '../../store/usePlayerStore';
-import { resolverYGuardarPictograma } from '../../services/arasaac';
-
-interface ItemTableroProps {
-	pic: Pictograma;
-	onSelect: (pic: Pictograma) => void;
-}
-
-const ItemTablero: React.FC<ItemTableroProps> = ({ pic, onSelect }) => {
-	const [imgSrc, setImgSrc] = useState(pic.imagenUrl);
-	const [hasError, setHasError] = useState(false);
-
-	const handleImageError = async () => {
-		if (!hasError) {
-			const apiUrl = await resolverYGuardarPictograma(pic.palabra);
-			if (apiUrl && apiUrl !== imgSrc) {
-				setImgSrc(apiUrl);
-			} else {
-				setHasError(true);
-			}
-		}
-	};
-
-	return (
-		<div
-			role="button"
-			tabIndex={0}
-			onClick={() => onSelect(pic)}
-			onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onSelect(pic)}
-			className="flex flex-col items-center justify-between p-3 bg-surface border-2 border-borderCustom hover:border-brand rounded-2xl shadow hover:scale-105 active:scale-95 transition-all cursor-pointer h-32 w-full"
-		>
-			<div className="w-16 h-16 flex items-center justify-center overflow-hidden">
-				{!hasError ? (
-					<img
-						src={imgSrc}
-						alt={pic.palabra}
-						onError={handleImageError}
-						className="w-full h-full object-contain"
-					/>
-				) : (
-					<div className="text-2xl font-black text-secondary">
-						{pic.palabra.charAt(0).toUpperCase()}
-					</div>
-				)}
-			</div>
-
-			<span className="font-bold text-sm text-primary text-center truncate w-full">
-				{pic.palabra}
-			</span>
-		</div>
-	);
-};
+import { CategoriasBar } from './CategoriasBar';
+import { SentenceBuilderBar } from './SentenceBuilderBar';
 
 export const TableroSAAC: React.FC = () => {
-	const { playAudio } = usePlayerStore();
-	const [categoriaActiva, setCategoriaActiva] = useState('todos');
-	const [fraseConstruida, setFraseConstruida] = useState<Pictograma[]>([]);
+  const { categoriaActiva, agregarPictograma } = useSAACStore();
+  const { playAudio } = usePlayerStore();
 
-	const pictogramas = useLiveQuery(async () => {
-		if (categoriaActiva === 'todos') {
-			return await db.pictogramas.toArray();
-		}
-		return await db.pictogramas.where('categoria').equals(categoriaActiva).toArray();
-	}, [categoriaActiva]);
+  const pictogramas = useLiveQuery(
+    () => db.pictogramas.where('categoria').equals(categoriaActiva).toArray(),
+    [categoriaActiva]
+  );
 
-	const handleSelectPictograma = (pic: Pictograma) => {
-		setFraseConstruida((prev) => [...prev, pic]);
-		if (pic.audioUrl) {
-			playAudio(pic.audioUrl);
-		}
-	};
+  const handleSelectPictograma = (pic: Pictograma) => {
+    agregarPictograma(pic);
+    if (pic.audioUrl) {
+      playAudio(pic.audioUrl);
+    } else {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(pic.palabra);
+      utterance.lang = 'es-CL';
+      utterance.rate = 0.85;
+      window.speechSynthesis.speak(utterance);
+    }
+  };
 
-	const handleReproducirFrase = () => {
-		if (fraseConstruida.length === 0) return;
+  return (
+    <div className="flex flex-col gap-4 w-full h-full max-w-6xl mx-auto p-2">
+      {/* 5.1 Cinta de Construcción de Frases */}
+      <SentenceBuilderBar />
 
-		let delay = 0;
-		fraseConstruida.forEach((pic) => {
-			if (pic.audioUrl) {
-				setTimeout(() => {
-					playAudio(pic.audioUrl!);
-				}, delay);
-				delay += 900;
-			}
-		});
-	};
+      {/* 5.2 Barra de Categorías */}
+      <CategoriasBar />
 
-	const handleLimpiarFrase = () => {
-		setFraseConstruida([]);
-	};
+      {/* 5.3 Grilla de Comunicadores SAAC */}
+      <div className="flex-1 bg-surface/90 backdrop-blur-md border-4 border-borderCustom rounded-3xl p-4 sm:p-6 shadow-xl overflow-y-auto">
+        {!pictogramas || pictogramas.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-48 text-center gap-2">
+            <Volume2 className="w-10 h-10 text-secondary animate-pulse" />
+            <p className="text-lg font-bold text-primary">Cargando pictogramas de la categoría...</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            {pictogramas.map((pic: Pictograma) => (
+              <div
+                key={pic.id}
+                onClick={() => handleSelectPictograma(pic)}
+                className="bg-app rounded-3xl border-4 border-borderCustom p-3 shadow-md hover:border-brand hover:bg-brand/5 active:scale-95 transition-all flex flex-col items-center justify-center gap-2 group cursor-pointer h-36"
+              >
+                {/* Pictograma con Fallback Resiliente */}
+                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-surface rounded-2xl overflow-hidden flex items-center justify-center p-2 border-2 border-borderCustom shadow-inner">
+                  {pic.imagenUrl ? (
+                    <img src={pic.imagenUrl} alt={pic.palabra} className="w-full h-full object-contain group-hover:scale-105 transition-transform" />
+                  ) : (
+                    <div className="w-full h-full bg-brand/10 text-brand font-black text-xl flex items-center justify-center">
+                      {pic.palabra.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                </div>
 
-	const categorias = [
-		{ id: 'todos', label: 'Todos' },
-		{ id: 'necesidades', label: 'Necesidades' },
-		{ id: 'emociones', label: 'Emociones' },
-		{ id: 'personas', label: 'Personas' },
-		{ id: 'acciones', label: 'Acciones' },
-		{ id: 'objetos', label: 'Objetos' },
-	];
-
-	return (
-		<div className="flex flex-col gap-6 w-full">
-			{/* Barra de Construcción de Frase */}
-			<div className="flex items-center justify-between min-h-24 p-4 bg-surface border-4 border-borderCustom rounded-3xl shadow-inner gap-4 overflow-x-auto">
-				<div className="flex items-center gap-3 flex-1 overflow-x-auto py-2">
-					{fraseConstruida.length === 0 ? (
-						<p className="text-secondary font-medium text-sm sm:text-base italic px-2">
-							Toca los pictogramas abajo para construir tu mensaje...
-						</p>
-					) : (
-						fraseConstruida.map((item, index) => (
-							<div
-								key={index}
-								className="flex flex-col items-center bg-app border-2 border-borderCustom rounded-2xl p-2 min-w-[70px] shadow-sm animate-fade-in"
-							>
-								<img src={item.imagenUrl} alt={item.palabra} className="w-12 h-12 object-contain" />
-								<span className="text-xs font-black text-primary mt-1">{item.palabra}</span>
-							</div>
-						))
-					)}
-				</div>
-
-				{fraseConstruida.length > 0 && (
-					<div className="flex items-center gap-2 shrink-0">
-						<button
-							onClick={handleReproducirFrase}
-							className="flex items-center gap-2 bg-brand text-white px-4 py-3 rounded-2xl font-black shadow hover:opacity-90 active:scale-95 transition-all cursor-pointer text-sm"
-							title="Reproducir frase"
-						>
-							<Volume2 size={20} />
-							<span className="hidden sm:inline">LEER</span>
-						</button>
-						<button
-							onClick={handleLimpiarFrase}
-							className="p-3 bg-red-100 text-red-600 rounded-2xl border-2 border-red-200 hover:bg-red-200 active:scale-95 transition-all cursor-pointer shadow-sm"
-							title="Limpiar frase"
-						>
-							<Trash2 size={20} />
-						</button>
-					</div>
-				)}
-			</div>
-
-			{/* Categorías */}
-			<div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-				{categorias.map((cat) => (
-					<button
-						key={cat.id}
-						onClick={() => setCategoriaActiva(cat.id)}
-						className={`px-4 py-2 rounded-xl font-extrabold text-xs sm:text-sm whitespace-nowrap transition-all cursor-pointer border-2 shadow-sm ${
-							categoriaActiva === cat.id
-								? 'bg-brand text-white border-brand-hover scale-105'
-								: 'bg-surface text-secondary border-borderCustom hover:border-brand'
-						}`}
-					>
-						{cat.label}
-					</button>
-				))}
-			</div>
-
-			{/* Grilla de Pictogramas */}
-			<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 max-h-[50vh] overflow-y-auto p-1">
-				{pictogramas?.map((pic) => (
-					<ItemTablero key={pic.id || pic.palabra} pic={pic} onSelect={handleSelectPictograma} />
-				))}
-			</div>
-		</div>
-	);
+                {/* Palabra */}
+                <span className="text-sm sm:text-base font-extrabold text-primary tracking-wide text-center">
+                  {pic.palabra}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
 };

@@ -1,94 +1,64 @@
 import React from 'react';
 import { Clock, ArrowRight, Info } from 'lucide-react';
-import { Button } from './Button';
+import { Button } from './Button'; // Ajusta la ruta de importación de tu botón según corresponda
 import { useAuthStore } from '../../store/useAuthStore';
 
-export interface SessionTimeoutModalProps {
-	onClose?: () => void;
-	onContinuar?: () => void;
-	onCerrarSesion?: () => void;
+interface SessionTimeoutModalProps {
+  onClose: () => void;
 }
 
-export const SessionTimeoutModal: React.FC<SessionTimeoutModalProps> = ({
-	onClose,
-	onContinuar,
-	onCerrarSesion,
-}) => {
-	const { isSessionExpiredModalOpen, closeSessionExpiredModal, logout } = useAuthStore();
+export const SessionTimeoutModal: React.FC<SessionTimeoutModalProps> = ({ onClose }) => {
+  const { isSessionExpiredModalOpen, closeSessionExpiredModal } = useAuthStore();
 
-	if (!isSessionExpiredModalOpen) return null;
+  if (!isSessionExpiredModalOpen) return null;
 
-	const handleConfirm = () => {
-		if (closeSessionExpiredModal) {
-			closeSessionExpiredModal();
-		}
-		if (onContinuar) {
-			onContinuar();
-		}
-		if (onClose) {
-			onClose();
-		}
-	};
+  const handleConfirm = () => {
+    if (closeSessionExpiredModal) {
+      closeSessionExpiredModal();
+    }
+    onClose();
+  };
 
-	const handleExit = () => {
-		if (closeSessionExpiredModal) {
-			closeSessionExpiredModal();
-		}
-		if (onCerrarSesion) {
-			onCerrarSesion();
-		} else {
-			logout();
-		}
-	};
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn">
+      <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-6 sm:p-8 text-center relative overflow-hidden border border-amber-100">
+        
+        {/* Encabezado Decorativo */}
+        <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-amber-400 via-orange-500 to-amber-500" />
+        
+        <div className="mx-auto w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-600 mb-5 shadow-inner">
+          <Clock className="w-8 h-8 animate-pulse" />
+        </div>
 
-	return (
-		<div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-			<div className="bg-surface border-4 border-borderCustom rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl flex flex-col items-center text-center gap-6 animate-scale-up">
-				{/* Encabezado Decorativo */}
-				<div className="p-4 bg-brand/10 border-4 border-brand rounded-full text-brand">
-					<Clock size={48} />
-				</div>
+        <span className="inline-block px-3 py-1 bg-amber-100 text-amber-800 text-xs font-semibold rounded-full mb-3 uppercase tracking-wider">
+          Tiempo de Laboratorio Cumplido
+        </span>
 
-				<div className="flex flex-col gap-2">
-					<span className="text-xs font-black text-brand tracking-widest uppercase">
-						Tiempo de Laboratorio Cumplido
-					</span>
-					<h2 className="text-2xl sm:text-3xl font-black text-primary">
-						¡Sesión de Aula Finalizada!
-					</h2>
-					<p className="text-secondary font-medium text-sm sm:text-base mt-1">
-						Han transcurrido las 1.5 horas de uso continuo fijadas para el estudiante.
-					</p>
-				</div>
+        <h3 className="text-2xl font-bold text-gray-900 mb-2">
+          ¡Sesión de Aula Finalizada!
+        </h3>
 
-				{/* Nota Informativa Docente */}
-				<div className="flex items-start gap-3 bg-app border-2 border-borderCustom rounded-2xl p-4 text-left w-full">
-					<Info className="text-brand shrink-0 mt-0.5" size={20} />
-					<p className="text-xs sm:text-sm text-secondary font-medium">
-						<strong className="text-primary font-bold">Nota para el docente:</strong> Tu sesión continúa activa. Puedes seleccionar otro alumno o reactivar al mismo estudiante en el mosaico.
-					</p>
-				</div>
+        <p className="text-gray-600 text-sm mb-6 leading-relaxed">
+          Han transcurrido las <span className="font-semibold text-gray-800">1.5 horas</span> de uso continuo fijadas para el estudiante.
+        </p>
 
-				{/* Botones de Acción */}
-				<div className="flex flex-col gap-3 w-full mt-2">
-					<Button
-						onClick={handleConfirm}
-						className="w-full flex items-center justify-center gap-2 py-3.5 bg-brand text-white font-black text-base rounded-2xl shadow-lg border-2 border-brand-hover hover:opacity-90 active:scale-95 transition-all cursor-pointer"
-					>
-						Volver al Mosaico de Alumnos
-						<ArrowRight size={20} />
-					</Button>
+        {/* Nota informativa docente */}
+        <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 text-left flex gap-3 mb-6">
+          <Info className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
+          <p className="text-xs text-blue-900 leading-normal">
+            <span className="font-semibold">Nota para el docente:</span> Tu sesión continúa activa. Puedes seleccionar otro alumno o reactivar al mismo estudiante en el mosaico.
+          </p>
+        </div>
 
-					{onCerrarSesion && (
-						<button
-							onClick={handleExit}
-							className="text-xs sm:text-sm text-secondary hover:text-red-500 font-bold py-2 transition-colors cursor-pointer"
-						>
-							Cerrar Sesión Definitivamente
-						</button>
-					)}
-				</div>
-			</div>
-		</div>
-	);
+        {/* Botón de acción */}
+        <Button 
+          onClick={handleConfirm}
+          className="w-full py-3 px-6 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold rounded-xl shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2 transition-all transform active:scale-95"
+        >
+          <span>Volver al Mosaico de Alumnos</span>
+          <ArrowRight className="w-4 h-4" />
+        </Button>
+      </div>
+    </div>
+  );
 };

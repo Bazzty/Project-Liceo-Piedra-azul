@@ -109,19 +109,6 @@ export const ControlAulaView: React.FC = () => {
           </div>
         </div>
 
-        {/* Ir al Panel Docente (progreso, alumnos y cuentos) */}
-        <button
-          onClick={() => setVistaInicio1('panel-docente')}
-          style={{
-            backgroundColor: 'var(--btn-hablar-bg)',
-            color: 'var(--btn-hablar-text)',
-            borderColor: 'var(--btn-hablar-border)',
-          }}
-          className="w-full py-4 rounded-2xl border-4 font-black text-base shadow-lg hover:opacity-90 active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2"
-        >
-          <span>PANEL DOCENTE: PROGRESO, ALUMNOS Y CUENTOS</span>
-        </button>
-
         {/* Ir al Mosaico */}
         <button
           onClick={() => setVistaInicio1('aula-mosaico')}

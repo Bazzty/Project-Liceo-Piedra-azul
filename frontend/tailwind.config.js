@@ -13,10 +13,6 @@ export default {
           hover: "var(--brand-hover)",
         },
         borderCustom: "var(--border-color)",
-        /* Colores de estado (panel docente) */
-        statusOk: { DEFAULT: "var(--status-ok)", bg: "var(--status-ok-bg)" },
-        statusWarn: { DEFAULT: "var(--status-warn)", bg: "var(--status-warn-bg)" },
-        statusDanger: { DEFAULT: "var(--status-danger)", bg: "var(--status-danger-bg)" },
         /* Variables dinámicas para botones de la Vista Principal */
         btnAprender: {
           bg: "var(--btn-aprender-bg)",

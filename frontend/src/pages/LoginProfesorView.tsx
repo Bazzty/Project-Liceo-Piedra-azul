@@ -7,12 +7,11 @@ export const LoginProfesorView: React.FC = () => {
   const [usuario, setUsuario] = useState('profesora@piedraazul.cl');
   const [password, setPassword] = useState('123456');
   const [error, setError] = useState('');
-  const { setVistaInicio1, setRole, login } = useAuthStore();
+  const { setVistaInicio1, setRole } = useAuthStore();
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     if (usuario && password) {
-      login();
       setRole('docente');
       setVistaInicio1('control-aula');
     } else {

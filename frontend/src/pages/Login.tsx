@@ -33,8 +33,7 @@ export const Login: React.FC<LoginProps> = ({ onSuccessLogin, onLoginSuccess }) 
     login({
       id: 'docente-1',
       nombre: usuario || 'Educadora PIE',
-      email: "a",
-      role: 'docente',
+      rol: 'docente',
     });
 
     handleCallback();
