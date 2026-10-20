@@ -33,7 +33,7 @@ export const EsperaAulaView: React.FC = () => {
 	return (
 		<MainLayout>
 			<div className="flex flex-col items-center justify-center min-h-[85vh] p-4 gap-6">
-				<Button variant="secondary" size="sm" onClick={() => navigate(ROUTES.portal)} className="self-start">
+				<Button variant="secondary" size="sm" onClick={() => navigate(ROUTES.inicio)} className="self-start">
 					<ArrowLeft className="w-4 h-4" />
 					VOLVER
 				</Button>

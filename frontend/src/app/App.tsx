@@ -1,11 +1,9 @@
 import React from 'react';
+import { InicioView } from '@/features/acceso/pages/InicioView';
 import { MuestraComponentes } from '@/features/muestra/MuestraComponentes';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { RequireAlumno, RequireDocente, RequireSesionAula } from './guards';
 import { ROUTES } from './routes';
-import { SelectorInicioView } from '@/features/acceso/pages/SelectorInicioView';
-import { Inicio2View } from '@/features/acceso/pages/Inicio2View';
-import { PortalInicioView } from '@/features/acceso/pages/PortalInicioView';
 import { LoginProfesorView } from '@/features/acceso/pages/LoginProfesorView';
 import { LoginAlumnoCasaView } from '@/features/acceso/pages/LoginAlumnoCasaView';
 import { EsperaAulaView } from '@/features/acceso/pages/EsperaAulaView';
@@ -20,9 +18,7 @@ import { AdminDashboard } from '@/features/docente/pages/AdminDashboard';
 export const App: React.FC = () => (
   <Routes>
     {/* Acceso */}
-    <Route path={ROUTES.selector} element={<SelectorInicioView />} />
-    <Route path={ROUTES.inicio2} element={<Inicio2View />} />
-    <Route path={ROUTES.portal} element={<PortalInicioView />} />
+    <Route path={ROUTES.inicio} element={<InicioView />} />
     <Route path={ROUTES.muestra} element={<MuestraComponentes />} />
     <Route path={ROUTES.profesorLogin} element={<LoginProfesorView />} />
     <Route path={ROUTES.casaLogin} element={<LoginAlumnoCasaView />} />
@@ -47,7 +43,7 @@ export const App: React.FC = () => (
       <Route path={`${ROUTES.aprender}/:nivelId/:cuentoId`} element={<LecturaView />} />
     </Route>
 
-    <Route path="*" element={<Navigate to={ROUTES.selector} replace />} />
+    <Route path="*" element={<Navigate to={ROUTES.inicio} replace />} />
   </Routes>
 );
 

@@ -18,5 +18,5 @@ export const RequireSesionAula: React.FC = () => {
 /** Pantallas del alumno: requieren haber elegido un alumno. */
 export const RequireAlumno: React.FC = () => {
   const activeStudentId = useAuthStore((s) => s.activeStudentId);
-  return activeStudentId ? <Outlet /> : <Navigate to={ROUTES.portal} replace />;
+  return activeStudentId ? <Outlet /> : <Navigate to={ROUTES.inicio} replace />;
 };

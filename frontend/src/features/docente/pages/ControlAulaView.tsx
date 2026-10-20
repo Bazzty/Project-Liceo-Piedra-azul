@@ -19,9 +19,9 @@ export const ControlAulaView: React.FC = () => {
         
         {/* Encabezado */}
         <div className="flex flex-col sm:flex-row items-center justify-between bg-surface/90 backdrop-blur-md p-4 sm:p-6 rounded-3xl shadow-md border-2 border-borderCustom gap-4">
-          <Button variant="secondary" size="sm" onClick={() => navigate(ROUTES.portal)}>
+          <Button variant="secondary" size="sm" onClick={() => navigate(ROUTES.inicio)}>
           	<ArrowLeft className="w-4 h-4" />
-          	VOLVER AL PORTAL
+          	Volver al inicio
           </Button>
           
           <div className="text-center sm:text-left">

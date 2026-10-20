@@ -193,7 +193,7 @@ export const LoginAlumnoCasaView: React.FC = () => {
       {/* Panel de ingreso */}
       <main className="flex flex-col items-center justify-center px-4 py-8 lg:py-12">
         <div className="w-full max-w-md flex flex-col gap-6">
-          <Button variant="ghost" size="sm" onClick={() => navigate(ROUTES.portal)} className="self-start -ml-3">
+          <Button variant="ghost" size="sm" onClick={() => navigate(ROUTES.inicio)} className="self-start -ml-3">
             <ArrowLeft className="w-4 h-4" aria-hidden />
             Volver
           </Button>

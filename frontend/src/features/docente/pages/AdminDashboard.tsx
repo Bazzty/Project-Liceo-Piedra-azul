@@ -22,7 +22,7 @@ export const AdminDashboard: React.FC = () => {
 
   const cerrarSesion = () => {
     logout();
-    navigate(ROUTES.portal);
+    navigate(ROUTES.inicio);
   };
 
   const reiniciarDemo = async () => {

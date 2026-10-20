@@ -28,9 +28,9 @@ export const LoginProfesorView: React.FC = () => {
     <MainLayout allowScroll={true}>
       <div className="flex flex-col gap-6 w-full max-w-md mx-auto py-12 px-4 justify-center h-full">
         
-        <Button variant="secondary" size="sm" onClick={() => navigate(ROUTES.portal)} className="self-start">
+        <Button variant="secondary" size="sm" onClick={() => navigate(ROUTES.inicio)} className="self-start">
         	<ArrowLeft className="w-4 h-4" />
-        	VOLVER AL PORTAL
+        	Volver al inicio
         </Button>
 
         <div className="bg-surface rounded-3xl border-4 border-borderCustom p-8 shadow-2xl flex flex-col gap-6">

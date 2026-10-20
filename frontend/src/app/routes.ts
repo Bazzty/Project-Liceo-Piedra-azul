@@ -1,8 +1,6 @@
 /** Rutas de la aplicación. Única fuente de verdad: no escribir paths a mano en los componentes. */
 export const ROUTES = {
-  selector: '/',
-  inicio2: '/inicio-2',
-  portal: '/portal',
+  inicio: '/',
   muestra: '/muestra',
 
   profesorLogin: '/profesor/login',
