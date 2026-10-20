@@ -8,7 +8,8 @@ import { CasillasCodigo } from '@/features/acceso/components/CasillasCodigo';
 import { TarjetaIlustrada } from '@/features/acceso/components/TarjetaIlustrada';
 import { TecladoCodigo } from '@/features/acceso/components/TecladoCodigo';
 import { useAuthStore } from '@/features/acceso/useAuthStore';
-import { buscarTarjeta, LARGO_CODIGO, TARJETAS_DEMO } from '@/mocks/tarjetas';
+import { useTarjetasStore } from '@/features/acceso/useTarjetasStore';
+import { LARGO_CODIGO } from '@/mocks/tarjetas';
 import { Creditos } from '@/shared/components/Creditos';
 import { FondoPaisaje } from '@/shared/components/FondoPaisaje';
 import type { ClaveAudio } from '@/shared/config/audiosInterfaz';
@@ -38,6 +39,7 @@ const TarjetasDeEjemplo: React.FC<{ onElegir: (codigo: string) => void; nombres:
   onElegir,
   nombres,
 }) => {
+  const tarjetas = useTarjetasStore((s) => s.tarjetas);
   const [abierto, setAbierto] = useState(false);
   return (
     <div className="flex flex-col items-center gap-3">
@@ -48,7 +50,7 @@ const TarjetasDeEjemplo: React.FC<{ onElegir: (codigo: string) => void; nombres:
       </Button>
       {abierto && (
         <ul className="grid grid-cols-2 gap-2 w-full">
-          {TARJETAS_DEMO.map((t) => (
+          {tarjetas.map((t) => (
             <li key={t.codigo}>
               <button
                 type="button"
@@ -82,6 +84,8 @@ export const LoginAlumnoCasaView: React.FC = () => {
   const [ahora, setAhora] = useState(() => Date.now());
   const [alumno, setAlumno] = useState<Alumno | null>(null);
   const [nombres, setNombres] = useState<Record<string, string>>({});
+  const tarjetas = useTarjetasStore((s) => s.tarjetas);
+  const buscarTarjeta = useTarjetasStore((s) => s.buscar);
 
   const segundosRestantes = bloqueadoHasta ? Math.max(0, Math.ceil((bloqueadoHasta - ahora) / 1000)) : 0;
   const bloqueado = segundosRestantes > 0;
@@ -104,14 +108,14 @@ export const LoginAlumnoCasaView: React.FC = () => {
   // Nombres de las tarjetas de ejemplo
   useEffect(() => {
     let activo = true;
-    Promise.all(TARJETAS_DEMO.map((t) => obtenerAlumno(t.alumnoId))).then((lista) => {
+    Promise.all(tarjetas.map((t) => obtenerAlumno(t.alumnoId))).then((lista) => {
       if (!activo) return;
-      setNombres(Object.fromEntries(TARJETAS_DEMO.map((t, i) => [t.alumnoId, lista[i]?.nombre ?? ''])));
+      setNombres(Object.fromEntries(tarjetas.map((t, i) => [t.alumnoId, lista[i]?.nombre ?? ''])));
     });
     return () => {
       activo = false;
     };
-  }, []);
+  }, [tarjetas]);
 
   const escribir = useCallback(
     (d: string) => {
@@ -145,7 +149,7 @@ export const LoginAlumnoCasaView: React.FC = () => {
       setAhora(Date.now());
       setBloqueadoHasta(hasta);
     }
-  }, [alumno, bloqueado, codigo, intentos]);
+  }, [alumno, bloqueado, buscarTarjeta, codigo, intentos]);
 
   // Teclado físico: números, borrar y Enter
   useEffect(() => {

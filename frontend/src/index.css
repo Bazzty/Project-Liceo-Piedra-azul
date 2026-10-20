@@ -55,6 +55,21 @@
     transition-duration: 0.01ms !important;
   }
 
+  /* Impresión (tarjetas de acceso): hoja carta y colores tal como se ven en pantalla */
+  @page {
+    size: letter;
+    margin: 12mm;
+  }
+  @media print {
+    * {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    body {
+      background: #ffffff;
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     *,
     *::before,

@@ -14,6 +14,7 @@ import { LecturaView } from '@/features/aprender/pages/LecturaView';
 import { ControlAulaView } from '@/features/docente/pages/ControlAulaView';
 import { AdminDashboard } from '@/features/docente/pages/AdminDashboard';
 import { CuentosPage } from '@/features/docente/pages/CuentosPage';
+import { TarjetasPage } from '@/features/docente/pages/TarjetasPage';
 import { EstudiantesPage } from '@/features/docente/pages/EstudiantesPage';
 
 export const App: React.FC = () => (
@@ -30,6 +31,7 @@ export const App: React.FC = () => (
       <Route path={ROUTES.profesorPanel} element={<AdminDashboard />} />
       <Route path={ROUTES.profesorEstudiantes} element={<EstudiantesPage />} />
       <Route path={ROUTES.profesorCuentos} element={<CuentosPage />} />
+      <Route path={ROUTES.profesorTarjetas} element={<TarjetasPage />} />
     </Route>
 
     {/* Aula */}
