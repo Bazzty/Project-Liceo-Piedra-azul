@@ -2,6 +2,7 @@ import React from 'react';
 import { Button } from '@/shared/ui';
 import { ArrowLeft, Play, Square, Users, CheckCircle, ShieldCheck } from 'lucide-react';
 import { MainLayout } from '@/shared/layouts/MainLayout';
+import { AgendaClase } from '@/features/docente/components/AgendaClase';
 import { useAuthStore } from '@/features/acceso/useAuthStore';
 import type { Alumno } from '@/types';
 import { useAlumnos } from '@/api';
@@ -109,6 +110,8 @@ export const ControlAulaView: React.FC = () => {
             ))}
           </div>
         </div>
+
+        <AgendaClase />
 
         {/* Ir al Panel Docente (progreso, alumnos y cuentos) */}
         <button
