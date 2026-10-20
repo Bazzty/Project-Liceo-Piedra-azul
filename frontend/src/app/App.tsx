@@ -1,5 +1,4 @@
 import React from 'react';
-import { InicioView } from '@/features/acceso/pages/InicioView';
 import { MuestraComponentes } from '@/features/muestra/MuestraComponentes';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { RequireAlumno, RequireDocente, RequireSesionAula } from './guards';
@@ -18,10 +17,9 @@ import { AdminDashboard } from '@/features/docente/pages/AdminDashboard';
 export const App: React.FC = () => (
   <Routes>
     {/* Acceso */}
-    <Route path={ROUTES.inicio} element={<InicioView />} />
+    <Route path={ROUTES.inicio} element={<LoginAlumnoCasaView />} />
     <Route path={ROUTES.muestra} element={<MuestraComponentes />} />
     <Route path={ROUTES.profesorLogin} element={<LoginProfesorView />} />
-    <Route path={ROUTES.casaLogin} element={<LoginAlumnoCasaView />} />
     <Route path={ROUTES.aulaEspera} element={<EsperaAulaView />} />
 
     {/* Docente */}

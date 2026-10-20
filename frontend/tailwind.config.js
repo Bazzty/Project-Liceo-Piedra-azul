@@ -60,9 +60,11 @@ export default {
       },
       keyframes: {
         fadeIn: { from: { opacity: "0" }, to: { opacity: "1" } },
+        flotar: { "0%, 100%": { transform: "translateY(0)" }, "50%": { transform: "translateY(-10px)" } },
       },
       animation: {
         fadeIn: "fadeIn 0.2s ease-out",
+        flotar: "flotar 6s ease-in-out infinite",
       },
     },
   },

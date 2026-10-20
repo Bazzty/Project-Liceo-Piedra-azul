@@ -9,7 +9,6 @@ export const ROUTES = {
 
   aulaEspera: '/aula/espera',
   aulaAlumnos: '/aula/alumnos',
-  casaLogin: '/casa/login',
 
   menu: '/menu',
   aprender: '/aprender',

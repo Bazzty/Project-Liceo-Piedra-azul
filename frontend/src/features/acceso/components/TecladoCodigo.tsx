@@ -13,7 +13,7 @@ export interface TecladoCodigoProps {
 const DIGITOS = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
 
 const TECLA =
-  'min-h-[4rem] rounded-control border-2 font-black text-3xl flex items-center justify-center transition-all cursor-pointer active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100';
+  'min-h-[4rem] [@media(max-height:820px)]:min-h-[3.25rem] rounded-control border-2 font-black text-3xl flex items-center justify-center transition-all cursor-pointer active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100';
 
 /** Teclado numérico grande en pantalla para escribir el código de la tarjeta. */
 export const TecladoCodigo: React.FC<TecladoCodigoProps> = ({ onDigito, onBorrar, onEntrar, puedeEntrar, disabled = false }) => (
