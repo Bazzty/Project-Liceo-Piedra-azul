@@ -33,19 +33,32 @@ Guardar cada una como `frontend/public/audio/interfaz/<clave>.mp3`.
 | `respira` | Respira conmigo. Inhala... y exhala. |
 | `sigues_ahi` | ¿Sigues ahí? |
 
-## Cómo grabarlas con la misma voz
+## Generarlas automáticamente (recomendado)
 
-Los audios actuales se hicieron con **ElevenLabs** (el nombre del archivo de origen indica la voz "Playful, High-pitched Friend" y sus ajustes: velocidad 1.0, estabilidad 30 %, similitud 100 %). Para que todo suene igual:
+Desde `frontend/`, un script crea los audios que falten con la voz del proyecto (ElevenLabs). Está en `scripts/generar-audios.mjs` y lee la lista `scripts/audios.manifest.json`.
 
-1. Entrar a la cuenta de ElevenLabs con la que se hicieron los audios (la persona que los generó).
-2. Elegir **la misma voz** y **los mismos ajustes**.
-3. Pegar cada frase de la tabla, generar y descargar el `.mp3`.
-4. Renombrar el archivo con su clave (por ejemplo `leer.mp3`) y copiarlo a `frontend/public/audio/interfaz/`.
-5. Recargar la página: no hay que tocar código. La app usa el archivo apenas existe.
+1. Copiar `.env.example` como `.env.local` y completar `ELEVENLABS_API_KEY` y `ELEVENLABS_VOICE_ID` (la clave nunca se sube a git ni se comparte por chat).
+2. `npm run audios -- --dry-run` muestra qué audios faltan sin gastar créditos.
+3. `npm run audios` genera solo los que faltan o cuyo texto cambió, y los guarda en `public/audio/`.
+4. Opciones: `--forzar` (regenera todo) y `--solo=interfaz` (solo una carpeta).
 
-Recomendaciones: un solo tono (suave, sin gritar), frases con una pausa corta al inicio y al final, y volumen parecido al de los audios existentes.
+**Para agregar un audio nuevo** (un cuento, un pictograma, una frase): añadir una línea al manifiesto con `archivo` (ruta dentro de `public/audio/`) y `texto`, y ejecutar `npm run audios`. Si se cambia el texto de una línea, se regenera sola.
 
-## Importante antes de producción
+> El script no se ha probado contra la API real (no se dispone de clave en el desarrollo del prototipo): la primera ejecución debe revisarse con `--solo=interfaz` y escuchando los resultados.
 
-- Verificar que la **licencia de la voz** y el **plan de ElevenLabs** permiten este uso. Si es una voz compartida por un tercero, puede tener límites (por ejemplo, uso comercial). Ver `docs/legal-y-privacidad.md`.
-- Los textos que cambian (nombre del niño, "3 días seguidos") no se graban: usan la voz del navegador. Si se quiere que también suenen con la voz suave, hay que grabar combinaciones fijas (números del 1 al 8, etc.) o usar un servicio de voz con API.
+### Grabarlas a mano (alternativa)
+
+Entrar a ElevenLabs con la misma voz y ajustes (velocidad 1.0, estabilidad 30 %, similitud 100 %), generar cada frase de la tabla, descargar el `.mp3`, nombrarlo con su clave y copiarlo a `frontend/public/audio/interfaz/`. La app lo usa apenas existe.
+
+## Cuando la docente cree contenido (producción)
+
+El script sirve para el equipo de desarrollo. Para que la **docente** agregue un cuento o pictograma y el audio aparezca solo, hace falta un backend (la clave de ElevenLabs nunca puede estar en el navegador):
+
+1. La docente escribe o edita un cuento en el editor y lo guarda.
+2. El backend crea un **trabajo de audio** por cada página o palabra nueva. Estados visibles en el editor: *pendiente → generando → listo / error*.
+3. Antes de llamar a ElevenLabs revisa un **caché** (huella del texto + voz + ajustes): si ya existe, reutiliza el archivo y no gasta créditos.
+4. El audio se guarda en almacenamiento de archivos y se asigna a la página (`audioPaginaUrl`). Mientras esté pendiente, la app usa la voz del navegador.
+5. El **revisor** escucha los audios antes de validar el cuento (la voz de IA puede pronunciar mal).
+6. Controles: límite de caracteres por mes, registro de cuánto se gasta y reintentos si falla.
+
+Cuidado con los datos: los textos de los cuentos se envían a ElevenLabs, así que no deben incluir nombres ni datos de niños.

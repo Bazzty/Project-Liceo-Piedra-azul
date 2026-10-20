@@ -310,7 +310,7 @@ export async function seedDatabase() {
 						{
 							numeroPagina: 1,
 							textoCompleto: 'Ana ve un auto azul',
-							audioPaginaUrl: '/audio/cuentos/cuento-auto-ana_p1.mp3',
+							audioPaginaUrl: '/audio/cuentos/cuento-auto-ana-p1.mp3',
 							palabras: [
 								{ texto: 'Ana', pictogramaUrl: '/pictogramas/arasaac/nina.png', audioUrl: '/audio/pictogramas/nina.mp3' },
 								{ texto: 've', pictogramaUrl: '/pictogramas/arasaac/ver.png', audioUrl: '/audio/pictogramas/ver.mp3' },
@@ -333,7 +333,7 @@ export async function seedDatabase() {
 						{
 							numeroPagina: 1,
 							textoCompleto: 'Mi mamá me ama',
-							audioPaginaUrl: '/audio/cuentos/cuento-mi-mama_p1.mp3',
+							audioPaginaUrl: '/audio/cuentos/cuento-mi-mama-p1.mp3',
 							palabras: [
 								{ texto: 'Mi', audioUrl: '/audio/fonemas/mi.mp3' },
 								{ texto: 'mamá', pictogramaUrl: '/pictogramas/arasaac/mama.png', audioUrl: '/audio/pictogramas/mama.mp3' },
