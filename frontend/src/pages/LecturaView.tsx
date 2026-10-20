@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { ArrowLeft, ChevronLeft, ChevronRight, Volume2, CheckCircle2 } from 'lucide-react';
-import { db } from '../db/db';
-import { MainLayout } from '../layouts/MainLayout';
-import { PictogramaCard } from '../components/lectura/PictogramaCard';
-import { CharacterGuide } from '../components/common/CharacterGuide';
-import { usePlayerStore } from '../store/usePlayerStore';
-import { useAuthStore } from '../store/useAuthStore';
-import { getPersonajeAudio } from '../config/audioConfig';
+import { db } from '@/db/db';
+import { MainLayout } from '@/layouts/MainLayout';
+import { PictogramaCard } from '@/components/lectura/PictogramaCard';
+import { CharacterGuide } from '@/components/common/CharacterGuide';
+import { usePlayerStore } from '@/store/usePlayerStore';
+import { useAuthStore } from '@/store/useAuthStore';
+import { getPersonajeAudio } from '@/config/audioConfig';
 
 export interface LecturaViewProps {
 	cuentoId?: string;

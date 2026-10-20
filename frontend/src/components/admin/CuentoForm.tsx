@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Sparkles, Trash2, Volume2 } from 'lucide-react';
-import { db, type Cuento, type CuentoPagina, type CuentoPalabra } from '../../db/db';
-import { getArasaacImageUrl, fetchArasaacPictogramId, searchArasaacPictograms, type ArasaacOpcion } from '../../services/arasaac';
+import { db } from '@/db/db';
+import type { Cuento, CuentoPagina, CuentoPalabra } from '@/types';
+import { getArasaacImageUrl, fetchArasaacPictogramId, searchArasaacPictograms, type ArasaacOpcion } from '@/services/arasaac';
 import { normalizar } from './format';
 import { PictoImg } from './widgets';
 

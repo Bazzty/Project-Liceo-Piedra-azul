@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
 import { ArrowLeft, Clock } from 'lucide-react';
-import { MainLayout } from '../layouts/MainLayout';
-import { CharacterGuide } from '../components/common/CharacterGuide';
-import { useAuthStore } from '../store/useAuthStore';
-import { getPersonajeAudio } from '../config/audioConfig';
+import { MainLayout } from '@/layouts/MainLayout';
+import { CharacterGuide } from '@/components/common/CharacterGuide';
+import { useAuthStore } from '@/store/useAuthStore';
+import { getPersonajeAudio } from '@/config/audioConfig';
 
 export const EsperaAulaView: React.FC = () => {
 	const { setVistaInicio1, isClassroomSessionActive, checkClassroomStatus } = useAuthStore();

@@ -1,4 +1,4 @@
-import { db } from '../db/db';
+import { db } from '@/db/db';
 
 const ARASAAC_API_BASE = 'https://api.arasaac.org/v1';
 const ARASAAC_STATIC_BASE = 'https://static.arasaac.org/pictograms';

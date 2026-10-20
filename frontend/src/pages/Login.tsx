@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Lock, User as UserIcon, Sparkles } from 'lucide-react';
-import { AuthLayout } from '../layouts/AuthLayout';
-import { Button } from '../components/common/Button';
-import { useAuthStore } from '../store/useAuthStore';
+import { AuthLayout } from '@/layouts/AuthLayout';
+import { Button } from '@/components/common/Button';
+import { useAuthStore } from '@/store/useAuthStore';
 
 export interface LoginProps {
   onSuccessLogin?: () => void;

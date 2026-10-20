@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { BookOpen, MessageSquare, Palette, Star } from 'lucide-react';
-import { useAuthStore } from '../store/useAuthStore';
-import { useThemeStore, type ThemeId } from '../store/useThemeStore';
-import { THEMES_CONFIG } from '../config/themes';
-import { MainLayout } from '../layouts/MainLayout';
-import { CharacterGuide } from '../components/common/CharacterGuide';
-import { Modal } from '../components/common/Modal';
-import { TableroSAAC } from '../components/tablero/TableroSAAC';
-import { getPersonajeAudio } from '../config/audioConfig';
+import { useAuthStore } from '@/store/useAuthStore';
+import { useThemeStore, type ThemeId } from '@/store/useThemeStore';
+import { THEMES_CONFIG } from '@/config/themes';
+import { MainLayout } from '@/layouts/MainLayout';
+import { CharacterGuide } from '@/components/common/CharacterGuide';
+import { Modal } from '@/components/common/Modal';
+import { TableroSAAC } from '@/components/tablero/TableroSAAC';
+import { getPersonajeAudio } from '@/config/audioConfig';
 
 export interface VistaPrincipalProps {
 	onNavigateToAprender?: () => void;

@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { RotateCcw } from 'lucide-react';
-import { AdminLayout, type AdminSection } from '../../layouts/AdminLayout';
-import { ResumenCurso } from '../../components/admin/ResumenCurso';
-import { AlumnosPanel } from '../../components/admin/AlumnosPanel';
-import { NivelesPanel } from '../../components/admin/NivelesPanel';
-import { useAuthStore } from '../../store/useAuthStore';
-import { resetDemoData } from '../../db/seed';
+import { AdminLayout, type AdminSection } from '@/layouts/AdminLayout';
+import { ResumenCurso } from '@/components/admin/ResumenCurso';
+import { AlumnosPanel } from '@/components/admin/AlumnosPanel';
+import { NivelesPanel } from '@/components/admin/NivelesPanel';
+import { useAuthStore } from '@/store/useAuthStore';
+import { resetDemoData } from '@/db/seed';
 
 /** 9. Vista de profesor: panel principal, alumnos y gestión de niveles/cuentos. */
 export const AdminDashboard: React.FC = () => {

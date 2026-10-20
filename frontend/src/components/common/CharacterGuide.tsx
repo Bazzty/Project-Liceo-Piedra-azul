@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Volume2 } from 'lucide-react';
-import { usePlayerStore } from '../../store/usePlayerStore';
-import { getPersonajeAudio } from '../../config/audioConfig';
+import { usePlayerStore } from '@/store/usePlayerStore';
+import { getPersonajeAudio } from '@/config/audioConfig';
 
 // 1. DICCIONARIO DE FONEMAS A VISEMAS
 const MOUTH_MAP: Record<string, string> = {

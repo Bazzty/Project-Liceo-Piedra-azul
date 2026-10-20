@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { Pictograma } from '../db/db';
+import type { Pictograma } from '@/types';
 
 export type SAACCategoria = 'necesidades' | 'emociones' | 'personas' | 'acciones' | 'objetos';
 

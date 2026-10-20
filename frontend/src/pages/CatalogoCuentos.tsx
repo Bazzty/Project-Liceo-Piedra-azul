@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, BookOpen, Sparkles, Star } from 'lucide-react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { MainLayout } from '../layouts/MainLayout';
-import { CharacterGuide } from '../components/common/CharacterGuide';
-import { useAuthStore } from '../store/useAuthStore';
-import { db, type Cuento, type Progreso } from '../db/db';
-import { resolverYGuardarPictograma } from '../services/arasaac';
+import { MainLayout } from '@/layouts/MainLayout';
+import { CharacterGuide } from '@/components/common/CharacterGuide';
+import { useAuthStore } from '@/store/useAuthStore';
+import { db } from '@/db/db';
+import type { Cuento, Progreso } from '@/types';
+import { resolverYGuardarPictograma } from '@/services/arasaac';
 
 // Subcomponente interno para la portada de la tarjeta con fallback a ARASAAC
 const PortadaCuento: React.FC<{ cuento: Cuento }> = ({ cuento }) => {

@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { ArrowLeft, ChevronRight, Palette, Volume2 } from 'lucide-react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { db, type VozId } from '../../db/db';
-import { THEMES_CONFIG } from '../../config/themes';
-import { VOCES_CONFIG, VOZ_POR_DEFECTO } from '../../config/voces';
+import { db } from '@/db/db';
+import type { VozId } from '@/types';
+import { THEMES_CONFIG } from '@/config/themes';
+import { VOCES_CONFIG, VOZ_POR_DEFECTO } from '@/config/voces';
 import { formatearFecha } from './format';
 import { useListaAlumnos, useResumen } from './useResumen';
 import { ProgresoPorCuento, RegistroLista, StatsGrid } from './widgets';

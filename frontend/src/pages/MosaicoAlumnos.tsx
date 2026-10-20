@@ -1,9 +1,10 @@
 import React from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Sparkles } from 'lucide-react';
-import { db, type Alumno } from '../db/db';
-import { MainLayout } from '../layouts/MainLayout';
-import { useAuthStore } from '../store/useAuthStore';
+import { db } from '@/db/db';
+import type { Alumno } from '@/types';
+import { MainLayout } from '@/layouts/MainLayout';
+import { useAuthStore } from '@/store/useAuthStore';
 
 export interface MosaicoAlumnosProps {
   onSelectStudent?: (studentId: string) => void;

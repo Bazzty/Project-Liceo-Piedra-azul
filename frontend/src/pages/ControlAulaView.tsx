@@ -1,9 +1,10 @@
 import React from 'react';
 import { ArrowLeft, Play, Square, Users, CheckCircle, ShieldCheck } from 'lucide-react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { MainLayout } from '../layouts/MainLayout';
-import { useAuthStore } from '../store/useAuthStore';
-import { db, type Alumno } from '../db/db';
+import { MainLayout } from '@/layouts/MainLayout';
+import { useAuthStore } from '@/store/useAuthStore';
+import { db } from '@/db/db';
+import type { Alumno } from '@/types';
 
 export const ControlAulaView: React.FC = () => {
   const { setVistaInicio1, isClassroomSessionActive, activarSesionAula, desactivarSesionAula } = useAuthStore();

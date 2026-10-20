@@ -1,6 +1,6 @@
 import React from 'react';
 import { PictogramaCard } from './PictogramaCard';
-import type { CuentoPalabra } from '../../db/db';
+import type { CuentoPalabra } from '@/types';
 
 export interface LectorDualViewProps {
   palabras: CuentoPalabra[];

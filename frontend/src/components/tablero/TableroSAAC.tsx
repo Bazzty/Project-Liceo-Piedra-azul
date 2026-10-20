@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Volume2, Trash2 } from 'lucide-react';
-import { db, type Pictograma } from '../../db/db';
-import { usePlayerStore } from '../../store/usePlayerStore';
-import { resolverYGuardarPictograma } from '../../services/arasaac';
+import { db } from '@/db/db';
+import type { Pictograma } from '@/types';
+import { usePlayerStore } from '@/store/usePlayerStore';
+import { resolverYGuardarPictograma } from '@/services/arasaac';
 
 interface ItemTableroProps {
 	pic: Pictograma;

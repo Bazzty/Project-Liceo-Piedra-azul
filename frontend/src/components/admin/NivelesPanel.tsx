@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { ArrowLeft, ChevronRight, Pencil, Plus, Trash2, Upload } from 'lucide-react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { db, type Cuento, type Nivel } from '../../db/db';
+import { db } from '@/db/db';
+import type { Cuento, Nivel } from '@/types';
 import { CuentoForm } from './CuentoForm';
 import { PictoImg } from './widgets';
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Heart, Smile, Users, Activity, Package } from 'lucide-react';
-import { useSAACStore, type SAACCategoria } from '../../store/useSAACStore';
+import { useSAACStore, type SAACCategoria } from '@/store/useSAACStore';
 
 interface CategoriaOption {
   id: SAACCategoria;

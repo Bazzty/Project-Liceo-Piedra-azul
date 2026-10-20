@@ -1,7 +1,7 @@
 import React from 'react';
 import { ArrowLeft } from 'lucide-react';
-import { MainLayout } from '../layouts/MainLayout';
-import { CharacterGuide } from '../components/common/CharacterGuide';
+import { MainLayout } from '@/layouts/MainLayout';
+import { CharacterGuide } from '@/components/common/CharacterGuide';
 
 export interface NivelesViewProps {
   onSelectNivel: (nivelId: string) => void;

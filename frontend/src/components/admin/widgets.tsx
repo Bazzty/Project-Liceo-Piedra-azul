@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Home, School } from 'lucide-react';
-import type { Pictograma } from '../../db/db';
+import type { Pictograma } from '@/types';
 import { formatearFecha } from './format';
 import type { Resumen } from './useResumen';
 

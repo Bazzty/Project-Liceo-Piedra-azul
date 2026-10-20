@@ -1,4 +1,5 @@
-import { db, type Cuento } from './db';
+import { db } from './db';
+import type { Cuento } from '@/types';
 
 // ---------------------------------------------------------------------------
 // DATOS SIMULADOS PARA EL PANEL DOCENTE

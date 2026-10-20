@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { db, type CuentoPalabra } from '../../db/db';
-import { usePlayerStore } from '../../store/usePlayerStore';
-import { resolverYGuardarPictograma } from '../../services/arasaac';
+import { db } from '@/db/db';
+import type { CuentoPalabra } from '@/types';
+import { usePlayerStore } from '@/store/usePlayerStore';
+import { resolverYGuardarPictograma } from '@/services/arasaac';
 
 export interface PictogramaCardProps {
 	palabra: CuentoPalabra;

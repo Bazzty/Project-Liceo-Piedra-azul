@@ -1,4 +1,4 @@
-import type { Cuento, Progreso } from '../../db/db';
+import type { Cuento, Progreso } from '@/types';
 
 /** Quita tildes y pasa a minúsculas (para comparar palabras). */
 export const normalizar = (texto: string): string =>

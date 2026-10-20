@@ -1,6 +1,6 @@
 import React from 'react';
 import { Volume2, Delete, Trash2, MessageSquare } from 'lucide-react';
-import { useSAACStore } from '../../store/useSAACStore';
+import { useSAACStore } from '@/store/useSAACStore';
 
 export const SentenceBuilderBar: React.FC = () => {
   const { fraseSecuencia, eliminarUltimoPictograma, limpiarFrase, isReadingSentence, setIsReadingSentence } = useSAACStore();

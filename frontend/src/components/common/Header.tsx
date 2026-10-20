@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { MessageSquare, Settings, User as UserIcon, Sparkles } from 'lucide-react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Modal } from './Modal';
-import { TableroSAAC } from '../tablero/TableroSAAC';
-import { useAuthStore } from '../../store/useAuthStore';
-import { useThemeStore, type ThemeId } from '../../store/useThemeStore';
-import { THEMES_CONFIG } from '../../config/themes';
-import { db } from '../../db/db';
+import { TableroSAAC } from '@/components/tablero/TableroSAAC';
+import { useAuthStore } from '@/store/useAuthStore';
+import { useThemeStore, type ThemeId } from '@/store/useThemeStore';
+import { THEMES_CONFIG } from '@/config/themes';
+import { db } from '@/db/db';
 
 export const Header: React.FC = () => {
   const [isOptionsOpen, setIsOptionsOpen] = useState(false);

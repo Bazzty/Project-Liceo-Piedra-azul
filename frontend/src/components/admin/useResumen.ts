@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { db, type Alumno, type Cuento, type Pictograma, type Registro } from '../../db/db';
+import { db } from '@/db/db';
+import type { Alumno, Cuento, Pictograma, Registro } from '@/types';
 import { esDeLosUltimosDias, porcentajeAvance } from './format';
 
 export interface FilaProgreso {

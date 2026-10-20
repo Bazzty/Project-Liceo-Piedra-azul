@@ -1,4 +1,4 @@
-import type { VozId } from '../db/db';
+import type { VozId } from '@/types';
 
 export interface VozConfig {
   id: VozId;

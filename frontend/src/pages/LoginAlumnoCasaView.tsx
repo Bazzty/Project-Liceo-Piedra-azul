@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ArrowLeft, KeyRound, User, Home } from 'lucide-react';
-import { MainLayout } from '../layouts/MainLayout';
-import { useAuthStore } from '../store/useAuthStore';
+import { MainLayout } from '@/layouts/MainLayout';
+import { useAuthStore } from '@/store/useAuthStore';
 
 export const LoginAlumnoCasaView: React.FC = () => {
   const [usuario, setUsuario] = useState('');

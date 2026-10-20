@@ -1,7 +1,7 @@
 import React from 'react';
 import { School, Sparkles, Layout } from 'lucide-react';
-import { MainLayout } from '../layouts/MainLayout';
-import { useAuthStore } from '../store/useAuthStore';
+import { MainLayout } from '@/layouts/MainLayout';
+import { useAuthStore } from '@/store/useAuthStore';
 
 export const SelectorInicioView: React.FC = () => {
   const { setModoInicio, setVistaInicio1 } = useAuthStore();
