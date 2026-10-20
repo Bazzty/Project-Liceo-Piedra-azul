@@ -69,11 +69,13 @@ export default {
         nube: { from: { transform: "translateX(0)" }, to: { transform: "translateX(70px)" } },
         caer: { "0%": { opacity: "1", transform: "translateY(-10vh) rotate(0)" }, "85%": { opacity: "1" }, "100%": { opacity: "0", transform: "translateY(105vh) rotate(360deg)" } },
         rotar: { from: { transform: "rotate(0)" }, to: { transform: "rotate(360deg)" } },
+        respiracion: { "0%, 100%": { transform: "scale(0.85)", opacity: "0.8" }, "50%": { transform: "scale(1.15)", opacity: "1" } },
         flotar: { "0%, 100%": { transform: "translateY(0)" }, "50%": { transform: "translateY(-10px)" } },
       },
       animation: {
         fadeIn: "fadeIn 0.2s ease-out",
         flotar: "flotar 6s ease-in-out infinite",
+        respiracion: "respiracion 8s ease-in-out infinite",
         rotar: "rotar 90s linear infinite",
         aparecer: "aparecer 0.5s ease-out backwards",
         respirar: "respirar 4.5s ease-in-out infinite",

@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BookOpen, LogOut, MessageCircle, Palette, Star, Volume2 } from 'lucide-react';
+import { BookOpen, LogOut, MessageCircle, Star, Volume2 } from 'lucide-react';
 import { useAlumno, useProgresosDeAlumno } from '@/api';
+import { sonarToque } from '@/shared/audio/sonidos';
+import type { PasoAgenda } from '@/shared/store/useAjustesStore';
 import { ROUTES } from '@/app/routes';
 import { useAuthStore } from '@/features/acceso/useAuthStore';
 import { TableroSAAC } from '@/features/tablero/components/TableroSAAC';
-import { DecoracionJardin } from '@/shared/components/DecoracionJardin';
-import { FondoPaisaje } from '@/shared/components/FondoPaisaje';
+import { AgendaVisual } from '@/shared/components/AgendaVisual';
+import { LayoutEstudiante } from '@/shared/components/LayoutEstudiante';
 import { OsoBurbuja } from '@/shared/components/OsoBurbuja';
-import { SelectorPaleta } from '@/shared/components/SelectorPaleta';
-import { useAplicarTema } from '@/shared/hooks/useAplicarTema';
 import { useHablar } from '@/shared/hooks/useHablar';
 import { Modal } from '@/shared/ui';
 
@@ -36,7 +36,10 @@ const Globo: React.FC<GloboProps> = ({ orden, estilo, icono, titulo, onClick }) 
       <div className="relative flex flex-col items-center animate-flotar" style={{ animationDelay: `${orden * -2}s`, animationDuration: `${5 + orden}s` }}>
         <button
           type="button"
-          onClick={onClick}
+          onClick={() => {
+            sonarToque();
+            onClick();
+          }}
           className={`group relative overflow-hidden w-[27vw] h-[27vw] max-w-[9.5rem] max-h-[9.5rem] sm:max-w-none sm:max-h-none sm:w-[min(13rem,24vh)] sm:h-[min(13rem,24vh)] sm:portrait:w-[min(27vw,19rem)] sm:portrait:h-[min(27vw,19rem)] lg:w-[min(16rem,27vh)] lg:h-[min(16rem,27vh)] rounded-full flex flex-col items-center justify-center gap-1 sm:gap-2 shadow-card cursor-pointer transition-transform hover:scale-110 active:scale-95 ${fondo}`}
         >
           <span className="absolute top-[11%] left-[17%] w-[26%] h-[15%] rounded-full bg-white/35 -rotate-[35deg]" aria-hidden />
@@ -65,7 +68,6 @@ const Globo: React.FC<GloboProps> = ({ orden, estilo, icono, titulo, onClick }) 
 
 /** Inicio del estudiante: escena de jardín con el osito, globos para elegir y una puerta para salir. */
 export const VistaPrincipal: React.FC = () => {
-  useAplicarTema();
   const navigate = useNavigate();
   const hablar = useHablar();
   const { activeStudentId, logout } = useAuthStore();
@@ -73,7 +75,6 @@ export const VistaPrincipal: React.FC = () => {
   const progresos = useProgresosDeAlumno(activeStudentId);
   const [hablarAbierto, setHablarAbierto] = useState(false);
   const [estrellasAbierto, setEstrellasAbierto] = useState(false);
-  const [paletaAbierta, setPaletaAbierta] = useState(false);
 
   const nombre = alumno?.nombre ?? 'amigo';
   const leidos = (progresos ?? []).filter((p) => p.completado).length;
@@ -84,32 +85,15 @@ export const VistaPrincipal: React.FC = () => {
     navigate(ROUTES.inicio);
   };
 
+  const irAPaso = (paso: PasoAgenda) => {
+    sonarToque();
+    if (paso === 'leer') navigate(ROUTES.aprender);
+    else if (paso === 'hablar') setHablarAbierto(true);
+    else setEstrellasAbierto(true);
+  };
+
   return (
-    <div className="relative overflow-hidden min-h-screen bg-app text-primary flex flex-col">
-      <FondoPaisaje />
-      <DecoracionJardin />
-
-      <header className="relative bg-surface/95 border-b-2 border-borderCustom px-4 sm:px-8 py-3 flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          {alumno?.avatarUrl ? (
-            <img src={alumno.avatarUrl} alt="" className="w-14 h-14 rounded-full object-cover border-[3px] border-brand" />
-          ) : (
-            <span className="w-14 h-14 rounded-full bg-accent border-[3px] border-brand flex items-center justify-center text-2xl font-black text-onAccent" aria-hidden>
-              {nombre.charAt(0).toUpperCase()}
-            </span>
-          )}
-          <p className="text-2xl sm:text-3xl font-black">{nombre}</p>
-        </div>
-        <button
-          type="button"
-          onClick={() => setPaletaAbierta(true)}
-          className="inline-flex items-center justify-center min-h-12 min-w-12 rounded-control border-2 border-borderStrong bg-surface text-primary cursor-pointer hover:border-brand"
-        >
-          <Palette className="w-5 h-5" aria-hidden />
-          <span className="sr-only">Colores</span>
-        </button>
-      </header>
-
+    <LayoutEstudiante fondo="jardin" centro={<AgendaVisual onElegir={irAPaso} />}>
       <main className="relative flex-1 w-full max-w-6xl mx-auto px-3 sm:px-6 pt-4 sm:pt-6 pb-6 flex flex-col items-center justify-between sm:portrait:justify-center sm:portrait:gap-[7vh] gap-4">
         <h1 className="sr-only">Menú de {nombre}</h1>
 
@@ -169,7 +153,6 @@ export const VistaPrincipal: React.FC = () => {
         </div>
       </Modal>
 
-      <SelectorPaleta isOpen={paletaAbierta} onClose={() => setPaletaAbierta(false)} />
-    </div>
+    </LayoutEstudiante>
   );
 };

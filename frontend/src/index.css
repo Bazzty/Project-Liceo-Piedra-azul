@@ -45,6 +45,14 @@
     box-shadow: 0 0 0 6px var(--bg-card);
   }
 
+  /* Ajuste del propio niño/docente: pantalla quieta */
+  html[data-motion='off'] *,
+  html[data-motion='off'] *::before,
+  html[data-motion='off'] *::after {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     *,
     *::before,

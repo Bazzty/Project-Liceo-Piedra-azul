@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { useAjustesStore } from '@/shared/store/useAjustesStore';
 
 export interface PlayerState {
   currentAudioUrl: string | null;
@@ -19,6 +20,7 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
   selectedVoice: 'catalina-cl',
   activeAudioInstance: null,
   playAudio: (audioUrl: string) => {
+    if (!useAjustesStore.getState().sonido) return;
     const { activeAudioInstance, playbackRate } = get();
     // 1. Detener y limpiar cualquier instancia de audio que esté sonando previamente
     if (activeAudioInstance) {
@@ -27,7 +29,7 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
     }
     // 2. Crear la nueva instancia de audio nativa
     const newAudio = new Audio(audioUrl);
-    newAudio.playbackRate = playbackRate;
+    newAudio.playbackRate = playbackRate * (useAjustesStore.getState().vozLenta ? 0.8 : 1);
     // 3. Configurar eventos para actualizar el estado del store de Zustand
     newAudio.onplay = () => {
       set({ isPlaying: true, currentAudioUrl: audioUrl });
