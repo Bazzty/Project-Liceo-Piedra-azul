@@ -1,4 +1,5 @@
 import React from 'react';
+import { Button } from '@/shared/ui';
 import { ArrowLeft } from 'lucide-react';
 import { MainLayout } from '@/shared/layouts/MainLayout';
 import { CharacterGuide } from '@/shared/components/CharacterGuide';
@@ -17,13 +18,10 @@ export const NivelesView: React.FC = () => {
         
         {/* Encabezado Fijo con Botón Volver */}
         <div className="flex items-center justify-between bg-surface/90 backdrop-blur-md p-4 rounded-3xl shadow-md border-2 border-borderCustom shrink-0">
-          <button
-            onClick={onBack}
-            className="flex items-center gap-2 px-4 py-2 bg-app hover:bg-borderCustom/40 text-primary font-bold rounded-2xl border-2 border-borderCustom transition-colors cursor-pointer"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            <span>VOLVER</span>
-          </button>
+          <Button variant="secondary" size="sm" onClick={onBack}>
+          	<ArrowLeft className="w-4 h-4" />
+          	VOLVER
+          </Button>
           
           <h2 className="text-xl sm:text-2xl font-extrabold text-primary tracking-wide">
             NIVELES DE LECTURA

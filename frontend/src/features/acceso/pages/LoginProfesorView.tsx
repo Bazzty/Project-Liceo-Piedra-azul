@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Button } from '@/shared/ui';
 import { ArrowLeft, KeyRound, UserCheck, ShieldCheck } from 'lucide-react';
 import { MainLayout } from '@/shared/layouts/MainLayout';
 import { useAuthStore } from '@/features/acceso/useAuthStore';
@@ -27,13 +28,10 @@ export const LoginProfesorView: React.FC = () => {
     <MainLayout allowScroll={true}>
       <div className="flex flex-col gap-6 w-full max-w-md mx-auto py-12 px-4 justify-center h-full">
         
-        <button
-          onClick={() => navigate(ROUTES.portal)}
-          className="flex items-center gap-2 bg-surface px-4 py-2 rounded-2xl border-2 border-borderCustom font-black text-primary hover:border-brand transition-all active:scale-95 self-start cursor-pointer shadow"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>VOLVER AL PORTAL</span>
-        </button>
+        <Button variant="secondary" size="sm" onClick={() => navigate(ROUTES.portal)} className="self-start">
+        	<ArrowLeft className="w-4 h-4" />
+        	VOLVER AL PORTAL
+        </Button>
 
         <div className="bg-surface rounded-3xl border-4 border-borderCustom p-8 shadow-2xl flex flex-col gap-6">
           

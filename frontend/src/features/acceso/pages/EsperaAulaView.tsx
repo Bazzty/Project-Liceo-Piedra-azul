@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { Button } from '@/shared/ui';
 import { ArrowLeft, Clock } from 'lucide-react';
 import { MainLayout } from '@/shared/layouts/MainLayout';
 import { CharacterGuide } from '@/shared/components/CharacterGuide';
@@ -32,13 +33,10 @@ export const EsperaAulaView: React.FC = () => {
 	return (
 		<MainLayout>
 			<div className="flex flex-col items-center justify-center min-h-[85vh] p-4 gap-6">
-				<button
-					onClick={() => navigate(ROUTES.portal)}
-					className="flex items-center gap-2 bg-surface px-4 py-2 rounded-2xl border-2 border-borderCustom font-black text-primary hover:border-brand transition-all active:scale-95 self-start cursor-pointer shadow"
-				>
-					<ArrowLeft size={20} />
+				<Button variant="secondary" size="sm" onClick={() => navigate(ROUTES.portal)} className="self-start">
+					<ArrowLeft className="w-4 h-4" />
 					VOLVER
-				</button>
+				</Button>
 
 				<div className="flex flex-col items-center justify-center gap-6 max-w-md w-full bg-surface border-4 border-borderCustom rounded-3xl p-6 sm:p-8 shadow-xl text-center">
 					<div className="p-4 bg-brand/10 border-4 border-brand rounded-full animate-pulse text-brand">

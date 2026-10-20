@@ -1,4 +1,5 @@
 import React from 'react';
+import { Button } from '@/shared/ui';
 import { School, UserCheck, Home, ArrowLeft } from 'lucide-react';
 import { MainLayout } from '@/shared/layouts/MainLayout';
 import { useAuthStore } from '@/features/acceso/useAuthStore';
@@ -32,13 +33,10 @@ export const PortalInicioView: React.FC = () => {
       <div className="flex flex-col gap-6 w-full max-w-4xl mx-auto py-12 px-4 justify-center items-center h-full">
         
         {/* Encabezado */}
-        <button
-          onClick={() => navigate(ROUTES.selector)}
-          className="flex items-center gap-2 bg-surface px-4 py-2 rounded-2xl border-2 border-borderCustom font-black text-primary hover:border-brand transition-all active:scale-95 cursor-pointer shadow"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>CAMBIAR MODO DEMO</span>
-        </button>
+        <Button variant="secondary" size="sm" onClick={() => navigate(ROUTES.selector)}>
+        	<ArrowLeft className="w-4 h-4" />
+        	CAMBIAR MODO DEMO
+        </Button>
 
         {/* Título */}
         <h2 className="text-3xl font-black text-primary tracking-tight text-center">

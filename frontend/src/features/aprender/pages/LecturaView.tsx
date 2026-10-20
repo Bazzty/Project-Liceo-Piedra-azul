@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Button } from '@/shared/ui';
 import { ArrowLeft, ChevronLeft, ChevronRight, Volume2, CheckCircle2 } from 'lucide-react';
 import { MainLayout } from '@/shared/layouts/MainLayout';
 import { PictogramaCard } from '@/features/aprender/components/PictogramaCard';
@@ -112,13 +113,10 @@ export const LecturaView: React.FC = () => {
 			<div className="flex flex-col items-center justify-between min-h-[85vh] p-4 gap-6 max-w-4xl mx-auto w-full">
 				{/* Barra Superior de Navegación */}
 				<div className="flex items-center justify-between w-full bg-surface border-4 border-borderCustom rounded-3xl p-4 shadow-md">
-					<button
-						onClick={handleVolver}
-						className="flex items-center gap-2 bg-app px-4 py-2 rounded-2xl border-2 border-borderCustom font-black text-primary hover:border-brand transition-all active:scale-95 cursor-pointer shadow-sm"
-					>
-						<ArrowLeft size={20} />
+					<Button variant="secondary" size="sm" onClick={handleVolver}>
+						<ArrowLeft className="w-4 h-4" />
 						SALIR
-					</button>
+					</Button>
 					<h2 className="text-lg sm:text-xl font-black text-primary text-center px-2">
 						{cuento.titulo}
 					</h2>

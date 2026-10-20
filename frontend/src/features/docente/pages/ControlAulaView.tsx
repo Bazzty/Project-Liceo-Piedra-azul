@@ -1,4 +1,5 @@
 import React from 'react';
+import { Button } from '@/shared/ui';
 import { ArrowLeft, Play, Square, Users, CheckCircle, ShieldCheck } from 'lucide-react';
 import { MainLayout } from '@/shared/layouts/MainLayout';
 import { useAuthStore } from '@/features/acceso/useAuthStore';
@@ -18,13 +19,10 @@ export const ControlAulaView: React.FC = () => {
         
         {/* Encabezado */}
         <div className="flex flex-col sm:flex-row items-center justify-between bg-surface/90 backdrop-blur-md p-4 sm:p-6 rounded-3xl shadow-md border-2 border-borderCustom gap-4">
-          <button
-            onClick={() => navigate(ROUTES.portal)}
-            className="flex items-center gap-2 bg-app px-4 py-2.5 rounded-2xl border-2 border-borderCustom font-black text-primary hover:border-brand transition-all active:scale-95 cursor-pointer text-sm shadow-sm"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>VOLVER AL PORTAL</span>
-          </button>
+          <Button variant="secondary" size="sm" onClick={() => navigate(ROUTES.portal)}>
+          	<ArrowLeft className="w-4 h-4" />
+          	VOLVER AL PORTAL
+          </Button>
           
           <div className="text-center sm:text-left">
             <span className="text-xs font-bold uppercase tracking-wider text-statusInfo">PANEL DOCENTE DE AULA</span>

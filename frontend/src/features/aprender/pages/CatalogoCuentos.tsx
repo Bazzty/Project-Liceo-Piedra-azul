@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Button } from '@/shared/ui';
 import { ArrowLeft, BookOpen, Sparkles, Star } from 'lucide-react';
 import { MainLayout } from '@/shared/layouts/MainLayout';
 import { CharacterGuide } from '@/shared/components/CharacterGuide';
@@ -72,13 +73,10 @@ export const CatalogoCuentos: React.FC = () => {
 			<div className="flex flex-col gap-6 max-w-5xl mx-auto w-full p-4 min-h-[85vh]">
 				{/* Encabezado Fijo */}
 				<div className="flex items-center justify-between w-full bg-surface border-4 border-borderCustom rounded-3xl p-4 shadow-md">
-					<button
-						onClick={onBack}
-						className="flex items-center gap-2 bg-app px-4 py-2 rounded-2xl border-2 border-borderCustom font-black text-primary hover:border-brand transition-all active:scale-95 cursor-pointer shadow-sm"
-					>
-						<ArrowLeft size={20} />
+					<Button variant="secondary" size="sm" onClick={onBack}>
+						<ArrowLeft className="w-4 h-4" />
 						VOLVER
-					</button>
+					</Button>
 
 					<div className="text-center">
 						<span className="text-xs font-black text-brand tracking-wider uppercase">
