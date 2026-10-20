@@ -5,7 +5,7 @@ import { ResumenCurso } from '@/features/docente/components/ResumenCurso';
 import { AlumnosPanel } from '@/features/docente/components/AlumnosPanel';
 import { NivelesPanel } from '@/features/docente/components/NivelesPanel';
 import { useAuthStore } from '@/features/acceso/useAuthStore';
-import { resetDemoData } from '@/db/seed';
+import { resetDemoData } from '@/mocks/seed';
 
 /** 9. Vista de profesor: panel principal, alumnos y gestión de niveles/cuentos. */
 export const AdminDashboard: React.FC = () => {
