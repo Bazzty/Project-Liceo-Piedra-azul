@@ -35,7 +35,7 @@ const PortadaCuento: React.FC<{ cuento: Cuento }> = ({ cuento }) => {
 	};
 
 	return (
-		<div className="w-full h-36 flex items-center justify-center bg-app rounded-2xl overflow-hidden p-2">
+		<div className="portada-suave w-full h-40 flex items-center justify-center rounded-2xl overflow-hidden p-3">
 			{imgSrc && !hasError ? (
 				<img
 					src={imgSrc}
@@ -69,7 +69,7 @@ export const CatalogoCuentos: React.FC = () => {
 	};
 
 	return (
-		<MainLayout>
+		<MainLayout asoma={{ lado: 'izq', pos: 62, mensaje: '¡Elige un cuento!' }}>
 			<div className="flex flex-col gap-6 max-w-5xl mx-auto w-full p-4 min-h-[85vh]">
 				{/* Encabezado Fijo */}
 				<div className="flex items-center justify-between w-full bg-surface border-4 border-borderCustom rounded-3xl p-4 shadow-md">
@@ -112,11 +112,12 @@ export const CatalogoCuentos: React.FC = () => {
 						</div>
 					) : (
 						<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-							{cuentos.map((cuento: Cuento) => {
+							{cuentos.map((cuento: Cuento, indice: number) => {
 								const completado = cuentoEstaCompletado(cuento.id);
 								return (
 									<div
 										key={cuento.id}
+										style={{ animationDelay: `${indice * 80}ms` }}
 										role="button"
 										tabIndex={0}
 										onClick={() => cuento.id && onSelectCuento(cuento.id)}
@@ -126,7 +127,7 @@ export const CatalogoCuentos: React.FC = () => {
 												onSelectCuento(cuento.id);
 											}
 										}}
-										className="bg-surface rounded-3xl border-4 border-borderCustom p-4 shadow-xl hover:border-brand transition-all active:scale-98 cursor-pointer flex flex-col justify-between gap-3 group relative overflow-hidden"
+										className="entra-suave tarjeta-3d bg-surface rounded-[2rem] border-4 border-borderCustom p-4 cursor-pointer flex flex-col justify-between gap-3 group relative overflow-hidden"
 									>
 										{/* Indicador ⭐ COMPLETADO */}
 										{completado && (

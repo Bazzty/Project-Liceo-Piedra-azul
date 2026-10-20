@@ -1,0 +1,125 @@
+/* ==========================================================
+   Diseño suave para niños: fondos con color, tarjetas "gorditas"
+   con sombra sólida, entradas escalonadas y puntitos de avance.
+   Todo se apoya en las variables del tema (calma-azul, verde-bosque…)
+   y se apaga solo en "alto contraste" y con "menos movimiento".
+   ========================================================== */
+
+/* Fuente redondeada del sistema (sin descargar nada de internet) */
+:root {
+	--sans: ui-rounded, 'SF Pro Rounded', 'Nunito', 'Quicksand', 'Segoe UI', system-ui, sans-serif;
+	--heading: var(--sans);
+}
+
+/* ---------- Fondo: manchas de color que flotan despacito ---------- */
+.fondo-suave {
+	background-image:
+		radial-gradient(60rem 36rem at 8% -8%, color-mix(in srgb, var(--brand-primary) 13%, transparent), transparent 62%),
+		radial-gradient(46rem 30rem at 100% 108%, color-mix(in srgb, var(--brand-primary) 10%, transparent), transparent 60%);
+	background-attachment: fixed;
+}
+.fondo-suave::before,
+.fondo-suave::after {
+	content: '';
+	position: fixed;
+	z-index: 0;
+	border-radius: 9999px;
+	pointer-events: none;
+	filter: blur(28px);
+	opacity: 0.5;
+}
+.fondo-suave::before {
+	width: 18rem; height: 18rem; top: 14%; right: -5rem;
+	background: color-mix(in srgb, var(--brand-primary) 14%, transparent);
+	animation: deriva 22s ease-in-out infinite alternate;
+}
+.fondo-suave::after {
+	width: 14rem; height: 14rem; bottom: 18%; left: -4rem;
+	background: color-mix(in srgb, var(--brand-primary) 11%, transparent);
+	animation: deriva 28s ease-in-out infinite alternate-reverse;
+}
+@keyframes deriva {
+	from { transform: translate(0, 0) scale(1); }
+	to   { transform: translate(-3rem, 2.5rem) scale(1.18); }
+}
+
+/* ---------- Tarjetas "gorditas": borde + sombra sólida que se hunde al tocar ---------- */
+.tarjeta-3d {
+	box-shadow: 0 6px 0 0 var(--border-color), 0 14px 24px -12px rgba(15, 23, 42, 0.25);
+	transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.tarjeta-3d:hover { transform: translateY(-3px); box-shadow: 0 9px 0 0 var(--brand-primary), 0 18px 28px -12px rgba(15, 23, 42, 0.28); border-color: var(--brand-primary); }
+.tarjeta-3d:active { transform: translateY(4px); box-shadow: 0 2px 0 0 var(--border-color); }
+
+/* Palabra que se está leyendo: brilla y late */
+.tarjeta-leyendo {
+	border-color: var(--brand-primary) !important;
+	box-shadow: 0 6px 0 0 var(--brand-primary), 0 0 0 6px color-mix(in srgb, var(--brand-primary) 22%, transparent) !important;
+	animation: late 0.9s ease-in-out infinite alternate;
+}
+@keyframes late {
+	from { transform: scale(1.04); }
+	to   { transform: scale(1.09) translateY(-2px); }
+}
+
+/* Marco del pictograma con degradado suave */
+.marco-picto {
+	background: linear-gradient(160deg, var(--bg-card) 0%, color-mix(in srgb, var(--brand-primary) 8%, var(--bg-card)) 100%);
+}
+.portada-suave {
+	background:
+		radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--brand-primary) 22%, transparent), transparent 60%),
+		linear-gradient(135deg, color-mix(in srgb, var(--brand-primary) 14%, var(--bg-card)), color-mix(in srgb, var(--brand-primary) 4%, var(--bg-card)));
+}
+
+/* ---------- Entrada escalonada de tarjetas ---------- */
+.entra-suave {
+	opacity: 0;
+	animation: entra-suave 0.5s cubic-bezier(0.34, 1.4, 0.5, 1) forwards;
+}
+@keyframes entra-suave {
+	from { opacity: 0; transform: translateY(14px) scale(0.96); }
+	to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ---------- Puntitos de avance (páginas del cuento) ---------- */
+.puntos-pagina { display: flex; align-items: center; justify-content: center; gap: 0.55rem; }
+.punto-pagina {
+	width: 0.85rem; height: 0.85rem; border-radius: 9999px;
+	background: var(--border-color);
+	border: 2px solid var(--border-color);
+	transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.punto-pagina[data-estado='hecha'] { background: var(--brand-primary); border-color: var(--brand-primary); }
+.punto-pagina[data-estado='actual'] { width: 2.2rem; background: var(--brand-primary); border-color: var(--brand-hover); }
+
+/* ---------- Oración grande bajo los pictogramas ---------- */
+.oracion-lectura {
+	font-size: clamp(1.6rem, 5vw, 2.6rem);
+	font-weight: 900;
+	line-height: 1.35;
+	text-align: center;
+	color: var(--text-primary);
+}
+.oracion-lectura .palabra-oracion {
+	display: inline-block;
+	padding: 0 0.2em;
+	border-radius: 0.6rem;
+	transition: background-color 0.15s, color 0.15s, transform 0.15s;
+}
+.oracion-lectura .palabra-oracion[data-activa='1'] {
+	background: color-mix(in srgb, var(--brand-primary) 24%, transparent);
+	color: var(--brand-primary);
+	transform: scale(1.1) translateY(-2px);
+}
+
+/* ---------- Alto contraste y menos movimiento ---------- */
+html[data-theme='alto-contraste'] .fondo-suave { background-image: none; }
+html[data-theme='alto-contraste'] .fondo-suave::before,
+html[data-theme='alto-contraste'] .fondo-suave::after { display: none; }
+html[data-theme='alto-contraste'] .tarjeta-3d { box-shadow: 0 6px 0 0 var(--border-color); }
+
+@media (prefers-reduced-motion: reduce) {
+	.fondo-suave::before, .fondo-suave::after, .tarjeta-leyendo, .entra-suave { animation: none !important; opacity: 1; }
+	.tarjeta-3d, .punto-pagina { transition: none; }
+}

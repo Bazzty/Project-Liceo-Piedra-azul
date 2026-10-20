@@ -15,7 +15,9 @@ const PALABRAS_CLAVE = [
 	'colegio', 'lápiz', 'libro', 'mesa', 'silla', 'mochila', 'auto', 'azul', 'yo',
 	// Palabras de Actividades (Nivel A - palabras.png)
 	'dado', 'dama', 'dedo', 'lana', 'lila', 'lima', 'lupa', 'masa',
-	'mimi', 'mula', 'pala', 'pelo', 'piso', 'puma', 'sala', 'sapo', 'sopa'
+	'mimi', 'mula', 'pala', 'pelo', 'piso', 'puma', 'sala', 'sapo', 'sopa',
+	// Cuentos de Kinder (El Sapo Pepe, Mimi y la Lana, Mi Día)
+	'saltar', 'tomar', 'gato', 'pan', 'cama', 'abrazar'
 ];
 
 const targetDir = path.join(__dirname, '..', 'public', 'pictogramas', 'arasaac');

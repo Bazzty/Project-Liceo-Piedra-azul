@@ -20,6 +20,7 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
   activeAudioInstance: null,
   playAudio: (audioUrl: string) => {
     const { activeAudioInstance, playbackRate } = get();
+    if (typeof window !== 'undefined') window.speechSynthesis?.cancel(); // evita que se pisen dos voces
     // 1. Detener y limpiar cualquier instancia de audio que esté sonando previamente
     if (activeAudioInstance) {
       activeAudioInstance.pause();
