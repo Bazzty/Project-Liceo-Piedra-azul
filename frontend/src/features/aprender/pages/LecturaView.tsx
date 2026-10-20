@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useLiveQuery } from 'dexie-react-hooks';
 import { ArrowLeft, ChevronLeft, ChevronRight, Volume2, CheckCircle2 } from 'lucide-react';
-import { db } from '@/db/db';
 import { MainLayout } from '@/shared/layouts/MainLayout';
 import { PictogramaCard } from '@/features/aprender/components/PictogramaCard';
 import { CharacterGuide } from '@/shared/components/CharacterGuide';
 import { usePlayerStore } from '@/shared/store/usePlayerStore';
 import { useAuthStore } from '@/features/acceso/useAuthStore';
 import { getPersonajeAudio } from '@/shared/config/audioConfig';
+import { registrarProgreso, useCuento } from '@/api';
 
 export interface LecturaViewProps {
 	cuentoId?: string;
@@ -25,15 +24,7 @@ export const LecturaView: React.FC<LecturaViewProps> = ({
 	const [paginaActual, setPaginaActual] = useState(0);
 	const [actividadCompletada, setActividadCompletada] = useState(false);
 
-	const cuento = useLiveQuery(
-		async () => {
-			if (!cuentoId) {
-				return await db.cuentos.toCollection().first();
-			}
-			return await db.cuentos.get(cuentoId);
-		},
-		[cuentoId]
-	);
+	const cuento = useCuento(cuentoId);
 
 	const handleVolver = () => {
 		if (onVolver) {
@@ -81,7 +72,7 @@ export const LecturaView: React.FC<LecturaViewProps> = ({
 		if (esUltimaPagina) {
 			setActividadCompletada(true);
 			if (activeStudentId && cuento.id) {
-				await db.progresos.add({
+				await registrarProgreso({
 					alumnoId: activeStudentId,
 					cuentoId: cuento.id,
 					completado: true,

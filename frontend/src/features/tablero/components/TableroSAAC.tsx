@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import { useLiveQuery } from 'dexie-react-hooks';
 import { Volume2, Trash2 } from 'lucide-react';
-import { db } from '@/db/db';
 import type { Pictograma } from '@/types';
 import { usePlayerStore } from '@/shared/store/usePlayerStore';
 import { resolverYGuardarPictograma } from '@/features/tablero/arasaac';
+import { usePictogramasPorCategoria } from '@/api';
 
 interface ItemTableroProps {
 	pic: Pictograma;
@@ -61,12 +60,7 @@ export const TableroSAAC: React.FC = () => {
 	const [categoriaActiva, setCategoriaActiva] = useState('todos');
 	const [fraseConstruida, setFraseConstruida] = useState<Pictograma[]>([]);
 
-	const pictogramas = useLiveQuery(async () => {
-		if (categoriaActiva === 'todos') {
-			return await db.pictogramas.toArray();
-		}
-		return await db.pictogramas.where('categoria').equals(categoriaActiva).toArray();
-	}, [categoriaActiva]);
+	const pictogramas = usePictogramasPorCategoria(categoriaActiva as Pictograma['categoria'] | 'todos');
 
 	const handleSelectPictograma = (pic: Pictograma) => {
 		setFraseConstruida((prev) => [...prev, pic]);

@@ -1,14 +1,13 @@
 import React from 'react';
 import { ArrowLeft, Play, Square, Users, CheckCircle, ShieldCheck } from 'lucide-react';
-import { useLiveQuery } from 'dexie-react-hooks';
 import { MainLayout } from '@/shared/layouts/MainLayout';
 import { useAuthStore } from '@/features/acceso/useAuthStore';
-import { db } from '@/db/db';
 import type { Alumno } from '@/types';
+import { useAlumnos } from '@/api';
 
 export const ControlAulaView: React.FC = () => {
   const { setVistaInicio1, isClassroomSessionActive, activarSesionAula, desactivarSesionAula } = useAuthStore();
-  const alumnos = useLiveQuery(() => db.alumnos.toArray(), []);
+  const alumnos = useAlumnos();
 
   return (
     <MainLayout allowScroll={true}>

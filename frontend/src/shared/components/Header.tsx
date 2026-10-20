@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
 import { MessageSquare, Settings, User as UserIcon, Sparkles } from 'lucide-react';
-import { useLiveQuery } from 'dexie-react-hooks';
 import { Modal } from '@/shared/ui';
 import { TableroSAAC } from '@/features/tablero/components/TableroSAAC';
 import { useAuthStore } from '@/features/acceso/useAuthStore';
 import { useThemeStore, type ThemeId } from '@/shared/store/useThemeStore';
 import { THEMES_CONFIG } from '@/shared/config/themes';
-import { db } from '@/db/db';
+import { useAlumno } from '@/api';
 
 export const Header: React.FC = () => {
   const [isOptionsOpen, setIsOptionsOpen] = useState(false);
@@ -16,13 +15,7 @@ export const Header: React.FC = () => {
   const { currentTheme, setTheme, showCharacterBackground, toggleCharacterBackground } = useThemeStore();
 
   // Consulta reactiva del alumno activo en IndexedDB
-  const alumnoActivo = useLiveQuery(
-    async () => {
-      if (!activeStudentId) return null;
-      return await db.alumnos.get(activeStudentId);
-    },
-    [activeStudentId]
-  );
+  const alumnoActivo = useAlumno(activeStudentId);
 
   return (
     <>

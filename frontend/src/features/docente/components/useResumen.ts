@@ -1,8 +1,7 @@
 import { useMemo } from 'react';
-import { useLiveQuery } from 'dexie-react-hooks';
-import { db } from '@/db/db';
 import type { Alumno, Cuento, Pictograma, Registro } from '@/types';
 import { esDeLosUltimosDias, porcentajeAvance } from '@/features/docente/components/format';
+import { useAlumnos, useCuentos, usePictogramas, useProgresos, useRegistros } from '@/api';
 
 export interface FilaProgreso {
   cuento: Cuento;
@@ -29,11 +28,11 @@ export interface Resumen {
  * Devuelve `null` mientras carga.
  */
 export function useResumen(alumnoId?: string): Resumen | null {
-  const alumnos = useLiveQuery(() => db.alumnos.toArray(), []);
-  const cuentos = useLiveQuery(() => db.cuentos.toArray(), []);
-  const progresos = useLiveQuery(() => db.progresos.toArray(), []);
-  const registros = useLiveQuery(() => db.registros.toArray(), []);
-  const pictogramas = useLiveQuery(() => db.pictogramas.toArray(), []);
+  const alumnos = useAlumnos();
+  const cuentos = useCuentos();
+  const progresos = useProgresos();
+  const registros = useRegistros();
+  const pictogramas = usePictogramas();
 
   return useMemo(() => {
     if (!alumnos || !cuentos || !progresos || !registros || !pictogramas) return null;
@@ -114,10 +113,10 @@ export interface FilaAlumno {
 
 /** Una fila por alumno para la lista del panel docente (reactivo). */
 export function useListaAlumnos(): FilaAlumno[] | null {
-  const alumnos = useLiveQuery(() => db.alumnos.toArray(), []);
-  const cuentos = useLiveQuery(() => db.cuentos.toArray(), []);
-  const progresos = useLiveQuery(() => db.progresos.toArray(), []);
-  const registros = useLiveQuery(() => db.registros.toArray(), []);
+  const alumnos = useAlumnos();
+  const cuentos = useCuentos();
+  const progresos = useProgresos();
+  const registros = useRegistros();
 
   return useMemo(() => {
     if (!alumnos || !cuentos || !progresos || !registros) return null;

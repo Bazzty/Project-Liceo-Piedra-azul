@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useLiveQuery } from 'dexie-react-hooks';
-import { db } from '@/db/db';
 import type { CuentoPalabra } from '@/types';
 import { usePlayerStore } from '@/shared/store/usePlayerStore';
 import { resolverYGuardarPictograma } from '@/features/tablero/arasaac';
+import { usePictogramaPorPalabra } from '@/api';
 
 export interface PictogramaCardProps {
 	palabra: CuentoPalabra;
@@ -23,14 +22,7 @@ export const PictogramaCard: React.FC<PictogramaCardProps> = ({
 	const [hasError, setHasError] = useState(false);
 
 	// Búsqueda en IndexedDB si la palabra del cuento no trae pictogramaUrl explícito
-	const picEnDb = useLiveQuery(
-		async () => {
-			if (palabra.pictogramaUrl) return null;
-			const cleanText = palabra.texto.toLowerCase().trim();
-			return await db.pictogramas.where('palabra').equalsIgnoreCase(cleanText).first();
-		},
-		[palabra.texto, palabra.pictogramaUrl]
-	);
+	const picEnDb = usePictogramaPorPalabra(palabra.texto, !palabra.pictogramaUrl);
 
 	const initialImageUrl = palabra.pictogramaUrl || picEnDb?.imagenUrl;
 

@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, BookOpen, Sparkles, Star } from 'lucide-react';
-import { useLiveQuery } from 'dexie-react-hooks';
 import { MainLayout } from '@/shared/layouts/MainLayout';
 import { CharacterGuide } from '@/shared/components/CharacterGuide';
 import { useAuthStore } from '@/features/acceso/useAuthStore';
-import { db } from '@/db/db';
 import type { Cuento, Progreso } from '@/types';
 import { resolverYGuardarPictograma } from '@/features/tablero/arasaac';
+import { useCuentosDeNivel, useNivel, useProgresosDeAlumno } from '@/api';
 
 // Subcomponente interno para la portada de la tarjeta con fallback a ARASAAC
 const PortadaCuento: React.FC<{ cuento: Cuento }> = ({ cuento }) => {
@@ -62,18 +61,9 @@ export const CatalogoCuentos: React.FC<CatalogoCuentosProps> = ({
 	onBack,
 }) => {
 	const { activeStudentId } = useAuthStore();
-	const nivel = useLiveQuery(() => db.niveles.get(nivelId), [nivelId]);
-	const cuentos = useLiveQuery(
-		() => db.cuentos.where('nivelId').equals(nivelId).toArray(),
-		[nivelId]
-	);
-	const progresos = useLiveQuery(
-		async () => {
-			if (!activeStudentId) return [];
-			return await db.progresos.where('alumnoId').equals(activeStudentId).toArray();
-		},
-		[activeStudentId]
-	);
+	const nivel = useNivel(nivelId);
+	const cuentos = useCuentosDeNivel(nivelId);
+	const progresos = useProgresosDeAlumno(activeStudentId);
 
 	const cuentoEstaCompletado = (cuentoId?: string) => {
 		if (!cuentoId || !progresos) return false;

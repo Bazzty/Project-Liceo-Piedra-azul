@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { ArrowLeft, ChevronRight, Pencil, Plus, Trash2, Upload } from 'lucide-react';
-import { useLiveQuery } from 'dexie-react-hooks';
-import { db } from '@/db/db';
 import type { Cuento, Nivel } from '@/types';
 import { CuentoForm } from '@/features/docente/components/CuentoForm';
 import { PictoImg } from '@/features/docente/components/widgets';
+import { actualizarNivel, crearNivel, eliminarCuento, eliminarNivel as eliminarNivelConCuentos, useCuentos, useCuentosDeNivel, useNiveles } from '@/api';
 
 const campo =
   'w-full bg-surface border-2 border-borderCustom rounded-2xl px-4 py-2.5 text-sm font-bold text-primary outline-none focus:border-brand';
@@ -41,9 +40,9 @@ const NivelForm: React.FC<{ nivel?: Nivel; niveles: Nivel[]; onListo: () => void
     if (niveles.some((n) => n.codigo === cod && n.id !== nivel?.id)) return setError(`Ya existe el nivel ${cod}.`);
 
     if (nivel) {
-      await db.niveles.update(nivel.id, { codigo: cod, nombre: nombre.trim(), descripcion: descripcion.trim() });
+      await actualizarNivel(nivel.id, { codigo: cod, nombre: nombre.trim(), descripcion: descripcion.trim() });
     } else {
-      await db.niveles.add({
+      await crearNivel({
         id: `nivel-${cod.toLowerCase()}`,
         codigo: cod,
         nombre: nombre.trim(),
@@ -77,15 +76,12 @@ const NivelForm: React.FC<{ nivel?: Nivel; niveles: Nivel[]; onListo: () => void
 
 /** Cuentos de un nivel: listar, subir, editar y eliminar. */
 const CuentosDeNivel: React.FC<{ nivel: Nivel; onVolver: () => void }> = ({ nivel, onVolver }) => {
-  const cuentos = useLiveQuery(() => db.cuentos.where('nivelId').equals(nivel.id).toArray(), [nivel.id]);
+  const cuentos = useCuentosDeNivel(nivel.id);
   const [modo, setModo] = useState<'lista' | 'nuevo' | { editar: Cuento }>('lista');
 
   const eliminar = async (c: Cuento) => {
     if (!c.id || !window.confirm(`¿Eliminar «${c.titulo}»? También se borrará el avance de los alumnos en este cuento.`)) return;
-    await db.transaction('rw', db.cuentos, db.progresos, async () => {
-      await db.cuentos.delete(c.id as string);
-      await db.progresos.where('cuentoId').equals(c.id as string).delete();
-    });
+    await eliminarCuento(c.id);
   };
 
   return (
@@ -173,8 +169,8 @@ const CuentosDeNivel: React.FC<{ nivel: Nivel; onVolver: () => void }> = ({ nive
 
 /** 9d. Gestión de niveles (categorías) y, al entrar a cada una, de sus cuentos. */
 export const NivelesPanel: React.FC = () => {
-  const niveles = useLiveQuery(() => db.niveles.orderBy('orden').toArray(), []);
-  const cuentos = useLiveQuery(() => db.cuentos.toArray(), []);
+  const niveles = useNiveles();
+  const cuentos = useCuentos();
   const [abierto, setAbierto] = useState<string | null>(null);
   const [formulario, setFormulario] = useState<'nuevo' | string | null>(null); // 'nuevo' o id del nivel a editar
 
@@ -189,11 +185,7 @@ export const NivelesPanel: React.FC = () => {
       ? `¿Eliminar el nivel ${n.codigo}? También se eliminarán sus ${ids.length} cuento(s) y el avance asociado.`
       : `¿Eliminar el nivel ${n.codigo}?`;
     if (!window.confirm(aviso)) return;
-    await db.transaction('rw', db.niveles, db.cuentos, db.progresos, async () => {
-      await db.progresos.where('cuentoId').anyOf(ids).delete();
-      await db.cuentos.bulkDelete(ids);
-      await db.niveles.delete(n.id);
-    });
+    await eliminarNivelConCuentos(n.id, ids);
   };
 
   return (

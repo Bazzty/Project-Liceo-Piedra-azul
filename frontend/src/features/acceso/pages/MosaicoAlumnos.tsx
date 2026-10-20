@@ -1,10 +1,9 @@
 import React from 'react';
-import { useLiveQuery } from 'dexie-react-hooks';
 import { Sparkles } from 'lucide-react';
-import { db } from '@/db/db';
 import type { Alumno } from '@/types';
 import { MainLayout } from '@/shared/layouts/MainLayout';
 import { useAuthStore } from '@/features/acceso/useAuthStore';
+import { useAlumnos } from '@/api';
 
 export interface MosaicoAlumnosProps {
   onSelectStudent?: (studentId: string) => void;
@@ -15,7 +14,7 @@ export const MosaicoAlumnos: React.FC<MosaicoAlumnosProps> = ({
   onSelectStudent,
   selectStudent,
 }) => {
-  const alumnos = useLiveQuery(() => db.alumnos.toArray(), []);
+  const alumnos = useAlumnos();
   const { setActiveStudentId, setVistaInicio1 } = useAuthStore();
 
   const handleStudentClick = (id: string) => {

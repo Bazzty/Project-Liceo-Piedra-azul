@@ -12,10 +12,10 @@ import { NivelesView } from '@/features/aprender/pages/NivelesView';
 import { CatalogoCuentos } from '@/features/aprender/pages/CatalogoCuentos';
 import { LecturaView } from '@/features/aprender/pages/LecturaView';
 import { AdminDashboard } from '@/features/docente/pages/AdminDashboard';
-import { db } from '@/db/db';
 import { useThemeStore, type ThemeId } from '@/shared/store/useThemeStore';
 import { usePlayerStore } from '@/shared/store/usePlayerStore';
 import { THEMES_CONFIG } from '@/shared/config/themes';
+import { obtenerAlumno } from '@/api';
 
 export const App: React.FC = () => {
   const { modoInicio, vistaInicio1, setVistaInicio1, isClassroomSessionActive, sessionType, setActiveStudentId } = useAuthStore();
@@ -68,7 +68,7 @@ export const App: React.FC = () => {
           setActiveStudentId(studentId);
           setVistaInicio1('menu');
           // Aplica el color y la voz que el docente asignó a este alumno
-          const alumno = await db.alumnos.get(studentId);
+          const alumno = await obtenerAlumno(studentId);
           if (alumno && THEMES_CONFIG.some((t) => t.id === alumno.temaId)) {
             useThemeStore.getState().setTheme(alumno.temaId as ThemeId);
           }

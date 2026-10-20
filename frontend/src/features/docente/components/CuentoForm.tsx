@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Sparkles, Trash2, Volume2 } from 'lucide-react';
-import { db } from '@/db/db';
 import type { Cuento, CuentoPagina, CuentoPalabra } from '@/types';
 import { getArasaacImageUrl, fetchArasaacPictogramId, searchArasaacPictograms, type ArasaacOpcion } from '@/features/tablero/arasaac';
 import { normalizar } from '@/features/docente/components/format';
 import { PictoImg } from '@/features/docente/components/widgets';
+import { actualizarCuento, crearCuento, listarPictogramas } from '@/api';
 
 // Palabras funcionales que NO reciben pictograma sugerido (igual que en los cuentos del seed).
 // El docente igualmente puede agregarles uno a mano.
@@ -84,7 +84,7 @@ export const CuentoForm: React.FC<CuentoFormProps> = ({ nivelId, cuento, onGuard
   const sugerirPictogramas = async () => {
     setSugiriendo(true);
     setMensaje('');
-    const locales = await db.pictogramas.toArray();
+    const locales = await listarPictogramas();
     const catalogo = new Map(locales.map((p) => [normalizar(p.palabra), p.imagenUrl]));
     const cache = new Map<string, string | undefined>();
     let sinInternet = 0;
@@ -151,9 +151,9 @@ export const CuentoForm: React.FC<CuentoFormProps> = ({ nivelId, cuento, onGuard
       estado,
     };
     if (cuento?.id) {
-      await db.cuentos.update(cuento.id, datos);
+      await actualizarCuento(cuento.id, datos);
     } else {
-      await db.cuentos.add({
+      await crearCuento({
         ...datos,
         id: `cuento-${crypto.randomUUID()}`,
         fechaCreacion: new Date().toISOString(),

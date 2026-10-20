@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import { ArrowLeft, ChevronRight, Palette, Volume2 } from 'lucide-react';
-import { useLiveQuery } from 'dexie-react-hooks';
-import { db } from '@/db/db';
 import type { VozId } from '@/types';
 import { THEMES_CONFIG } from '@/shared/config/themes';
 import { VOCES_CONFIG, VOZ_POR_DEFECTO } from '@/shared/config/voces';
@@ -9,10 +7,11 @@ import { Avatar, OptionButton, PageTitle, ProgressBar, SectionTitle } from '@/sh
 import { formatearFecha } from '@/features/docente/components/format';
 import { useListaAlumnos, useResumen } from '@/features/docente/components/useResumen';
 import { ProgresoPorCuento, RegistroLista, StatsGrid } from '@/features/docente/components/widgets';
+import { actualizarAlumno, useAlumno } from '@/api';
 
 /** Detalle de un alumno: avance + cambio de color y voz. */
 const DetalleAlumno: React.FC<{ alumnoId: string; onVolver: () => void }> = ({ alumnoId, onVolver }) => {
-  const alumno = useLiveQuery(() => db.alumnos.get(alumnoId), [alumnoId]);
+  const alumno = useAlumno(alumnoId);
   const resumen = useResumen(alumnoId);
 
   if (!alumno || !resumen) return <p className="text-secondary font-semibold">Cargando…</p>;
@@ -56,7 +55,7 @@ const DetalleAlumno: React.FC<{ alumnoId: string; onVolver: () => void }> = ({ a
               <OptionButton
                 key={t.id}
                 selected={alumno.temaId === t.id}
-                onClick={() => db.alumnos.update(alumnoId, { temaId: t.id })}
+                onClick={() => actualizarAlumno(alumnoId, { temaId: t.id })}
                 className="flex items-center gap-2 px-3 py-2 font-bold text-sm"
               >
                 <span
@@ -76,7 +75,7 @@ const DetalleAlumno: React.FC<{ alumnoId: string; onVolver: () => void }> = ({ a
               <OptionButton
                 key={v.id}
                 selected={vozActual === v.id}
-                onClick={() => db.alumnos.update(alumnoId, { vozId: v.id as VozId })}
+                onClick={() => actualizarAlumno(alumnoId, { vozId: v.id as VozId })}
                 className="text-left px-3 py-2"
               >
                 <span className="block text-sm font-black text-primary">{v.nombre}</span>

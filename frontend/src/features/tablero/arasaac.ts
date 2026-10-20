@@ -1,4 +1,4 @@
-import { db } from '@/db/db';
+import { buscarPictogramaPorPalabra } from '@/api';
 
 const ARASAAC_API_BASE = 'https://api.arasaac.org/v1';
 const ARASAAC_STATIC_BASE = 'https://static.arasaac.org/pictograms';
@@ -116,7 +116,7 @@ export async function resolverYGuardarPictograma(palabra: string): Promise<strin
 	}
 
 	// 2. Revisar si la palabra pertenece al catálogo de comunicación SAAC
-	const picExistente = await db.pictogramas.where('palabra').equalsIgnoreCase(cleanWord).first();
+	const picExistente = await buscarPictogramaPorPalabra(cleanWord);
 	if (picExistente?.imagenUrl) {
 		cachePictogramasMemoria[cleanWord] = picExistente.imagenUrl;
 		return picExistente.imagenUrl;

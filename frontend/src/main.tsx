@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom/client'
 import App from '@/app/App.tsx'
 import '@/index.css'
 import '@/styles/theme.css' 
-import { seedDatabase } from '@/db/seed.ts'
+import { seedDatabase } from '@/mocks/seed.ts'
 
 // Ejecutar poblamiento inicial de la BD local
 seedDatabase();
