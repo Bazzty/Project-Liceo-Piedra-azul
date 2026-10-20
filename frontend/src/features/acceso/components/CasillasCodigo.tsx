@@ -21,7 +21,7 @@ export const CasillasCodigo: React.FC<CasillasCodigoProps> = ({ valor, largo, er
         <div
           key={i}
           aria-hidden
-          className={`w-14 h-[4.5rem] sm:w-16 sm:h-20 rounded-control border-2 flex items-center justify-center text-4xl font-black text-primary transition-colors ${
+          className={`w-12 h-16 sm:w-16 sm:h-20 rounded-control border-2 flex items-center justify-center text-4xl font-black text-primary transition-colors ${
             error
               ? 'border-statusDanger bg-statusDanger-bg'
               : activa

@@ -174,7 +174,7 @@ export const LoginAlumnoCasaView: React.FC = () => {
   return (
     <div className="min-h-screen bg-app text-primary lg:grid lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
       {/* Panel de marca */}
-      <aside className="relative overflow-hidden bg-brand text-onBrand px-6 py-8 lg:py-10 lg:px-12 flex flex-col items-center justify-between gap-6 lg:sticky lg:top-0 lg:h-screen">
+      <aside className="relative overflow-hidden bg-brand text-onBrand px-6 py-5 lg:py-10 lg:px-12 flex flex-col items-center justify-between gap-4 lg:gap-6 lg:sticky lg:top-0 lg:h-screen">
         <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-onBrand/10" aria-hidden />
         <div className="absolute -bottom-32 -left-20 w-96 h-96 rounded-full bg-onBrand/10" aria-hidden />
         {ESTRELLAS.map((e, i) => (
@@ -197,13 +197,13 @@ export const LoginAlumnoCasaView: React.FC = () => {
         </div>
 
         <div className="relative flex flex-col items-center gap-5">
-          <h2 className="text-4xl lg:text-5xl font-black text-center">¡Vamos a leer!</h2>
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-center">¡Vamos a leer!</h2>
           <OsoBurbuja mensaje={mensajeOso} size="lg" />
         </div>
 
-        <ul className="relative flex flex-wrap justify-center gap-3" aria-hidden>
+        <ul className="relative flex justify-center gap-2 sm:gap-3" aria-hidden>
           {PICTOGRAMAS_DECORATIVOS.map((nombre, i) => (
-            <li key={nombre} className={`w-16 h-16 lg:w-20 lg:h-20 bg-white rounded-control p-1.5 shadow-card ${GIROS[i]}`}>
+            <li key={nombre} className={`w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20 bg-white rounded-control p-1.5 shadow-card ${GIROS[i]}`}>
               <img src={`${BASE}pictogramas/arasaac/${nombre}.png`.replace(/\/\//g, '/')} alt="" className="w-full h-full object-contain" />
             </li>
           ))}
@@ -244,17 +244,17 @@ export const LoginAlumnoCasaView: React.FC = () => {
               </div>
             ) : (
               <>
-                <div className="flex items-center gap-4">
-                  <TarjetaIlustrada className="w-28 shrink-0" />
+                <div className="flex items-center gap-3 sm:gap-4">
+                  <TarjetaIlustrada className="w-20 sm:w-28 shrink-0" />
                   <div className="flex flex-col gap-1 flex-1">
-                    <h1 className="text-3xl sm:text-4xl font-black text-primary">Tu tarjeta</h1>
-                    <p className="text-lg font-bold text-secondary">Toca los números.</p>
+                    <h1 className="text-2xl sm:text-4xl font-black text-primary">Tu tarjeta</h1>
+                    <p className="text-base sm:text-lg font-bold text-secondary">Toca los números.</p>
                   </div>
                   <button
                     type="button"
                     onClick={() => hablar('Toca los números de tu tarjeta. Después toca la palomita.')}
                     aria-label="Escuchar las instrucciones"
-                    className="w-14 h-14 shrink-0 rounded-full bg-accent text-onAccent border-2 border-borderStrong flex items-center justify-center cursor-pointer hover:bg-accent-hover transition-colors"
+                    className="w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-full bg-accent text-onAccent border-2 border-borderStrong flex items-center justify-center cursor-pointer hover:bg-accent-hover transition-colors"
                   >
                     <Volume2 className="w-7 h-7" aria-hidden />
                   </button>
@@ -262,14 +262,14 @@ export const LoginAlumnoCasaView: React.FC = () => {
 
                 <CasillasCodigo valor={codigo} largo={LARGO_CODIGO} error={error || bloqueado} />
 
-                <div className="min-h-[3.5rem] [@media(max-height:820px)]:min-h-12" role="alert">
+                <div className="min-h-12" role="alert">
                   {bloqueado ? (
-                    <p className="flex items-center justify-center gap-2 text-center text-base font-extrabold text-statusWarn bg-statusWarn-bg border-2 border-statusWarn rounded-control px-4 py-3">
+                    <p className="flex items-center justify-center gap-2 text-center text-base font-extrabold text-statusWarn bg-statusWarn-bg border-2 border-statusWarn rounded-control px-4 py-2">
                       <Clock className="w-5 h-5 shrink-0" aria-hidden />
                       Descansemos un momento. Podrás intentar de nuevo en {segundosRestantes} segundos.
                     </p>
                   ) : error ? (
-                    <p className="text-center text-base font-extrabold text-statusDanger bg-statusDanger-bg border-2 border-statusDanger rounded-control px-4 py-3">
+                    <p className="text-center text-base font-extrabold text-statusDanger bg-statusDanger-bg border-2 border-statusDanger rounded-control px-4 py-2">
                       Ese número no está. Intentemos otra vez.
                     </p>
                   ) : null}
