@@ -119,7 +119,7 @@ export const LecturaView: React.FC<LecturaViewProps> = ({
 					/>
 					<button
 						onClick={handleVolver}
-						className="px-6 py-3 bg-brand text-white font-black rounded-2xl shadow-lg border-4 border-brand-hover hover:opacity-90 active:scale-95 transition-all cursor-pointer"
+						className="px-6 py-3 bg-brand text-onBrand font-black rounded-2xl shadow-lg border-4 border-brand-hover hover:opacity-90 active:scale-95 transition-all cursor-pointer"
 					>
 						VOLVER AL INICIO
 					</button>
@@ -146,7 +146,7 @@ export const LecturaView: React.FC<LecturaViewProps> = ({
 					{(paginaData?.audioPaginaUrl || paginaData?.palabras?.[0]?.audioUrl) ? (
 						<button
 							onClick={handleReproducirAudioPagina}
-							className="flex items-center gap-2 bg-brand text-white px-4 py-2 rounded-2xl font-black shadow-md border-2 border-brand-hover hover:scale-105 active:scale-95 transition-all cursor-pointer"
+							className="flex items-center gap-2 bg-brand text-onBrand px-4 py-2 rounded-2xl font-black shadow-md border-2 border-brand-hover hover:scale-105 active:scale-95 transition-all cursor-pointer"
 						>
 							<Volume2 size={20} />
 							<span className="hidden sm:inline">ESCUCHAR</span>
@@ -192,7 +192,7 @@ export const LecturaView: React.FC<LecturaViewProps> = ({
 
 					<button
 						onClick={handleSiguientePagina}
-						className="flex items-center gap-2 px-6 py-2 bg-brand text-white font-black rounded-2xl shadow-md border-2 border-brand-hover hover:scale-105 active:scale-95 transition-all cursor-pointer"
+						className="flex items-center gap-2 px-6 py-2 bg-brand text-onBrand font-black rounded-2xl shadow-md border-2 border-brand-hover hover:scale-105 active:scale-95 transition-all cursor-pointer"
 					>
 						{esUltimaPagina ? 'FINALIZAR' : 'SIGUIENTE'}
 						<ChevronRight size={20} />

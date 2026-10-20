@@ -25,7 +25,7 @@ export const ControlAulaView: React.FC = () => {
           </button>
           
           <div className="text-center sm:text-left">
-            <span className="text-xs font-bold uppercase tracking-wider text-sky-600">PANEL DOCENTE DE AULA</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-statusInfo">PANEL DOCENTE DE AULA</span>
             <h2 className="text-lg sm:text-xl font-extrabold text-primary">Control del Laboratorio PIE</h2>
           </div>
         </div>
@@ -34,7 +34,7 @@ export const ControlAulaView: React.FC = () => {
         <div className="bg-surface border-4 border-borderCustom rounded-3xl p-6 sm:p-8 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-4">
             <div className={`w-16 h-16 rounded-2xl flex items-center justify-center border-2 ${
-              isClassroomSessionActive ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30' : 'bg-amber-500/10 text-amber-600 border-amber-500/30'
+              isClassroomSessionActive ? 'bg-statusOk-bg text-statusOk border-statusOk' : 'bg-statusWarn-bg text-statusWarn border-statusWarn'
             }`}>
               <ShieldCheck className="w-8 h-8" />
             </div>
@@ -44,7 +44,7 @@ export const ControlAulaView: React.FC = () => {
               </span>
               <h3 className="text-xl sm:text-2xl font-black text-primary">
                 Sesión de Clases:{' '}
-                <span className={isClassroomSessionActive ? 'text-emerald-600' : 'text-amber-600'}>
+                <span className={isClassroomSessionActive ? 'text-statusOk' : 'text-statusWarn'}>
                   {isClassroomSessionActive ? 'ACTIVA (1.5 HRS)' : 'INACTIVA'}
                 </span>
               </h3>
@@ -69,7 +69,7 @@ export const ControlAulaView: React.FC = () => {
             ) : (
               <button
                 onClick={desactivarSesionAula}
-                className="flex-1 md:flex-none py-4 px-6 rounded-2xl border-4 border-red-500/30 bg-red-500/10 text-red-700 font-black text-base shadow-lg hover:bg-red-500/20 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="flex-1 md:flex-none py-4 px-6 rounded-2xl border-4 border-statusDanger bg-statusDanger-bg text-statusDanger font-black text-base shadow-lg hover:opacity-80 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Square className="w-5 h-5 fill-current" />
                 <span>FINALIZAR CLASE AHORA</span>
@@ -101,7 +101,7 @@ export const ControlAulaView: React.FC = () => {
                 </div>
                 <div className="flex flex-col flex-1 min-w-0">
                   <span className="font-extrabold text-primary text-sm truncate">{a.nombre}</span>
-                  <span className="text-xs text-emerald-600 font-bold flex items-center gap-1">
+                  <span className="text-xs text-statusOk font-bold flex items-center gap-1">
                     <CheckCircle className="w-3.5 h-3.5" /> Habilitado
                   </span>
                 </div>

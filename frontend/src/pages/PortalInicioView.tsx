@@ -50,11 +50,11 @@ export const PortalInicioView: React.FC = () => {
             onClick={handleIngresoProfesor}
             className="bg-surface rounded-3xl border-4 border-borderCustom p-6 shadow-xl flex flex-col items-center text-center gap-4 hover:border-brand transition-all cursor-pointer group"
           >
-            <div className="w-16 h-16 bg-sky-500/10 text-sky-600 rounded-2xl flex items-center justify-center border-2 border-sky-500/30 group-hover:scale-105 transition-transform">
+            <div className="w-16 h-16 bg-statusInfo-bg text-statusInfo rounded-2xl flex items-center justify-center border-2 border-statusInfo group-hover:scale-105 transition-transform">
               <UserCheck className="w-8 h-8" />
             </div>
             <div className="flex flex-col gap-1">
-              <h3 className="text-xl font-black text-primary group-hover:text-sky-600 transition-colors">
+              <h3 className="text-xl font-black text-primary group-hover:text-statusInfo transition-colors">
                 Acceso Profesor
               </h3>
               <p className="text-xs text-secondary font-medium">Gestión de clase</p>
@@ -82,11 +82,11 @@ export const PortalInicioView: React.FC = () => {
             onClick={handleIngresoCasa}
             className="bg-surface rounded-3xl border-4 border-borderCustom p-6 shadow-xl flex flex-col items-center text-center gap-4 hover:border-brand transition-all cursor-pointer group"
           >
-            <div className="w-16 h-16 bg-emerald-500/10 text-emerald-600 rounded-2xl flex items-center justify-center border-2 border-emerald-500/30 group-hover:scale-105 transition-transform">
+            <div className="w-16 h-16 bg-statusOk-bg text-statusOk rounded-2xl flex items-center justify-center border-2 border-statusOk group-hover:scale-105 transition-transform">
               <Home className="w-8 h-8" />
             </div>
             <div className="flex flex-col gap-1">
-              <h3 className="text-xl font-black text-primary group-hover:text-emerald-600 transition-colors">
+              <h3 className="text-xl font-black text-primary group-hover:text-statusOk transition-colors">
                 Mi Tarea en Casa
               </h3>
               <p className="text-xs text-secondary font-medium">Para estudiar en el hogar</p>

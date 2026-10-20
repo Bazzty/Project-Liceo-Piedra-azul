@@ -280,7 +280,7 @@ export const CuentoForm: React.FC<CuentoFormProps> = ({ nivelId, cuento, onGuard
       <div className="flex flex-wrap gap-3">
         <button
           onClick={() => guardar('publicado')}
-          className="px-5 py-3 rounded-2xl bg-brand text-white font-black text-sm cursor-pointer hover:bg-brand-hover"
+          className="px-5 py-3 rounded-2xl bg-brand text-onBrand font-black text-sm cursor-pointer hover:bg-brand-hover"
         >
           Publicar
         </button>

@@ -77,16 +77,16 @@ export const SelectorInicioView: React.FC = () => {
           <div className="bg-surface rounded-3xl border-4 border-borderCustom p-6 sm:p-8 shadow-xl flex flex-col justify-between gap-6 hover:border-brand transition-all group">
             <div className="flex flex-col gap-4">
               <div className="flex items-center justify-between">
-                <div className="w-14 h-14 bg-emerald-500/10 text-emerald-600 rounded-2xl flex items-center justify-center border-2 border-emerald-500/30 group-hover:scale-105 transition-transform">
+                <div className="w-14 h-14 bg-statusOk-bg text-statusOk rounded-2xl flex items-center justify-center border-2 border-statusOk group-hover:scale-105 transition-transform">
                   <Layout className="w-7 h-7" />
                 </div>
-                <span className="text-xs font-extrabold uppercase tracking-widest text-emerald-600 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/30">
+                <span className="text-xs font-extrabold uppercase tracking-widest text-statusOk bg-statusOk-bg px-3 py-1 rounded-full border border-statusOk">
                   FLUJO DIRECTO EN INTEGRACIÓN
                 </span>
               </div>
 
               <div className="flex flex-col gap-2">
-                <h3 className="text-xl sm:text-2xl font-black text-primary group-hover:text-emerald-600 transition-colors">
+                <h3 className="text-xl sm:text-2xl font-black text-primary group-hover:text-statusOk transition-colors">
                   Inicio 2: Demostración Directa
                 </h3>
                 <p className="text-sm sm:text-base text-secondary leading-relaxed">

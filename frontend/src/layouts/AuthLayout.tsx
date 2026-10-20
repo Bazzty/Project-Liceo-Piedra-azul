@@ -11,7 +11,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
       <div className="w-full max-w-md">
         {/* Cabecera / Identificación Institucional */}
         <div className="text-center mb-6 space-y-2">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-3xl bg-brand text-white shadow-lg mb-2">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-3xl bg-brand text-onBrand shadow-lg mb-2">
             <BookOpen className="w-10 h-10" />
           </div>
           <h1 className="text-3xl font-extrabold text-primary tracking-tight">

@@ -145,7 +145,7 @@ export const CatalogoCuentos: React.FC<CatalogoCuentosProps> = ({
 									>
 										{/* Indicador ⭐ COMPLETADO */}
 										{completado && (
-											<div className="absolute top-3 right-3 bg-brand text-white px-3 py-1 rounded-full text-xs font-black flex items-center gap-1 shadow-md z-10">
+											<div className="absolute top-3 right-3 bg-brand text-onBrand px-3 py-1 rounded-full text-xs font-black flex items-center gap-1 shadow-md z-10">
 												<Star size={14} fill="currentColor" />
 												COMPLETADO
 											</div>

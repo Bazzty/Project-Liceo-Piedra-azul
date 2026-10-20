@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useThemeStore } from '@/store/useThemeStore';
-import { Button } from '@/components/common/Button';
+import { Button } from '@/shared/ui';
 
 export type AdminSection = 'dashboard' | 'alumnos' | 'cuentos' | 'aula';
 
@@ -79,7 +79,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
         <div className="space-y-6">
           <div className="p-2 border-b border-borderCustom pb-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-brand text-white flex items-center justify-center font-bold shadow-sm">
+              <div className="w-10 h-10 rounded-xl bg-brand text-onBrand flex items-center justify-center font-bold shadow-sm">
                 <GraduationCap className="w-6 h-6" />
               </div>
               <div>
@@ -99,7 +99,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                   onClick={() => irA(item.id)}
                   aria-current={isActive ? 'page' : undefined}
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-left transition-all text-sm cursor-pointer ${
-                    isActive ? 'bg-brand text-white shadow-sm' : 'text-primary hover:bg-app'
+                    isActive ? 'bg-brand text-onBrand shadow-sm' : 'text-primary hover:bg-app'
                   }`}
                 >
                   <Icon className="w-5 h-5" />

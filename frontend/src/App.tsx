@@ -40,7 +40,7 @@ export const App: React.FC = () => {
           </p>
           <button
             onClick={() => useAuthStore.getState().setModoInicio('selector')}
-            className="px-6 py-3 rounded-2xl bg-brand text-white font-black shadow-lg hover:opacity-90 active:scale-95 transition-all cursor-pointer"
+            className="px-6 py-3 rounded-2xl bg-brand text-onBrand font-black shadow-lg hover:opacity-90 active:scale-95 transition-all cursor-pointer"
           >
             VOLVER AL SELECTOR
           </button>

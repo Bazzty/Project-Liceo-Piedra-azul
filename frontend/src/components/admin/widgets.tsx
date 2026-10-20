@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Home, School } from 'lucide-react';
 import type { Pictograma } from '@/types';
+import { EmptyState, ProgressBar, SectionTitle } from '@/shared/ui';
 import { formatearFecha } from './format';
 import type { Resumen } from './useResumen';
 
@@ -65,25 +66,16 @@ export const StatsGrid: React.FC<{ resumen: Resumen }> = ({ resumen }) => (
 /** Barras de progreso por cuento. */
 export const ProgresoPorCuento: React.FC<{ resumen: Resumen }> = ({ resumen }) => (
   <section className="flex flex-col gap-3">
-    <h3 className="text-lg font-black text-primary">Progreso por cuento</h3>
+    <SectionTitle>Progreso por cuento</SectionTitle>
     {resumen.progresoPorCuento.length === 0 && (
-      <p className="text-sm text-secondary font-semibold">No hay cuentos publicados.</p>
+      <EmptyState>No hay cuentos publicados.</EmptyState>
     )}
     {resumen.progresoPorCuento.map(({ cuento, porcentaje }) => (
       <div key={cuento.id} className="grid grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)_3rem] items-center gap-3">
         <span className="text-sm font-bold text-primary leading-tight">
           {cuento.titulo}
         </span>
-        <div
-          className="h-3 rounded-full bg-borderCustom overflow-hidden"
-          role="progressbar"
-          aria-valuenow={porcentaje}
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-label={`Progreso en ${cuento.titulo}`}
-        >
-          <div className="h-full bg-brand rounded-full" style={{ width: `${porcentaje}%` }} />
-        </div>
+        <ProgressBar value={porcentaje} label={`Progreso en ${cuento.titulo}`} />
         <span className="text-sm font-black text-primary text-right">{porcentaje}%</span>
       </div>
     ))}
@@ -96,9 +88,9 @@ export const RegistroLista: React.FC<{ resumen: Resumen; mostrarAlumno?: boolean
   mostrarAlumno = false,
 }) => (
   <section className="flex flex-col gap-3">
-    <h3 className="text-lg font-black text-primary">Registro</h3>
+    <SectionTitle>Registro</SectionTitle>
     {resumen.registro.length === 0 && (
-      <p className="text-sm text-secondary font-semibold">Aún no hay actividad registrada.</p>
+      <EmptyState>Aún no hay actividad registrada.</EmptyState>
     )}
     {resumen.registro.map((r) => (
       <div key={r.id} className="border-2 border-borderCustom rounded-2xl p-3 bg-app flex flex-col gap-1">

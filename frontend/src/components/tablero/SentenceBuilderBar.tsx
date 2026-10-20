@@ -56,7 +56,7 @@ export const SentenceBuilderBar: React.FC = () => {
         <button
           onClick={eliminarUltimoPictograma}
           disabled={fraseSecuencia.length === 0}
-          className="flex items-center gap-1.5 px-4 py-3 bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 border-2 border-amber-500/30 rounded-2xl font-bold text-xs transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+          className="flex items-center gap-1.5 px-4 py-3 bg-statusWarn-bg hover:bg-statusWarn-bg text-statusWarn border-2 border-statusWarn rounded-2xl font-bold text-xs transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
           title="Borrar último"
         >
           <Delete className="w-4 h-4" />
@@ -66,7 +66,7 @@ export const SentenceBuilderBar: React.FC = () => {
         <button
           onClick={limpiarFrase}
           disabled={fraseSecuencia.length === 0}
-          className="flex items-center gap-1.5 px-4 py-3 bg-red-500/10 hover:bg-red-500/20 text-red-700 border-2 border-red-500/30 rounded-2xl font-bold text-xs transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+          className="flex items-center gap-1.5 px-4 py-3 bg-statusDanger-bg hover:opacity-80 text-statusDanger border-2 border-statusDanger rounded-2xl font-bold text-xs transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
           title="Limpiar todo"
         >
           <Trash2 className="w-4 h-4" />

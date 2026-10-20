@@ -128,7 +128,7 @@ export const TableroSAAC: React.FC = () => {
 					<div className="flex items-center gap-2 shrink-0">
 						<button
 							onClick={handleReproducirFrase}
-							className="flex items-center gap-2 bg-brand text-white px-4 py-3 rounded-2xl font-black shadow hover:opacity-90 active:scale-95 transition-all cursor-pointer text-sm"
+							className="flex items-center gap-2 bg-brand text-onBrand px-4 py-3 rounded-2xl font-black shadow hover:opacity-90 active:scale-95 transition-all cursor-pointer text-sm"
 							title="Reproducir frase"
 						>
 							<Volume2 size={20} />
@@ -136,7 +136,7 @@ export const TableroSAAC: React.FC = () => {
 						</button>
 						<button
 							onClick={handleLimpiarFrase}
-							className="p-3 bg-red-100 text-red-600 rounded-2xl border-2 border-red-200 hover:bg-red-200 active:scale-95 transition-all cursor-pointer shadow-sm"
+							className="p-3 bg-statusDanger-bg text-statusDanger rounded-2xl border-2 border-statusDanger hover:opacity-80 active:scale-95 transition-all cursor-pointer shadow-sm"
 							title="Limpiar frase"
 						>
 							<Trash2 size={20} />
@@ -153,7 +153,7 @@ export const TableroSAAC: React.FC = () => {
 						onClick={() => setCategoriaActiva(cat.id)}
 						className={`px-4 py-2 rounded-xl font-extrabold text-xs sm:text-sm whitespace-nowrap transition-all cursor-pointer border-2 shadow-sm ${
 							categoriaActiva === cat.id
-								? 'bg-brand text-white border-brand-hover scale-105'
+								? 'bg-brand text-onBrand border-brand-hover scale-105'
 								: 'bg-surface text-secondary border-borderCustom hover:border-brand'
 						}`}
 					>

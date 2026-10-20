@@ -195,7 +195,7 @@ export const CharacterGuide: React.FC<CharacterGuideProps> = ({
 
         <button
           onClick={handleSpeak}
-          className="flex items-center gap-2 px-4 py-2 bg-brand text-white font-bold text-sm rounded-2xl shadow-md hover:opacity-90 active:scale-95 transition-all cursor-pointer"
+          className="flex items-center gap-2 px-4 py-2 bg-brand text-onBrand font-bold text-sm rounded-2xl shadow-md hover:opacity-90 active:scale-95 transition-all cursor-pointer"
         >
           <Volume2 className="w-4 h-4" />
           <span>TOCA PARA ESCUCHAR</span>
@@ -220,7 +220,7 @@ export const CharacterGuide: React.FC<CharacterGuideProps> = ({
         title="Escuchar mensaje"
       >
         {renderAvatar('w-16 h-16 sm:w-20 sm:h-20')}
-        <div className="absolute -bottom-1 -right-1 bg-surface p-1 rounded-full shadow-md text-brand border border-borderCustom group-hover:bg-brand group-hover:text-white transition-colors">
+        <div className="absolute -bottom-1 -right-1 bg-surface p-1 rounded-full shadow-md text-brand border border-borderCustom group-hover:bg-brand group-hover:text-onBrand transition-colors">
           <Volume2 className="w-3.5 h-3.5" />
         </div>
       </div>

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Lock, User as UserIcon, Sparkles } from 'lucide-react';
 import { AuthLayout } from '@/layouts/AuthLayout';
-import { Button } from '@/components/common/Button';
+import { Button } from '@/shared/ui';
 import { useAuthStore } from '@/store/useAuthStore';
 
 export interface LoginProps {
@@ -61,7 +61,7 @@ export const Login: React.FC<LoginProps> = ({ onSuccessLogin, onLoginSuccess }) 
         </div>
 
         {error && (
-          <div className="bg-red-500/10 border-2 border-red-500/30 text-red-600 text-sm font-semibold p-3 rounded-2xl text-center">
+          <div className="bg-statusDanger-bg border-2 border-statusDanger text-statusDanger text-sm font-semibold p-3 rounded-2xl text-center">
             {error}
           </div>
         )}
@@ -99,7 +99,7 @@ export const Login: React.FC<LoginProps> = ({ onSuccessLogin, onLoginSuccess }) 
 
           <Button 
             type="submit"
-            className="w-full mt-2 py-3.5 bg-brand hover:opacity-90 text-white font-bold rounded-2xl shadow-lg transition-transform active:scale-95 cursor-pointer"
+            className="w-full mt-2 py-3.5 bg-brand hover:opacity-90 text-onBrand font-bold rounded-2xl shadow-lg transition-transform active:scale-95 cursor-pointer"
           >
             Entrar al Panel
           </Button>

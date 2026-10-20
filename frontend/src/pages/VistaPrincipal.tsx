@@ -5,7 +5,7 @@ import { useThemeStore, type ThemeId } from '@/store/useThemeStore';
 import { THEMES_CONFIG } from '@/config/themes';
 import { MainLayout } from '@/layouts/MainLayout';
 import { CharacterGuide } from '@/components/common/CharacterGuide';
-import { Modal } from '@/components/common/Modal';
+import { Modal } from '@/shared/ui';
 import { TableroSAAC } from '@/components/tablero/TableroSAAC';
 import { getPersonajeAudio } from '@/config/audioConfig';
 

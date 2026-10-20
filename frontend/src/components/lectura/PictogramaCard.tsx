@@ -109,7 +109,7 @@ export const PictogramaCard: React.FC<PictogramaCardProps> = ({
 						<button
 							key={idx}
 							onClick={(e) => handleSilabaClick(e, silaba.audioUrl)}
-							className="px-3 py-1.5 bg-brand text-white font-black text-sm rounded-xl shadow border-2 border-brand-hover hover:scale-110 active:scale-95 transition-all cursor-pointer"
+							className="px-3 py-1.5 bg-brand text-onBrand font-black text-sm rounded-xl shadow border-2 border-brand-hover hover:scale-110 active:scale-95 transition-all cursor-pointer"
 						>
 							{silaba.texto}
 						</button>

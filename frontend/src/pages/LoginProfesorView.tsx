@@ -35,7 +35,7 @@ export const LoginProfesorView: React.FC = () => {
         <div className="bg-surface rounded-3xl border-4 border-borderCustom p-8 shadow-2xl flex flex-col gap-6">
           
           <div className="flex flex-col items-center text-center gap-2">
-            <div className="w-16 h-16 bg-sky-500/10 text-sky-600 rounded-2xl flex items-center justify-center border-2 border-sky-500/30">
+            <div className="w-16 h-16 bg-statusInfo-bg text-statusInfo rounded-2xl flex items-center justify-center border-2 border-statusInfo">
               <UserCheck className="w-8 h-8" />
             </div>
             <h3 className="text-2xl font-black text-primary">Acceso Docente PIE</h3>
@@ -43,7 +43,7 @@ export const LoginProfesorView: React.FC = () => {
           </div>
 
           {error && (
-            <div className="bg-red-500/10 border-2 border-red-500/30 text-red-700 px-4 py-3 rounded-2xl text-xs font-extrabold text-center">
+            <div className="bg-statusDanger-bg border-2 border-statusDanger text-statusDanger px-4 py-3 rounded-2xl text-xs font-extrabold text-center">
               {error}
             </div>
           )}
@@ -82,7 +82,7 @@ export const LoginProfesorView: React.FC = () => {
 
             <button
               type="submit"
-              className="mt-2 w-full py-4 bg-sky-600 hover:bg-sky-700 text-white rounded-2xl font-black text-base shadow-lg transition-all active:scale-95 cursor-pointer"
+              className="mt-2 w-full py-4 bg-statusInfo hover:opacity-90 text-onStatus rounded-2xl font-black text-base shadow-lg transition-all active:scale-95 cursor-pointer"
             >
               INGRESAR AL PANEL DE AULA
             </button>

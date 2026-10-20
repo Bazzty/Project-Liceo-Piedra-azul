@@ -36,7 +36,7 @@ export const LoginAlumnoCasaView: React.FC = () => {
         <div className="bg-surface rounded-3xl border-4 border-borderCustom p-8 shadow-2xl flex flex-col gap-6">
           
           <div className="flex flex-col items-center text-center gap-2">
-            <div className="w-16 h-16 bg-emerald-500/10 text-emerald-600 rounded-2xl flex items-center justify-center border-2 border-emerald-500/30">
+            <div className="w-16 h-16 bg-statusOk-bg text-statusOk rounded-2xl flex items-center justify-center border-2 border-statusOk">
               <Home className="w-8 h-8" />
             </div>
             <h3 className="text-2xl font-black text-primary">Mi Tarea en Casa</h3>
@@ -44,7 +44,7 @@ export const LoginAlumnoCasaView: React.FC = () => {
           </div>
 
           {error && (
-            <div className="bg-red-500/10 border-2 border-red-500/30 text-red-700 px-4 py-3 rounded-2xl text-xs font-extrabold text-center">
+            <div className="bg-statusDanger-bg border-2 border-statusDanger text-statusDanger px-4 py-3 rounded-2xl text-xs font-extrabold text-center">
               {error}
             </div>
           )}

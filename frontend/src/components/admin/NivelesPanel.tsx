@@ -64,7 +64,7 @@ const NivelForm: React.FC<{ nivel?: Nivel; niveles: Nivel[]; onListo: () => void
       </div>
       <input className={campo} placeholder="Descripción (opcional)" value={descripcion} onChange={(e) => setDescripcion(e.target.value)} aria-label="Descripción del nivel" />
       <div className="flex gap-3">
-        <button onClick={guardar} className="px-5 py-2.5 rounded-2xl bg-brand text-white font-black text-sm cursor-pointer hover:bg-brand-hover">
+        <button onClick={guardar} className="px-5 py-2.5 rounded-2xl bg-brand text-onBrand font-black text-sm cursor-pointer hover:bg-brand-hover">
           Guardar
         </button>
         <button onClick={onListo} className="px-5 py-2.5 rounded-2xl text-secondary font-black text-sm cursor-pointer hover:text-primary">
@@ -102,7 +102,7 @@ const CuentosDeNivel: React.FC<{ nivel: Nivel; onVolver: () => void }> = ({ nive
         {modo === 'lista' && (
           <button
             onClick={() => setModo('nuevo')}
-            className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-brand text-white font-black text-sm cursor-pointer hover:bg-brand-hover"
+            className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-brand text-onBrand font-black text-sm cursor-pointer hover:bg-brand-hover"
           >
             <Upload className="w-4 h-4" /> Subir cuento
           </button>
@@ -208,7 +208,7 @@ export const NivelesPanel: React.FC = () => {
         {formulario === null && (
           <button
             onClick={() => setFormulario('nuevo')}
-            className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-brand text-white font-black text-sm cursor-pointer hover:bg-brand-hover"
+            className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-brand text-onBrand font-black text-sm cursor-pointer hover:bg-brand-hover"
           >
             <Plus className="w-4 h-4" /> Nuevo nivel
           </button>
@@ -229,7 +229,7 @@ export const NivelesPanel: React.FC = () => {
                 onClick={() => setAbierto(n.id)}
                 className="flex-1 min-w-0 flex items-center gap-4 text-left cursor-pointer group"
               >
-                <span className="w-12 h-12 rounded-2xl bg-brand text-white flex items-center justify-center text-xl font-black shrink-0">
+                <span className="w-12 h-12 rounded-2xl bg-brand text-onBrand flex items-center justify-center text-xl font-black shrink-0">
                   {n.codigo}
                 </span>
                 <span className="flex-1 min-w-0">

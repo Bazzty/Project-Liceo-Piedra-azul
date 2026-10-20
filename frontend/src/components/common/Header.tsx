@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { MessageSquare, Settings, User as UserIcon, Sparkles } from 'lucide-react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { Modal } from './Modal';
+import { Modal } from '@/shared/ui';
 import { TableroSAAC } from '@/components/tablero/TableroSAAC';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useThemeStore, type ThemeId } from '@/store/useThemeStore';
@@ -50,7 +50,7 @@ export const Header: React.FC = () => {
           <button
             onClick={() => setIsHablarOpen(true)}
             aria-label="Abrir tablero de comunicación aumentativa SAAC"
-            className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-2xl shadow-md transition-all active:scale-95 cursor-pointer text-sm"
+            className="flex items-center gap-2 px-4 py-2.5 bg-statusOk hover:opacity-90 text-onStatus font-black rounded-2xl shadow-md transition-all active:scale-95 cursor-pointer text-sm"
           >
             <MessageSquare className="w-4 h-4" />
             <span>HABLAR</span>
@@ -106,7 +106,7 @@ export const Header: React.FC = () => {
               onClick={toggleCharacterBackground}
               className={`px-4 py-2 rounded-xl font-extrabold text-xs transition-all cursor-pointer ${
                 showCharacterBackground
-                  ? 'bg-emerald-600 text-white shadow-md'
+                  ? 'bg-statusOk text-onStatus shadow-md'
                   : 'bg-surface border border-borderCustom text-secondary'
               }`}
             >
