@@ -5,6 +5,7 @@ import { useAlumno, useProgresosDeAlumno } from '@/api';
 import { ROUTES } from '@/app/routes';
 import { useAuthStore } from '@/features/acceso/useAuthStore';
 import { TableroSAAC } from '@/features/tablero/components/TableroSAAC';
+import { DecoracionJardin } from '@/shared/components/DecoracionJardin';
 import { FondoPaisaje } from '@/shared/components/FondoPaisaje';
 import { OsoBurbuja } from '@/shared/components/OsoBurbuja';
 import { SelectorPaleta } from '@/shared/components/SelectorPaleta';
@@ -12,50 +13,57 @@ import { useAplicarTema } from '@/shared/hooks/useAplicarTema';
 import { useHablar } from '@/shared/hooks/useHablar';
 import { Modal } from '@/shared/ui';
 
-const ESTILOS = {
-  leer: 'bg-btnAprender-bg text-btnAprender-text border-btnAprender-border',
-  hablar: 'bg-btnHablar-bg text-btnHablar-text border-btnHablar-border',
-  estrellas: 'bg-btnLogros-bg text-btnLogros-text border-btnLogros-border',
-  salir: 'bg-surface text-primary border-borderStrong',
+const ESTILOS_GLOBO = {
+  leer: { fondo: 'bg-btnAprender-bg text-btnAprender-text', cuerda: 'var(--btn-aprender-border)' },
+  hablar: { fondo: 'bg-btnHablar-bg text-btnHablar-text', cuerda: 'var(--btn-hablar-border)' },
+  estrellas: { fondo: 'bg-btnLogros-bg text-btnLogros-text', cuerda: 'var(--btn-logros-border)' },
 } as const;
 
-interface OpcionProps {
+interface GloboProps {
   orden: number;
-  estilo: keyof typeof ESTILOS;
+  estilo: keyof typeof ESTILOS_GLOBO;
   icono: React.ReactNode;
   titulo: string;
   onClick: () => void;
 }
 
-/** Botón grande del menú: dibujo + una palabra. El parlante dice la palabra en voz alta. */
-const Opcion: React.FC<OpcionProps> = ({ orden, estilo, icono, titulo, onClick }) => {
+/** Globo grande para elegir: flota, aparece con un pequeño salto y dice su nombre al tocar el parlante. */
+const Globo: React.FC<GloboProps> = ({ orden, estilo, icono, titulo, onClick }) => {
   const hablar = useHablar();
+  const { fondo, cuerda } = ESTILOS_GLOBO[estilo];
   return (
-    <div className="relative animate-aparecer" style={{ animationDelay: `${orden * 120}ms` }}>
-      <button
-        type="button"
-        onClick={onClick}
-        className={`group w-full h-40 sm:h-60 lg:h-[17rem] rounded-card border-b-8 flex flex-col items-center justify-center gap-2 sm:gap-3 shadow-card cursor-pointer transition-transform hover:-translate-y-2 hover:scale-[1.03] active:translate-y-0 active:scale-95 ${ESTILOS[estilo]} ${estilo === 'salir' ? 'border-2 border-b-8' : ''}`}
-      >
-        <span className="group-hover:animate-girar [&>svg]:w-14 [&>svg]:h-14 sm:[&>svg]:w-24 sm:[&>svg]:h-24 lg:[&>svg]:w-28 lg:[&>svg]:h-28" aria-hidden>
-          {icono}
-        </span>
-        <span className="text-2xl sm:text-4xl lg:text-5xl font-black">{titulo}</span>
-      </button>
-      <button
-        type="button"
-        onClick={() => hablar(titulo)}
-        aria-label={`Escuchar: ${titulo}`}
-        className="absolute top-3 right-3 w-12 h-12 rounded-full bg-onBrand/20 flex items-center justify-center cursor-pointer hover:bg-onBrand/35 text-current"
-        style={{ color: estilo === 'salir' ? 'var(--text-primary)' : 'inherit' }}
-      >
-        <Volume2 className="w-6 h-6" aria-hidden />
-      </button>
+    <div className="animate-aparecer" style={{ animationDelay: `${orden * 150}ms` }}>
+      <div className="relative flex flex-col items-center animate-flotar" style={{ animationDelay: `${orden * -2}s`, animationDuration: `${5 + orden}s` }}>
+        <button
+          type="button"
+          onClick={onClick}
+          className={`group relative overflow-hidden w-[27vw] h-[27vw] max-w-[9.5rem] max-h-[9.5rem] sm:max-w-none sm:max-h-none sm:w-[min(13rem,24vh)] sm:h-[min(13rem,24vh)] sm:portrait:w-[min(27vw,19rem)] sm:portrait:h-[min(27vw,19rem)] lg:w-[min(16rem,27vh)] lg:h-[min(16rem,27vh)] rounded-full flex flex-col items-center justify-center gap-1 sm:gap-2 shadow-card cursor-pointer transition-transform hover:scale-110 active:scale-95 ${fondo}`}
+        >
+          <span className="absolute top-[11%] left-[17%] w-[26%] h-[15%] rounded-full bg-white/35 -rotate-[35deg]" aria-hidden />
+          <span className="group-hover:animate-girar [&>svg]:w-9 [&>svg]:h-9 sm:[&>svg]:w-16 sm:[&>svg]:h-16 lg:[&>svg]:w-24 lg:[&>svg]:h-24" aria-hidden>
+            {icono}
+          </span>
+          <span className="text-base sm:text-2xl lg:text-3xl font-black leading-tight text-center px-2">{titulo}</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => hablar(titulo)}
+          aria-label={`Escuchar: ${titulo}`}
+          className="absolute top-[4%] right-[4%] w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-surface text-primary border-2 border-borderStrong flex items-center justify-center cursor-pointer hover:bg-app"
+        >
+          <Volume2 className="w-5 h-5 sm:w-6 sm:h-6" aria-hidden />
+        </button>
+        {/* Nudo y cuerda del globo */}
+        <svg viewBox="0 0 40 60" className="w-8 sm:w-10 h-10 sm:h-14 -mt-1" aria-hidden>
+          <path d="M20 0 L14 9 H26 Z" fill={cuerda} />
+          <path d="M20 9 C 8 20 32 30 20 42 C 12 50 24 54 20 60" fill="none" stroke={cuerda} strokeWidth="2.5" strokeLinecap="round" />
+        </svg>
+      </div>
     </div>
   );
 };
 
-/** Inicio del estudiante: cuatro botones grandes con dibujo, voz y una sola palabra. */
+/** Inicio del estudiante: escena de jardín con el osito, globos para elegir y una puerta para salir. */
 export const VistaPrincipal: React.FC = () => {
   useAplicarTema();
   const navigate = useNavigate();
@@ -79,7 +87,9 @@ export const VistaPrincipal: React.FC = () => {
   return (
     <div className="relative overflow-hidden min-h-screen bg-app text-primary flex flex-col">
       <FondoPaisaje />
-      <header className="relative bg-surface border-b-2 border-borderCustom px-4 sm:px-8 py-3 flex items-center justify-between gap-3">
+      <DecoracionJardin />
+
+      <header className="relative bg-surface/95 border-b-2 border-borderCustom px-4 sm:px-8 py-3 flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           {alumno?.avatarUrl ? (
             <img src={alumno.avatarUrl} alt="" className="w-14 h-14 rounded-full object-cover border-[3px] border-brand" />
@@ -100,24 +110,33 @@ export const VistaPrincipal: React.FC = () => {
         </button>
       </header>
 
-      <main className="relative flex-1 w-full max-w-7xl mx-auto px-4 py-6 sm:py-10 flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-14">
-        <div className="bg-brand rounded-card p-6 sm:p-8 lg:p-10 shrink-0 shadow-card">
-          <OsoBurbuja mensaje="¿Qué hacemos?" size="lg" />
-        </div>
+      <main className="relative flex-1 w-full max-w-6xl mx-auto px-3 sm:px-6 pt-4 sm:pt-6 pb-6 flex flex-col items-center justify-between sm:portrait:justify-center sm:portrait:gap-[7vh] gap-4">
+        <h1 className="sr-only">Menú de {nombre}</h1>
 
-        <div className="grid grid-cols-2 gap-4 sm:gap-6 w-full max-w-4xl">
-          <Opcion orden={0} estilo="leer" titulo="Leer" icono={<BookOpen strokeWidth={1.8} />} onClick={() => navigate(ROUTES.aprender)} />
-          <Opcion orden={1} estilo="hablar" titulo="Hablar" icono={<MessageCircle strokeWidth={1.8} />} onClick={() => setHablarAbierto(true)} />
-          <Opcion
+        <div className="flex items-start justify-center gap-3 sm:gap-10 lg:gap-16 w-full">
+          <Globo orden={0} estilo="leer" titulo="Leer" icono={<BookOpen strokeWidth={1.8} />} onClick={() => navigate(ROUTES.aprender)} />
+          <Globo orden={1} estilo="hablar" titulo="Hablar" icono={<MessageCircle strokeWidth={1.8} />} onClick={() => setHablarAbierto(true)} />
+          <Globo
             orden={2}
             estilo="estrellas"
-            titulo="Mis estrellas"
+            titulo="Estrellas"
             icono={<Star strokeWidth={1.6} className="fill-accent" />}
             onClick={() => setEstrellasAbierto(true)}
           />
-          <Opcion orden={3} estilo="salir" titulo="Salir" icono={<LogOut strokeWidth={1.8} />} onClick={salir} />
         </div>
+
+        <OsoBurbuja mensaje={`¡Hola, ${nombre}!`} voz={`Hola ${nombre}. ¿Qué quieres hacer?`} size="xl" />
       </main>
+
+      {/* Puerta para salir: pequeña y apartada para que no se toque sin querer */}
+      <button
+        type="button"
+        onClick={salir}
+        className="absolute z-10 bottom-4 right-4 sm:bottom-6 sm:right-8 flex flex-col items-center justify-center gap-0.5 w-20 h-24 sm:w-24 sm:h-28 rounded-t-[2.5rem] rounded-b-lg border-4 border-borderStrong bg-surface text-primary shadow-card cursor-pointer hover:-translate-y-1 hover:border-brand transition-transform"
+      >
+        <LogOut className="w-8 h-8 sm:w-10 sm:h-10" strokeWidth={2} aria-hidden />
+        <span className="text-base sm:text-lg font-black">Salir</span>
+      </button>
 
       <Modal isOpen={hablarAbierto} onClose={() => setHablarAbierto(false)} title="Hablar" size="full">
         <TableroSAAC />

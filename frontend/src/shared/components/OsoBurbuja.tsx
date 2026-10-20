@@ -10,15 +10,21 @@ export interface OsoBurbujaProps {
   mensaje: string;
   /** Audio grabado a reproducir en lugar de la voz del navegador. */
   audioUrl?: string;
-  size?: 'md' | 'lg';
+  size?: 'md' | 'lg' | 'xl';
+  /** Lo que dice en voz alta, si es distinto del texto de la burbuja. */
+  voz?: string;
   /** Sin texto visible en la burbuja (solo voz), para quienes aún no leen. */
   className?: string;
 }
 
-const TAMANOS = { md: 'w-32 h-32 sm:w-40 sm:h-40', lg: 'w-28 h-28 sm:w-44 sm:h-44 lg:w-52 lg:h-52' };
+const TAMANOS = {
+  md: 'w-32 h-32 sm:w-40 sm:h-40',
+  lg: 'w-28 h-28 sm:w-44 sm:h-44 lg:w-52 lg:h-52',
+  xl: 'w-36 h-36 sm:w-[min(13rem,26vh)] sm:h-[min(13rem,26vh)] sm:portrait:w-[min(40vw,21rem)] sm:portrait:h-[min(40vw,21rem)] lg:w-[min(19rem,36vh)] lg:h-[min(19rem,36vh)]',
+};
 
 /** Osito guía con burbuja: al tocarlo dice el mensaje en voz alta. Pensado para quien aún no lee. */
-export const OsoBurbuja: React.FC<OsoBurbujaProps> = ({ mensaje, audioUrl, size = 'md', className = '' }) => {
+export const OsoBurbuja: React.FC<OsoBurbujaProps> = ({ mensaje, audioUrl, size = 'md', voz, className = '' }) => {
   const hablar = useHablar();
   const playAudio = usePlayerStore((s) => s.playAudio);
 
@@ -29,7 +35,7 @@ export const OsoBurbuja: React.FC<OsoBurbujaProps> = ({ mensaje, audioUrl, size 
     // Reinicia la animación aunque se toque varias veces seguidas
     requestAnimationFrame(() => setSaltando(true));
     if (audioUrl) playAudio(audioUrl);
-    else hablar(mensaje);
+    else hablar(voz ?? mensaje);
   };
 
   return (

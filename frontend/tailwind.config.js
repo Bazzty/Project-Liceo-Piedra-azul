@@ -68,11 +68,13 @@ export default {
         pop: { "0%": { transform: "scale(0.5)" }, "70%": { transform: "scale(1.15)" }, "100%": { transform: "scale(1)" } },
         nube: { from: { transform: "translateX(0)" }, to: { transform: "translateX(70px)" } },
         caer: { "0%": { opacity: "1", transform: "translateY(-10vh) rotate(0)" }, "85%": { opacity: "1" }, "100%": { opacity: "0", transform: "translateY(105vh) rotate(360deg)" } },
+        rotar: { from: { transform: "rotate(0)" }, to: { transform: "rotate(360deg)" } },
         flotar: { "0%, 100%": { transform: "translateY(0)" }, "50%": { transform: "translateY(-10px)" } },
       },
       animation: {
         fadeIn: "fadeIn 0.2s ease-out",
         flotar: "flotar 6s ease-in-out infinite",
+        rotar: "rotar 90s linear infinite",
         aparecer: "aparecer 0.5s ease-out backwards",
         respirar: "respirar 4.5s ease-in-out infinite",
         pulso: "pulso 2.4s ease-out infinite",
