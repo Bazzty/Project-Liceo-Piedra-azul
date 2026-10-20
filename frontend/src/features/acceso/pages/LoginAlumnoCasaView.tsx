@@ -13,6 +13,10 @@ import { useAplicarTema } from '@/shared/hooks/useAplicarTema';
 import { Avatar, Button } from '@/shared/ui';
 import type { Alumno } from '@/types';
 
+const BASE = import.meta.env.BASE_URL || '/';
+const PICTOGRAMAS_DECORATIVOS = ['mama', 'libro', 'feliz', 'jugar', 'colegio'];
+const GIROS = ['-rotate-6', 'rotate-3', '-rotate-2', 'rotate-6', '-rotate-3'];
+
 const MAX_INTENTOS = 5;
 const SEGUNDOS_BLOQUEO = 30;
 
@@ -160,7 +164,7 @@ export const LoginAlumnoCasaView: React.FC = () => {
   return (
     <div className="min-h-screen bg-app text-primary lg:grid lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
       {/* Panel de marca */}
-      <aside className="relative overflow-hidden bg-brand text-onBrand px-6 py-8 lg:py-12 lg:px-12 flex flex-col justify-between gap-8">
+      <aside className="relative overflow-hidden bg-brand text-onBrand px-6 py-8 lg:py-10 lg:px-12 flex flex-col justify-between gap-8 lg:sticky lg:top-0 lg:h-screen">
         <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-onBrand/10" aria-hidden />
         <div className="absolute -bottom-32 -left-20 w-96 h-96 rounded-full bg-onBrand/10" aria-hidden />
 
@@ -174,21 +178,28 @@ export const LoginAlumnoCasaView: React.FC = () => {
           </div>
         </div>
 
-        <OsoBurbuja mensaje={mensajeOso} size="md" className="relative py-2" />
+        <OsoBurbuja mensaje={mensajeOso} size="lg" className="relative py-2" />
 
-        <p className="relative hidden lg:block text-base font-semibold max-w-sm">
-          Leemos juntos con letras, dibujos y voz.
-        </p>
+        <ul className="relative flex flex-wrap justify-center gap-3" aria-hidden>
+          {PICTOGRAMAS_DECORATIVOS.map((nombre, i) => (
+            <li key={nombre} className={`w-16 h-16 lg:w-20 lg:h-20 bg-white rounded-control p-1.5 shadow-card ${GIROS[i]}`}>
+              <img src={`${BASE}pictogramas/arasaac/${nombre}.png`.replace(/\/\//g, '/')} alt="" className="w-full h-full object-contain" />
+            </li>
+          ))}
+        </ul>
       </aside>
 
       {/* Panel de ingreso */}
-      <main className="flex flex-col items-center justify-center px-4 py-8 lg:py-12">
-        <div className="w-full max-w-md flex flex-col gap-6">
+      <main className="relative overflow-hidden flex flex-col items-center justify-center px-4 py-6 lg:py-8">
+        <div className="absolute -top-24 -right-24 w-80 h-80 rounded-full bg-brand/10" aria-hidden />
+        <div className="absolute -bottom-32 -left-24 w-96 h-96 rounded-full bg-accent/30" aria-hidden />
+        <div className="relative w-full max-w-lg flex flex-col gap-4">
           <Button variant="ghost" size="sm" onClick={() => navigate(ROUTES.inicio)} className="self-start -ml-3">
             <ArrowLeft className="w-4 h-4" aria-hidden />
             Volver
           </Button>
 
+          <div className="bg-surface rounded-card border-2 border-borderCustom shadow-card p-6 sm:p-8 flex flex-col gap-5">
           {alumno ? (
             <div className="flex flex-col items-center gap-5 text-center py-6">
               {alumno.avatarUrl ? (
@@ -222,7 +233,7 @@ export const LoginAlumnoCasaView: React.FC = () => {
 
               <CasillasCodigo valor={codigo} largo={LARGO_CODIGO} error={error || bloqueado} />
 
-              <div className="min-h-[5.5rem]" role="alert">
+              <div className="min-h-[3.5rem]" role="alert">
                 {bloqueado ? (
                   <p className="flex items-center justify-center gap-2 text-center text-base font-extrabold text-statusWarn bg-statusWarn-bg border-2 border-statusWarn rounded-control px-4 py-3">
                     <Clock className="w-5 h-5 shrink-0" aria-hidden />
@@ -230,7 +241,7 @@ export const LoginAlumnoCasaView: React.FC = () => {
                   </p>
                 ) : error ? (
                   <p className="text-center text-base font-extrabold text-statusDanger bg-statusDanger-bg border-2 border-statusDanger rounded-control px-4 py-3">
-                    Ese número no es de ninguna tarjeta. Intentemos otra vez.
+                    Ese número no está. Intentemos otra vez.
                   </p>
                 ) : null}
               </div>
@@ -246,6 +257,7 @@ export const LoginAlumnoCasaView: React.FC = () => {
               <TarjetasDeEjemplo onElegir={(c) => { setError(false); setCodigo(c); }} nombres={nombres} />
             </>
           )}
+          </div>
         </div>
       </main>
     </div>
