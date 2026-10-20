@@ -16,7 +16,7 @@ export const Badge: React.FC<{ tone?: BadgeTone; children: React.ReactNode; clas
   className = '',
 }) => (
   <span
-    className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full border text-xs font-bold ${TONES[tone]} ${className}`}
+    className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full border text-sm font-bold ${TONES[tone]} ${className}`}
   >
     {children}
   </span>

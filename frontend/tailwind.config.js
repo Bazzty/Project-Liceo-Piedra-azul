@@ -17,6 +17,9 @@ export default {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ["var(--font-body)"],
+      },
       colors: {
         /* Superficies y texto */
         app: "var(--bg-app)",
@@ -24,6 +27,7 @@ export default {
         primary: "var(--text-primary)",
         secondary: "var(--text-secondary)",
         borderCustom: "var(--border-color)",
+        borderStrong: "var(--border-strong)",
 
         /* Marca y acento */
         brand: { DEFAULT: "var(--brand-primary)", hover: "var(--brand-hover)" },

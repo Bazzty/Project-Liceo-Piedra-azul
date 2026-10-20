@@ -26,5 +26,7 @@ shared/     ui/ (componentes base), components/, layouts/, config/, store/
 styles/     Tokens de diseño por tema (theme.css); se consumen vía tailwind.config.js
 ```
 
+Paletas: `suave` (por defecto), `alto-contraste`, `calida` y `monocromatica`, más `admin` para el panel docente. Cada una cumple contraste AA; `--border-strong` (3:1) delimita controles. La ruta `/muestra` muestra todos los componentes para revisar cada paleta.
+
 Reglas: usar colores solo desde los tokens (`bg-brand`, `text-statusDanger`…), nunca de la paleta de Tailwind;
 navegar con `ROUTES`; leer/escribir datos solo a través de `@/api`.

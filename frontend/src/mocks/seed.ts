@@ -23,11 +23,11 @@ async function seedDemoDocente() {
 
 	// Alumnos ficticios adicionales (Mateo ya existe en el seed base)
 	await db.alumnos.bulkPut([
-		{ id: 'estudiante-sofia', nombre: 'Sofía', apellido: 'Rojas', temaId: 'verde-bosque', personajeId: 'princesa', vozId: 'catalina-cl', fechaCreacion: ahora },
-		{ id: 'estudiante-benjamin', nombre: 'Benjamín', apellido: 'Soto', temaId: 'calma-azul', personajeId: 'superheroe', vozId: 'catalina-cl', fechaCreacion: ahora },
+		{ id: 'estudiante-sofia', nombre: 'Sofía', apellido: 'Rojas', temaId: 'calida', personajeId: 'princesa', vozId: 'catalina-cl', fechaCreacion: ahora },
+		{ id: 'estudiante-benjamin', nombre: 'Benjamín', apellido: 'Soto', temaId: 'suave', personajeId: 'superheroe', vozId: 'catalina-cl', fechaCreacion: ahora },
 		{ id: 'estudiante-valentina', nombre: 'Valentina', apellido: 'Muñoz', temaId: 'alto-contraste', personajeId: 'animales', vozId: 'profesora-clonada', fechaCreacion: ahora },
-		{ id: 'estudiante-joaquin', nombre: 'Joaquín', apellido: 'Díaz', temaId: 'calma-azul', personajeId: 'futbol', vozId: 'catalina-cl', fechaCreacion: ahora },
-		{ id: 'estudiante-emilia', nombre: 'Emilia', apellido: 'Vera', temaId: 'verde-bosque', personajeId: 'dinosaurio', vozId: 'catalina-cl', fechaCreacion: ahora },
+		{ id: 'estudiante-joaquin', nombre: 'Joaquín', apellido: 'Díaz', temaId: 'suave', personajeId: 'futbol', vozId: 'catalina-cl', fechaCreacion: ahora },
+		{ id: 'estudiante-emilia', nombre: 'Emilia', apellido: 'Vera', temaId: 'calida', personajeId: 'dinosaurio', vozId: 'catalina-cl', fechaCreacion: ahora },
 	]);
 
 	// Mateo: asignarle voz por defecto sin pisar sus demás datos
@@ -196,7 +196,7 @@ export async function seedDatabase() {
 					nombre: 'Mateo',
 					apellido: 'Pérez',
 					avatarUrl: '/assets/avatars/estudiante_demo.jpg',
-					temaId: 'calma-azul',
+					temaId: 'suave',
 					personajeId: 'dinosaurio',
 					fechaCreacion: new Date().toISOString(),
 				},

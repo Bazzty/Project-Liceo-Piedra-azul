@@ -10,8 +10,8 @@ export const OptionButton: React.FC<OptionButtonProps> = ({ selected, className 
     type="button"
     role="radio"
     aria-checked={selected}
-    className={`rounded-control border-2 cursor-pointer transition-all ${
-      selected ? 'border-brand bg-app text-primary' : 'border-borderCustom bg-surface text-secondary hover:border-brand'
+    className={`min-h-12 rounded-control border-2 cursor-pointer transition-all ${
+      selected ? 'border-brand bg-app text-primary' : 'border-borderStrong bg-surface text-secondary hover:border-brand'
     } ${className}`}
     {...props}
   />

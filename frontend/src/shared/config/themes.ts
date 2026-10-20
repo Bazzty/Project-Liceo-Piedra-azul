@@ -5,9 +5,8 @@ export interface ThemeConfig {
 }
 
 export const THEMES_CONFIG: ThemeConfig[] = [
-  { id: 'calma-azul', nombre: 'Calma Azul', colorPreviewHex: '#0284c7' },
-  { id: 'alto-contraste', nombre: 'Alto Contraste', colorPreviewHex: '#ffff00' },
-  { id: 'verde-bosque', nombre: 'Verde Bosque', colorPreviewHex: '#16a34a' },
-
-  // Agregar temas a futuro
+  { id: 'suave', nombre: 'Suave', colorPreviewHex: '#2f6f8f' },
+  { id: 'alto-contraste', nombre: 'Alto contraste', colorPreviewHex: '#ffff00' },
+  { id: 'calida', nombre: 'Cálida', colorPreviewHex: '#a84b19' },
+  { id: 'monocromatica', nombre: 'Monocromática', colorPreviewHex: '#333333' },
 ];

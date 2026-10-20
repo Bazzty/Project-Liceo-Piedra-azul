@@ -1,60 +1,67 @@
 /*
  * Tokens de diseño.
- * - :root define los valores base (tema "calma-azul").
+ * - :root define los valores base (paleta "suave", de bajo estímulo).
  * - Cada html[data-theme] solo redefine lo que cambia.
  * Los componentes usan únicamente estos tokens (ver tailwind.config.js),
  * nunca colores de paleta fijos.
+ *
+ * Contraste (WCAG 2.1 AA): texto >= 4.5:1, bordes de controles >= 3:1.
+ * --border-color es decorativo (tarjetas); --border-strong delimita controles.
  */
 
 :root,
-html[data-theme="calma-azul"] {
+html[data-theme="suave"] {
+  /* Tipografía: redondeada y cálida en el espacio del estudiante */
+  --font-body: 'Nunito Variable', ui-rounded, 'Segoe UI', system-ui, sans-serif;
+
   /* Superficies y texto */
-  --bg-app: #f0f9ff;
+  --bg-app: #f4f7f6;
   --bg-card: #ffffff;
-  --text-primary: #0c4a6e;
-  --text-secondary: #0369a1;
-  --border-color: #bae6fd;
+  --text-primary: #1f3a4d;
+  --text-secondary: #4a6274;
+  --border-color: #c9d6d8;
+  --border-strong: #76909a;
 
   /* Marca */
-  --brand-primary: #0284c7;
-  --brand-hover: #0369a1;
+  --brand-primary: #2f6f8f;
+  --brand-hover: #25586f;
   --on-brand: #ffffff;
 
-  /* Acento (acciones destacadas secundarias) */
-  --accent: #facc15;
-  --accent-hover: #fde047;
-  --on-accent: #422006;
+  /* Acento (celebraciones, estrellas, acciones destacadas secundarias) */
+  --accent: #f0c987;
+  --accent-hover: #e8b95f;
+  --on-accent: #3d2b08;
 
   /* Estados: color fuerte + fondo suave + texto sobre color fuerte */
-  --status-ok: #15803d;
-  --status-ok-bg: #dcfce7;
-  --status-warn: #b45309;
-  --status-warn-bg: #fef3c7;
-  --status-danger: #b91c1c;
-  --status-danger-bg: #fee2e2;
-  --status-info: #0369a1;
-  --status-info-bg: #e0f2fe;
+  --status-ok: #2a7548;
+  --status-ok-bg: #e3f3ea;
+  --status-warn: #8f5300;
+  --status-warn-bg: #fbefd5;
+  --status-danger: #b3382c;
+  --status-danger-bg: #fbe4e1;
+  --status-info: #2f6f8f;
+  --status-info-bg: #e1eef4;
   --on-status: #ffffff;
 
   /* Botones de la vista principal */
-  --btn-aprender-bg: #0284c7;
+  --btn-aprender-bg: #2f6f8f;
   --btn-aprender-text: #ffffff;
-  --btn-aprender-border: #0369a1;
-  --btn-hablar-bg: #0d9488;
+  --btn-aprender-border: #25586f;
+  --btn-hablar-bg: #2b7a76;
   --btn-hablar-text: #ffffff;
-  --btn-hablar-border: #0f766e;
-  --btn-colores-bg: #4f46e5;
+  --btn-hablar-border: #215f5c;
+  --btn-colores-bg: #5b5f9e;
   --btn-colores-text: #ffffff;
-  --btn-colores-border: #4338ca;
-  --btn-logros-bg: #059669;
+  --btn-colores-border: #484c82;
+  --btn-logros-bg: #7a5c00;
   --btn-logros-text: #ffffff;
-  --btn-logros-border: #047857;
+  --btn-logros-border: #5f4700;
 
   /* Forma y elevación */
   --radius-control: 1rem;
   --radius-card: 1.5rem;
-  --shadow-card: 0 4px 14px rgb(0 0 0 / 0.08);
-  --overlay: rgb(0 0 0 / 0.6);
+  --shadow-card: 0 2px 10px rgb(31 58 77 / 0.08);
+  --overlay: rgb(15 30 40 / 0.6);
 }
 
 html[data-theme="alto-contraste"] {
@@ -63,6 +70,7 @@ html[data-theme="alto-contraste"] {
   --text-primary: #ffff00;
   --text-secondary: #ffffff;
   --border-color: #ffffff;
+  --border-strong: #ffffff;
 
   --brand-primary: #facc15;
   --brand-hover: #eab308;
@@ -96,36 +104,99 @@ html[data-theme="alto-contraste"] {
   --btn-logros-border: #ffffff;
 
   --shadow-card: none;
+  --overlay: rgb(0 0 0 / 0.85);
 }
 
-html[data-theme="verde-bosque"] {
-  --bg-app: #f0fdf4;
-  --text-primary: #14532d;
-  --text-secondary: #15803d;
-  --border-color: #bbf7d0;
+html[data-theme="calida"] {
+  --bg-app: #fbf5ec;
+  --bg-card: #fffdf9;
+  --text-primary: #4a2f1b;
+  --text-secondary: #7a4a22;
+  --border-color: #e2cfb3;
+  --border-strong: #9a8260;
 
-  --brand-primary: #16a34a;
-  --brand-hover: #15803d;
+  --brand-primary: #a84b19;
+  --brand-hover: #8a3d12;
 
-  --status-info: #15803d;
-  --status-info-bg: #dcfce7;
+  --accent: #e9b872;
+  --accent-hover: #dfa650;
+  --on-accent: #3d2308;
 
-  --btn-aprender-bg: #16a34a;
-  --btn-aprender-border: #15803d;
-  --btn-colores-bg: #65a30d;
-  --btn-colores-border: #4d7c0f;
+  --status-ok: #2f7a45;
+  --status-ok-bg: #e6f2e3;
+  --status-warn: #8a5200;
+  --status-warn-bg: #fbedd0;
+  --status-danger: #a8322a;
+  --status-danger-bg: #f9e1dc;
+  --status-info: #8a5a2b;
+  --status-info-bg: #f3e5d2;
+
+  --btn-aprender-bg: #a84b19;
+  --btn-aprender-border: #8a3d12;
+  --btn-hablar-bg: #8a6a1a;
+  --btn-hablar-border: #6d5313;
+  --btn-colores-bg: #8c4a5e;
+  --btn-colores-border: #703b4b;
+  --btn-logros-bg: #6b7a2a;
+  --btn-logros-border: #556120;
+
+  --shadow-card: 0 2px 10px rgb(74 47 27 / 0.1);
+  --overlay: rgb(40 25 12 / 0.6);
 }
 
-/* Tema interno del panel docente (no se ofrece al alumno) */
+html[data-theme="monocromatica"] {
+  --bg-app: #f5f5f5;
+  --bg-card: #ffffff;
+  --text-primary: #1a1a1a;
+  --text-secondary: #4a4a4a;
+  --border-color: #c8c8c8;
+  --border-strong: #858585;
+
+  --brand-primary: #333333;
+  --brand-hover: #1a1a1a;
+
+  --accent: #d9d9d9;
+  --accent-hover: #c4c4c4;
+  --on-accent: #1a1a1a;
+
+  --status-ok: #3f3f3f;
+  --status-ok-bg: #e8e8e8;
+  --status-warn: #555555;
+  --status-warn-bg: #ececec;
+  --status-danger: #262626;
+  --status-danger-bg: #dedede;
+  --status-info: #333333;
+  --status-info-bg: #e8e8e8;
+
+  --btn-aprender-bg: #333333;
+  --btn-aprender-border: #1a1a1a;
+  --btn-hablar-bg: #404040;
+  --btn-hablar-border: #262626;
+  --btn-colores-bg: #4d4d4d;
+  --btn-colores-border: #333333;
+  --btn-logros-bg: #595959;
+  --btn-logros-border: #404040;
+
+  --shadow-card: 0 2px 10px rgb(0 0 0 / 0.08);
+  --overlay: rgb(0 0 0 / 0.65);
+}
+
+/* Espacio del docente: sobrio, de datos, tipografía neutra (no se ofrece al alumno) */
 html[data-theme="admin"] {
+  --font-body: 'Inter Variable', 'Segoe UI', system-ui, sans-serif;
+
   --bg-app: #f8fafc;
   --text-primary: #0f172a;
   --text-secondary: #475569;
   --border-color: #e2e8f0;
+  --border-strong: #8091a7;
 
   --brand-primary: #1e40af;
   --brand-hover: #1e3a8a;
 
+  --status-ok: #15803d;
+  --status-warn: #a15c07;
+  --status-danger: #b91c1c;
   --status-info: #1e40af;
   --status-info-bg: #dbeafe;
 
@@ -137,4 +208,8 @@ html[data-theme="admin"] {
   --btn-colores-border: #1e293b;
   --btn-logros-bg: #15803d;
   --btn-logros-border: #166534;
+
+  --radius-control: 0.625rem;
+  --radius-card: 0.875rem;
+  --shadow-card: 0 1px 3px rgb(15 23 42 / 0.08);
 }

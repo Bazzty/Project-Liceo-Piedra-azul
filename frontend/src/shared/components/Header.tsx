@@ -43,7 +43,7 @@ export const Header: React.FC = () => {
           <button
             onClick={() => setIsHablarOpen(true)}
             aria-label="Abrir tablero de comunicación aumentativa SAAC"
-            className="flex items-center gap-2 px-4 py-2.5 bg-statusOk hover:opacity-90 text-onStatus font-black rounded-2xl shadow-md transition-all active:scale-95 cursor-pointer text-sm"
+            className="flex items-center gap-2 px-4 py-2.5 min-h-12 bg-statusOk hover:opacity-90 text-onStatus font-black rounded-2xl shadow-md transition-all active:scale-95 cursor-pointer text-sm"
           >
             <MessageSquare className="w-4 h-4" />
             <span>HABLAR</span>
@@ -53,7 +53,7 @@ export const Header: React.FC = () => {
           <button
             onClick={() => setIsOptionsOpen(true)}
             aria-label="Opciones de accesibilidad y paleta de colores"
-            className="p-2.5 bg-app hover:bg-borderCustom/40 text-primary rounded-2xl border-2 border-borderCustom transition-colors cursor-pointer"
+            className="inline-flex items-center justify-center min-h-12 min-w-12 bg-app hover:bg-borderCustom/40 text-primary rounded-2xl border-2 border-borderStrong transition-colors cursor-pointer"
           >
             <Settings className="w-5 h-5" />
           </button>

@@ -17,15 +17,15 @@ const BASE =
 
 const VARIANTS: Record<ButtonVariant, string> = {
   primary: 'bg-brand text-onBrand hover:bg-brand-hover shadow-card',
-  secondary: 'bg-surface text-primary border-2 border-borderCustom hover:border-brand',
+  secondary: 'bg-surface text-primary border-2 border-borderStrong hover:border-brand',
   accent: 'bg-accent text-onAccent hover:bg-accent-hover shadow-card',
   danger: 'bg-statusDanger text-onStatus hover:opacity-90 shadow-card',
   ghost: 'bg-transparent text-secondary hover:text-brand hover:bg-app',
 };
 
 const SIZES: Record<ButtonSize, string> = {
-  sm: 'px-3 py-1.5 text-sm min-h-[2.25rem]',
-  md: 'px-4 py-2 text-base min-h-[2.75rem]',
+  sm: 'px-4 py-2 text-sm min-h-12',
+  md: 'px-5 py-2.5 text-base min-h-12',
   lg: 'px-6 py-3 text-lg min-h-[3.25rem]',
   xl: 'px-8 py-4 text-xl min-h-[3.75rem]', // acción principal para niños
 };

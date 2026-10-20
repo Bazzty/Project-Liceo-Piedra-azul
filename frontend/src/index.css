@@ -1,3 +1,5 @@
+@import '@fontsource-variable/nunito';
+@import '@fontsource-variable/inter';
 @import './styles/theme.css';
 @tailwind base;
 @tailwind components;
@@ -16,7 +18,9 @@
   body {
     background-color: var(--bg-app);
     color: var(--text-primary);
-    font-family: ui-sans-serif, system-ui, 'Segoe UI', Roboto, sans-serif;
+    font-family: var(--font-body);
+    font-size: 1.0625rem;
+    line-height: 1.55;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
@@ -24,7 +28,9 @@
   /* Foco visible y consistente en toda la app */
   :focus-visible {
     outline: 3px solid var(--brand-primary);
-    outline-offset: 2px;
+    outline-offset: 3px;
+    /* Halo de contraste para que el foco se vea sobre cualquier fondo */
+    box-shadow: 0 0 0 6px var(--bg-card);
   }
 
   @media (prefers-reduced-motion: reduce) {
