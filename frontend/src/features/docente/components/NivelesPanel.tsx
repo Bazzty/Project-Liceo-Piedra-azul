@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import { ArrowLeft, ChevronRight, Pencil, Plus, Trash2, Upload } from 'lucide-react';
 import type { Cuento, Nivel } from '@/types';
 import { CuentoForm } from '@/features/docente/components/CuentoForm';
+import { EstadoCuento } from '@/features/docente/components/EstadoCuento';
 import { PictoImg } from '@/features/docente/components/widgets';
 import { Button } from '@/shared/ui';
 import { actualizarNivel, crearNivel, eliminarCuento, eliminarNivel as eliminarNivelConCuentos, useCuentos, useCuentosDeNivel, useNiveles } from '@/api';
 
 const campo =
-  'w-full bg-surface border-2 border-borderCustom rounded-2xl px-4 py-2.5 text-sm font-bold text-primary outline-none focus:border-brand';
+  'w-full bg-surface border-2 border-borderCustom rounded-control px-4 py-2.5 text-sm font-bold text-primary outline-none focus:border-brand';
 
 const BotonAccion: React.FC<{
   onClick: () => void;
@@ -17,7 +18,7 @@ const BotonAccion: React.FC<{
 }> = ({ onClick, icono, texto, peligro }) => (
   <button
     onClick={onClick}
-    className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border-2 text-xs font-black cursor-pointer transition-all ${
+    className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-control border-2 text-xs font-bold cursor-pointer transition-all ${
       peligro
         ? 'border-borderCustom text-statusDanger hover:border-statusDanger'
         : 'border-borderCustom text-primary hover:border-brand'
@@ -55,8 +56,8 @@ const NivelForm: React.FC<{ nivel?: Nivel; niveles: Nivel[]; onListo: () => void
   };
 
   return (
-    <div className="bg-app border-2 border-borderCustom rounded-2xl p-4 flex flex-col gap-3">
-      <h3 className="text-base font-black text-primary">{nivel ? 'Editar nivel' : 'Nuevo nivel'}</h3>
+    <div className="bg-app border-2 border-borderCustom rounded-control p-4 flex flex-col gap-3">
+      <h3 className="font-display text-2xl font-semibold text-primary">{nivel ? 'Editar nivel' : 'Nuevo nivel'}</h3>
       {error && <p className="text-sm font-bold text-statusDanger">{error}</p>}
       <div className="grid grid-cols-[5rem_1fr] gap-3">
         <input className={campo} placeholder="Código" maxLength={2} value={codigo} onChange={(e) => setCodigo(e.target.value)} aria-label="Código del nivel" />
@@ -91,7 +92,7 @@ const CuentosDeNivel: React.FC<{ nivel: Nivel; onVolver: () => void }> = ({ nive
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-2xl font-black text-primary">Nivel {nivel.codigo} · Cuentos</h2>
+          <h2 className="text-2xl font-bold text-primary">Nivel {nivel.codigo} · Cuentos</h2>
           <p className="text-sm font-semibold text-secondary">{nivel.nombre}</p>
         </div>
         {modo === 'lista' && (
@@ -118,7 +119,7 @@ const CuentosDeNivel: React.FC<{ nivel: Nivel; onVolver: () => void }> = ({ nive
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
-              <tr className="text-xs font-black text-secondary border-b-2 border-borderCustom">
+              <tr className="text-xs font-bold text-secondary border-b-2 border-borderCustom">
                 <th className="py-2 pr-3">Cuento</th>
                 <th className="py-2 pr-3">Páginas</th>
                 <th className="py-2 pr-3">Estado</th>
@@ -131,18 +132,12 @@ const CuentosDeNivel: React.FC<{ nivel: Nivel; onVolver: () => void }> = ({ nive
                   <td className="py-3 pr-3">
                     <div className="flex items-center gap-3">
                       <PictoImg src={c.portadaUrl} alt={c.titulo} />
-                      <span className="font-black text-primary">{c.titulo}</span>
+                      <span className="font-bold text-primary">{c.titulo}</span>
                     </div>
                   </td>
                   <td className="py-3 pr-3 font-bold text-primary">{c.paginas.length}</td>
                   <td className="py-3 pr-3">
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-black ${
-                        c.estado === 'publicado' ? 'bg-statusOk-bg text-statusOk' : 'bg-statusWarn-bg text-statusWarn'
-                      }`}
-                    >
-                      {c.estado === 'publicado' ? 'Publicado' : 'Borrador'}
-                    </span>
+                    <EstadoCuento estado={c.estado} />
                   </td>
                   <td className="py-3">
                     <div className="flex justify-end gap-2">
@@ -188,7 +183,7 @@ export const NivelesPanel: React.FC = () => {
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-2xl font-black text-primary">Niveles y cuentos</h2>
+          <h2 className="text-2xl font-bold text-primary">Niveles y cuentos</h2>
           <p className="text-sm font-semibold text-secondary">
             Entra a un nivel para editar sus cuentos, o cambia el nombre del nivel.
           </p>
@@ -209,16 +204,16 @@ export const NivelesPanel: React.FC = () => {
               <NivelForm nivel={n} niveles={niveles} onListo={() => setFormulario(null)} />
             </li>
           ) : (
-            <li key={n.id} className="flex flex-wrap items-center gap-3 bg-app border-2 border-borderCustom rounded-2xl p-3">
+            <li key={n.id} className="flex flex-wrap items-center gap-3 bg-app border-2 border-borderCustom rounded-control p-3">
               <button
                 onClick={() => setAbierto(n.id)}
                 className="flex-1 min-w-0 flex items-center gap-4 text-left cursor-pointer group"
               >
-                <span className="w-12 h-12 rounded-2xl bg-brand text-onBrand flex items-center justify-center text-xl font-black shrink-0">
+                <span className="w-12 h-12 rounded-control bg-brand text-onBrand flex items-center justify-center text-xl font-bold shrink-0">
                   {n.codigo}
                 </span>
                 <span className="flex-1 min-w-0">
-                  <span className="block font-black text-primary truncate group-hover:text-brand">{n.nombre}</span>
+                  <span className="block font-bold text-primary truncate group-hover:text-brand">{n.nombre}</span>
                   <span className="block text-xs font-semibold text-secondary">
                     {cuentos.filter((c) => c.nivelId === n.id).length} cuento(s)
                   </span>

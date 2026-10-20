@@ -5,7 +5,8 @@ import { getArasaacImageUrl, fetchArasaacPictogramId, searchArasaacPictograms, t
 import { normalizar } from '@/features/docente/components/format';
 import { PictoImg } from '@/features/docente/components/widgets';
 import { Button } from '@/shared/ui';
-import { actualizarCuento, crearCuento, listarPictogramas } from '@/api';
+import { actualizarCuento, crearCuento, listarPictogramas, useNiveles } from '@/api';
+import { useAuthStore } from '@/features/acceso/useAuthStore';
 
 // Palabras funcionales que NO reciben pictograma sugerido (igual que en los cuentos del seed).
 // El docente igualmente puede agregarles uno a mano.
@@ -47,7 +48,8 @@ const construirPaginas = (texto: string, previas: CuentoPagina[]): CuentoPagina[
 };
 
 interface CuentoFormProps {
-  nivelId: string;
+  /** Nivel inicial al crear un cuento (se puede cambiar en el formulario). */
+  nivelId?: string;
   cuento?: Cuento; // si viene, se edita; si no, se crea
   onGuardado: () => void;
   onCancelar: () => void;
@@ -55,6 +57,9 @@ interface CuentoFormProps {
 
 /** 9e / 6.2 Subir o editar un cuento con pictogramas sugeridos (ARASAAC) y vista previa de voz. */
 export const CuentoForm: React.FC<CuentoFormProps> = ({ nivelId, cuento, onGuardado, onCancelar }) => {
+  const niveles = useNiveles();
+  const esRevisor = useAuthStore((s) => s.user?.role === 'revisor');
+  const [nivel, setNivel] = useState(cuento?.nivelId ?? nivelId ?? 'nivel-b');
   const [titulo, setTitulo] = useState(cuento?.titulo ?? '');
   const [descripcion, setDescripcion] = useState(cuento?.descripcion ?? '');
   const [texto, setTexto] = useState(cuento ? cuento.paginas.map(textoDePagina).join('\n') : '');
@@ -139,17 +144,20 @@ export const CuentoForm: React.FC<CuentoFormProps> = ({ nivelId, cuento, onGuard
     window.speechSynthesis.speak(u);
   };
 
-  const guardar = async (estado: 'borrador' | 'publicado') => {
+  const guardar = async (estado: Cuento['estado']) => {
     setError('');
     if (!titulo.trim()) return setError('El cuento necesita un título.');
     if (paginas.length === 0) return setError('Escribe al menos una frase.');
 
     const datos = {
-      nivelId,
+      nivelId: nivel,
       titulo: titulo.trim(),
       descripcion: descripcion.trim(),
       paginas,
       estado,
+      fechaCambio: new Date().toISOString(),
+      // Al volver a enviarlo, el comentario anterior del revisor ya no aplica
+      ...(estado === 'en_revision' ? { comentarioRevision: undefined } : {}),
     };
     if (cuento?.id) {
       await actualizarCuento(cuento.id, datos);
@@ -163,30 +171,41 @@ export const CuentoForm: React.FC<CuentoFormProps> = ({ nivelId, cuento, onGuard
     onGuardado();
   };
 
-  const campo = 'w-full bg-app border-2 border-borderCustom rounded-2xl px-4 py-3 text-sm font-bold text-primary outline-none focus:border-brand';
+  const campo = 'w-full bg-app border-2 border-borderCustom rounded-control px-4 py-3 text-sm font-bold text-primary outline-none focus:border-brand';
 
   return (
-    <div className="bg-app border-2 border-borderCustom rounded-2xl p-5 flex flex-col gap-4">
-      <h3 className="text-lg font-black text-primary">{cuento ? 'Editar cuento' : 'Subir cuento nuevo'}</h3>
+    <div className="bg-app border-2 border-borderCustom rounded-control p-5 flex flex-col gap-4">
+      <h3 className="font-display text-2xl font-semibold text-primary">{cuento ? 'Editar cuento' : 'Subir cuento nuevo'}</h3>
 
       {error && (
-        <p className="bg-statusDanger-bg text-statusDanger border-2 border-statusDanger rounded-2xl px-4 py-2 text-sm font-bold">
+        <p className="bg-statusDanger-bg text-statusDanger border-2 border-statusDanger rounded-control px-4 py-2 text-sm font-bold">
           {error}
         </p>
       )}
 
       <label className="flex flex-col gap-1.5">
-        <span className="text-sm font-black text-primary">Título del cuento</span>
+        <span className="text-sm font-bold text-primary">Nivel</span>
+        <select className={campo} value={nivel} onChange={(e) => setNivel(e.target.value)}>
+          {(niveles ?? []).map((n) => (
+            <option key={n.id} value={n.id}>
+              Nivel {n.codigo} · {n.nombre}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <label className="flex flex-col gap-1.5">
+        <span className="text-sm font-bold text-primary">Título del cuento</span>
         <input className={campo} value={titulo} onChange={(e) => setTitulo(e.target.value)} />
       </label>
 
       <label className="flex flex-col gap-1.5">
-        <span className="text-sm font-black text-primary">Descripción (opcional)</span>
+        <span className="text-sm font-bold text-primary">Descripción (opcional)</span>
         <input className={campo} value={descripcion} onChange={(e) => setDescripcion(e.target.value)} />
       </label>
 
       <label className="flex flex-col gap-1.5">
-        <span className="text-sm font-black text-primary">Texto: una frase por página</span>
+        <span className="text-sm font-bold text-primary">Texto: una frase por página</span>
         <textarea className={`${campo} min-h-28`} value={texto} onChange={(e) => cambiarTexto(e.target.value)} />
       </label>
 
@@ -203,40 +222,40 @@ export const CuentoForm: React.FC<CuentoFormProps> = ({ nivelId, cuento, onGuard
         </Button>
       </div>
       <p className="text-xs font-semibold text-secondary">
-        Cada palabra recibe un pictograma sugerido. Puedes cambiarlo antes de publicar. «Probar voz» usa la voz del
+        Cada palabra recibe un pictograma sugerido. Puedes cambiarlo antes de enviarlo a revisión. «Probar voz» usa la voz del
         navegador como vista previa; el audio definitivo del cuento se genera aparte.
       </p>
       {mensaje && <p className="text-sm font-bold text-statusOk">{mensaje}</p>}
 
       {/* Vista previa página por página: palabra + pictograma (tocar para cambiar) */}
       {paginas.map((pg, p) => (
-        <div key={p} className="bg-surface border-2 border-borderCustom rounded-2xl p-3 flex flex-col gap-2">
-          <span className="text-xs font-black uppercase tracking-wider text-secondary">Página {pg.numeroPagina}</span>
+        <div key={p} className="bg-surface border-2 border-borderCustom rounded-control p-3 flex flex-col gap-2">
+          <span className="text-xs font-bold uppercase tracking-wider text-secondary">Página {pg.numeroPagina}</span>
           <div className="flex flex-wrap gap-2">
             {pg.palabras.map((w, i) => (
               <button
                 key={i}
                 onClick={() => abrirEditor(p, i)}
                 aria-label={`Cambiar pictograma de ${w.texto}`}
-                className={`flex flex-col items-center gap-1 p-2 rounded-2xl border-2 cursor-pointer transition-all ${
+                className={`flex flex-col items-center gap-1 p-2 rounded-control border-2 cursor-pointer transition-all ${
                   editando?.p === p && editando.w === i ? 'border-brand' : 'border-borderCustom hover:border-brand'
                 }`}
               >
                 {w.pictogramaUrl ? (
                   <PictoImg src={w.pictogramaUrl} alt={w.texto} className="w-14 h-14" />
                 ) : (
-                  <div className="w-14 h-14 rounded-xl border-2 border-dashed border-borderCustom flex items-center justify-center text-secondary text-xl font-black">
+                  <div className="w-14 h-14 rounded-control border-2 border-dashed border-borderCustom flex items-center justify-center text-secondary text-xl font-bold">
                     +
                   </div>
                 )}
-                <span className="text-xs font-black text-primary">{w.texto}</span>
+                <span className="text-xs font-bold text-primary">{w.texto}</span>
               </button>
             ))}
           </div>
 
           {editando?.p === p && (
-            <div className="bg-app border-2 border-borderCustom rounded-2xl p-3 flex flex-col gap-2">
-              <span className="text-sm font-black text-primary">
+            <div className="bg-app border-2 border-borderCustom rounded-control p-3 flex flex-col gap-2">
+              <span className="text-sm font-bold text-primary">
                 Pictograma para «{paginas[p].palabras[editando.w].texto}»
               </span>
               {buscando && <span className="text-xs font-semibold text-secondary">Buscando en ARASAAC…</span>}
@@ -253,7 +272,7 @@ export const CuentoForm: React.FC<CuentoFormProps> = ({ nivelId, cuento, onGuard
                       asignarPictograma(p, editando.w, o.url);
                       setEditando(null);
                     }}
-                    className="cursor-pointer rounded-xl hover:ring-4 hover:ring-brand"
+                    className="cursor-pointer rounded-control hover:ring-4 hover:ring-brand"
                     aria-label={`Usar pictograma ${o.id}`}
                   >
                     <PictoImg src={o.url} alt={`pictograma ${o.id}`} className="w-16 h-16" />
@@ -275,7 +294,9 @@ export const CuentoForm: React.FC<CuentoFormProps> = ({ nivelId, cuento, onGuard
       ))}
 
       <div className="flex flex-wrap gap-3">
-        <Button onClick={() => guardar('publicado')}>Publicar</Button>
+        <Button onClick={() => guardar(esRevisor ? 'publicado' : 'en_revision')}>
+          {esRevisor ? 'Validar y publicar' : 'Enviar a revisión'}
+        </Button>
         <Button variant="secondary" onClick={() => guardar('borrador')}>
           Guardar borrador
         </Button>

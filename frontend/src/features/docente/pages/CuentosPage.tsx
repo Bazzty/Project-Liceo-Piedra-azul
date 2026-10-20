@@ -1,12 +1,9 @@
 import React from 'react';
 import { AdminLayout } from '@/features/docente/AdminLayout';
-import { Hoja } from '@/features/docente/components/Hoja';
-import { NivelesPanel } from '@/features/docente/components/NivelesPanel';
+import { GestionCuentos } from '@/features/docente/components/GestionCuentos';
 
 export const CuentosPage: React.FC = () => (
   <AdminLayout activeSection="cuentos">
-    <Hoja className="p-6">
-      <NivelesPanel />
-    </Hoja>
+    <GestionCuentos />
   </AdminLayout>
 );

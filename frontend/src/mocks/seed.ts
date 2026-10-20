@@ -299,6 +299,27 @@ export async function seedDatabase() {
 			// Cuentos asignados al Nivel B
 			const cuentosNivelB: Cuento[] = [
 				{
+					id: 'cuento-mochila',
+					nivelId: 'nivel-b',
+					titulo: 'Mi Mochila Nueva',
+					descripcion: 'Cuento corto enviado a revisión',
+					portadaUrl: '/pictogramas/arasaac/mochila.png',
+					estado: 'en_revision',
+					fechaCreacion: new Date().toISOString(),
+					paginas: [
+						{
+							numeroPagina: 1,
+							textoCompleto: 'Tengo una mochila nueva',
+							palabras: [
+								{ texto: 'Tengo' },
+								{ texto: 'una' },
+								{ texto: 'mochila', pictogramaUrl: '/pictogramas/arasaac/mochila.png', audioUrl: '/audio/pictogramas/mochila.mp3' },
+								{ texto: 'nueva' },
+							],
+						},
+					],
+				},
+				{
 					id: 'cuento-auto-ana',
 					nivelId: 'nivel-b',
 					titulo: 'El Auto de Ana',

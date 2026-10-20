@@ -110,8 +110,10 @@ export const NivelesView: React.FC = () => {
     useCuentosDeNivel(PARADAS[3].id),
   ];
 
+  const publicados = (nivelIndex: number) => (cuentosPorNivel[nivelIndex] ?? []).filter((c) => c.estado === 'publicado');
+
   const completadosDe = (nivelIndex: number) => {
-    const ids = new Set((cuentosPorNivel[nivelIndex] ?? []).map((c) => c.id));
+    const ids = new Set(publicados(nivelIndex).map((c) => c.id));
     return new Set((progresos ?? []).filter((p) => p.completado && ids.has(p.cuentoId)).map((p) => p.cuentoId)).size;
   };
 
@@ -141,7 +143,7 @@ export const NivelesView: React.FC = () => {
                 key={p.id}
                 parada={p}
                 orden={i}
-                total={(cuentosPorNivel[i] ?? []).length}
+                total={publicados(i).length}
                 completados={completadosDe(i)}
                 onElegir={() => navigate(ROUTES.catalogo(p.id))}
               />

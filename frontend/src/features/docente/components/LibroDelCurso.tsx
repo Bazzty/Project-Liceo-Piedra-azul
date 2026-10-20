@@ -53,7 +53,7 @@ export const LibroDelCurso: React.FC<{ filas: FilaLibro[]; titulo?: string }> = 
             </thead>
             <tbody>
               {filas.map((fila) => (
-                <tr key={fila.alumno.id} className="border-t border-borderCustom">
+                <tr key={fila.alumno.id} className="border-t border-borderCustom hover:bg-brand/5 transition-colors">
                   <td className="py-3 pr-3">
                     <Link
                       to={`${ROUTES.profesorEstudiantes}?alumno=${fila.alumno.id}`}

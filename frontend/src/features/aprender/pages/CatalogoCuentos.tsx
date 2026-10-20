@@ -110,7 +110,8 @@ export const CatalogoCuentos: React.FC = () => {
   const navigate = useNavigate();
   const activeStudentId = useAuthStore((s) => s.activeStudentId);
   const nivel = useNivel(nivelId);
-  const cuentos = useCuentosDeNivel(nivelId);
+  // Los niños solo ven los cuentos validados por el revisor
+  const cuentos = useCuentosDeNivel(nivelId)?.filter((c) => c.estado === 'publicado');
   const progresos = useProgresosDeAlumno(activeStudentId);
 
   const completado = (cuentoId?: string) => !!cuentoId && !!progresos?.some((p) => p.cuentoId === cuentoId && p.completado);

@@ -61,8 +61,12 @@ export interface Cuento {
 	descripcion: string;
 	portadaUrl?: string;
 	paginas: CuentoPagina[];
-	estado: 'borrador' | 'publicado'; // RF-13
+	/** borrador → en_revision (la docente lo envía) → publicado (el revisor lo valida) */
+	estado: 'borrador' | 'en_revision' | 'publicado'; // RF-13
+	/** Motivo por el que el revisor devolvió el cuento a borrador. */
+	comentarioRevision?: string;
 	fechaCreacion: string;
+	fechaCambio?: string;
 }
 
 // 5. Registro de Progreso Individual por Alumno
