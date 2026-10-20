@@ -14,54 +14,54 @@ html[data-theme="suave"] {
   /* Tipografía: redondeada y cálida en el espacio del estudiante */
   --font-body: 'Nunito Variable', ui-rounded, 'Segoe UI', system-ui, sans-serif;
 
-  /* Superficies y texto */
-  --bg-app: #f4f7f6;
+  /* Superficies y texto: cielo suave de fondo, tarjetas blancas que resaltan */
+  --bg-app: #d6ebf5;
   --bg-card: #ffffff;
-  --text-primary: #1f3a4d;
-  --text-secondary: #4a6274;
-  --border-color: #c9d6d8;
-  --border-strong: #76909a;
+  --text-primary: #12354d;
+  --text-secondary: #2d5470;
+  --border-color: #9cc6dc;
+  --border-strong: #4f7f9c;
 
   /* Marca */
-  --brand-primary: #2f6f8f;
-  --brand-hover: #25586f;
+  --brand-primary: #1a6699;
+  --brand-hover: #14527d;
   --on-brand: #ffffff;
 
-  /* Acento (celebraciones, estrellas, acciones destacadas secundarias) */
-  --accent: #f0c987;
-  --accent-hover: #e8b95f;
-  --on-accent: #3d2b08;
+  /* Acento: amarillo sol (celebración, estrellas, acciones destacadas) */
+  --accent: #ffc83d;
+  --accent-hover: #f5b800;
+  --on-accent: #3a2600;
 
   /* Estados: color fuerte + fondo suave + texto sobre color fuerte */
-  --status-ok: #2a7548;
-  --status-ok-bg: #e3f3ea;
+  --status-ok: #1f7a47;
+  --status-ok-bg: #dcf3e4;
   --status-warn: #8f5300;
-  --status-warn-bg: #fbefd5;
+  --status-warn-bg: #fdeccb;
   --status-danger: #b3382c;
-  --status-danger-bg: #fbe4e1;
-  --status-info: #2f6f8f;
-  --status-info-bg: #e1eef4;
+  --status-danger-bg: #fbe1de;
+  --status-info: #1a6699;
+  --status-info-bg: #dbeaf5;
   --on-status: #ffffff;
 
   /* Botones de la vista principal */
-  --btn-aprender-bg: #2f6f8f;
+  --btn-aprender-bg: #1a6699;
   --btn-aprender-text: #ffffff;
-  --btn-aprender-border: #25586f;
-  --btn-hablar-bg: #2b7a76;
+  --btn-aprender-border: #14527d;
+  --btn-hablar-bg: #0f7f77;
   --btn-hablar-text: #ffffff;
-  --btn-hablar-border: #215f5c;
-  --btn-colores-bg: #5b5f9e;
+  --btn-hablar-border: #0b625c;
+  --btn-colores-bg: #6a4fb3;
   --btn-colores-text: #ffffff;
-  --btn-colores-border: #484c82;
-  --btn-logros-bg: #7a5c00;
-  --btn-logros-text: #ffffff;
-  --btn-logros-border: #5f4700;
+  --btn-colores-border: #55409a;
+  --btn-logros-bg: #f0a30a;
+  --btn-logros-text: #3a2600;
+  --btn-logros-border: #c78400;
 
   /* Forma y elevación */
   --radius-control: 1rem;
   --radius-card: 1.5rem;
-  --shadow-card: 0 2px 10px rgb(31 58 77 / 0.08);
-  --overlay: rgb(15 30 40 / 0.6);
+  --shadow-card: 0 3px 12px rgb(18 53 77 / 0.16);
+  --overlay: rgb(10 30 45 / 0.6);
 }
 
 html[data-theme="alto-contraste"] {

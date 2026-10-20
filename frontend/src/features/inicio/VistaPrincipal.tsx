@@ -5,6 +5,7 @@ import { useAlumno, useProgresosDeAlumno } from '@/api';
 import { ROUTES } from '@/app/routes';
 import { useAuthStore } from '@/features/acceso/useAuthStore';
 import { TableroSAAC } from '@/features/tablero/components/TableroSAAC';
+import { FondoPaisaje } from '@/shared/components/FondoPaisaje';
 import { OsoBurbuja } from '@/shared/components/OsoBurbuja';
 import { SelectorPaleta } from '@/shared/components/SelectorPaleta';
 import { useAplicarTema } from '@/shared/hooks/useAplicarTema';
@@ -75,8 +76,9 @@ export const VistaPrincipal: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-app text-primary flex flex-col [background-image:radial-gradient(var(--border-color)_1.5px,transparent_1.5px)] [background-size:26px_26px]">
-      <header className="bg-surface border-b-2 border-borderCustom px-4 sm:px-8 py-3 flex items-center justify-between gap-3">
+    <div className="relative overflow-hidden min-h-screen bg-app text-primary flex flex-col">
+      <FondoPaisaje />
+      <header className="relative bg-surface border-b-2 border-borderCustom px-4 sm:px-8 py-3 flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           {alumno?.avatarUrl ? (
             <img src={alumno.avatarUrl} alt="" className="w-14 h-14 rounded-full object-cover border-[3px] border-brand" />
@@ -97,7 +99,7 @@ export const VistaPrincipal: React.FC = () => {
         </button>
       </header>
 
-      <main className="flex-1 w-full max-w-7xl mx-auto px-4 py-6 sm:py-10 flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-14">
+      <main className="relative flex-1 w-full max-w-7xl mx-auto px-4 py-6 sm:py-10 flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-14">
         <div className="bg-brand rounded-card p-6 sm:p-8 lg:p-10 shrink-0 shadow-card">
           <OsoBurbuja mensaje="¿Qué hacemos?" size="lg" />
         </div>

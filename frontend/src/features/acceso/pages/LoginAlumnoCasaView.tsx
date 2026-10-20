@@ -9,6 +9,7 @@ import { TarjetaIlustrada } from '@/features/acceso/components/TarjetaIlustrada'
 import { TecladoCodigo } from '@/features/acceso/components/TecladoCodigo';
 import { useAuthStore } from '@/features/acceso/useAuthStore';
 import { buscarTarjeta, LARGO_CODIGO, TARJETAS_DEMO } from '@/mocks/tarjetas';
+import { FondoPaisaje } from '@/shared/components/FondoPaisaje';
 import { OsoBurbuja } from '@/shared/components/OsoBurbuja';
 import { useAplicarTema } from '@/shared/hooks/useAplicarTema';
 import { useHablar } from '@/shared/hooks/useHablar';
@@ -211,7 +212,8 @@ export const LoginAlumnoCasaView: React.FC = () => {
       </aside>
 
       {/* Panel de ingreso */}
-      <main className="relative overflow-hidden flex flex-col items-center px-4 py-5 lg:py-6 [background-image:radial-gradient(var(--border-color)_1.5px,transparent_1.5px)] [background-size:26px_26px]">
+      <main className="relative overflow-hidden flex flex-col items-center px-4 py-5 lg:py-6">
+        <FondoPaisaje />
         <div className="absolute -top-24 -right-24 w-80 h-80 rounded-full bg-brand/10" aria-hidden />
         <div className="absolute -bottom-32 -left-24 w-96 h-96 rounded-full bg-accent/30" aria-hidden />
 
