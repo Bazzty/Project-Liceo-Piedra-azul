@@ -19,7 +19,7 @@ export const CasillasCodigo: React.FC<CasillasCodigoProps> = ({ valor, largo, er
       const activa = i === valor.length;
       return (
         <div
-          key={i}
+          key={`${i}-${lleno ? valor[i] : ''}`}
           aria-hidden
           className={`w-12 h-16 sm:w-16 sm:h-20 rounded-control border-2 flex items-center justify-center text-4xl font-black text-primary transition-colors ${
             error
@@ -27,7 +27,7 @@ export const CasillasCodigo: React.FC<CasillasCodigoProps> = ({ valor, largo, er
               : activa
                 ? 'border-brand bg-surface ring-4 ring-brand/20'
                 : lleno
-                  ? 'border-brand bg-surface'
+                  ? 'border-brand bg-surface animate-pop'
                   : 'border-borderStrong bg-app'
           }`}
         >

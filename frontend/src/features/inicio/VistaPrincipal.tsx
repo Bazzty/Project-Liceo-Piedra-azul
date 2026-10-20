@@ -20,6 +20,7 @@ const ESTILOS = {
 } as const;
 
 interface OpcionProps {
+  orden: number;
   estilo: keyof typeof ESTILOS;
   icono: React.ReactNode;
   titulo: string;
@@ -27,16 +28,16 @@ interface OpcionProps {
 }
 
 /** Botón grande del menú: dibujo + una palabra. El parlante dice la palabra en voz alta. */
-const Opcion: React.FC<OpcionProps> = ({ estilo, icono, titulo, onClick }) => {
+const Opcion: React.FC<OpcionProps> = ({ orden, estilo, icono, titulo, onClick }) => {
   const hablar = useHablar();
   return (
-    <div className="relative">
+    <div className="relative animate-aparecer" style={{ animationDelay: `${orden * 120}ms` }}>
       <button
         type="button"
         onClick={onClick}
-        className={`w-full h-40 sm:h-60 lg:h-[17rem] rounded-card border-b-8 flex flex-col items-center justify-center gap-2 sm:gap-3 shadow-card cursor-pointer transition-transform hover:-translate-y-1 active:translate-y-0 ${ESTILOS[estilo]} ${estilo === 'salir' ? 'border-2 border-b-8' : ''}`}
+        className={`group w-full h-40 sm:h-60 lg:h-[17rem] rounded-card border-b-8 flex flex-col items-center justify-center gap-2 sm:gap-3 shadow-card cursor-pointer transition-transform hover:-translate-y-2 hover:scale-[1.03] active:translate-y-0 active:scale-95 ${ESTILOS[estilo]} ${estilo === 'salir' ? 'border-2 border-b-8' : ''}`}
       >
-        <span className="[&>svg]:w-14 [&>svg]:h-14 sm:[&>svg]:w-24 sm:[&>svg]:h-24 lg:[&>svg]:w-28 lg:[&>svg]:h-28" aria-hidden>
+        <span className="group-hover:animate-girar [&>svg]:w-14 [&>svg]:h-14 sm:[&>svg]:w-24 sm:[&>svg]:h-24 lg:[&>svg]:w-28 lg:[&>svg]:h-28" aria-hidden>
           {icono}
         </span>
         <span className="text-2xl sm:text-4xl lg:text-5xl font-black">{titulo}</span>
@@ -105,15 +106,16 @@ export const VistaPrincipal: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-2 gap-4 sm:gap-6 w-full max-w-4xl">
-          <Opcion estilo="leer" titulo="Leer" icono={<BookOpen strokeWidth={1.8} />} onClick={() => navigate(ROUTES.aprender)} />
-          <Opcion estilo="hablar" titulo="Hablar" icono={<MessageCircle strokeWidth={1.8} />} onClick={() => setHablarAbierto(true)} />
+          <Opcion orden={0} estilo="leer" titulo="Leer" icono={<BookOpen strokeWidth={1.8} />} onClick={() => navigate(ROUTES.aprender)} />
+          <Opcion orden={1} estilo="hablar" titulo="Hablar" icono={<MessageCircle strokeWidth={1.8} />} onClick={() => setHablarAbierto(true)} />
           <Opcion
+            orden={2}
             estilo="estrellas"
             titulo="Mis estrellas"
             icono={<Star strokeWidth={1.6} className="fill-accent" />}
             onClick={() => setEstrellasAbierto(true)}
           />
-          <Opcion estilo="salir" titulo="Salir" icono={<LogOut strokeWidth={1.8} />} onClick={salir} />
+          <Opcion orden={3} estilo="salir" titulo="Salir" icono={<LogOut strokeWidth={1.8} />} onClick={salir} />
         </div>
       </main>
 
@@ -128,7 +130,8 @@ export const VistaPrincipal: React.FC = () => {
               <Star
                 key={i}
                 aria-hidden
-                className={`w-12 h-12 ${i < leidos ? 'fill-accent text-brand' : 'text-borderStrong'}`}
+                className={`w-12 h-12 animate-pop ${i < leidos ? 'fill-accent text-brand' : 'text-borderStrong'}`}
+                style={{ animationDelay: `${i * 90}ms`, animationFillMode: 'backwards' }}
                 strokeWidth={1.8}
               />
             ))}

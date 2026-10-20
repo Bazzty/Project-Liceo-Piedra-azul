@@ -10,6 +10,7 @@ import { TecladoCodigo } from '@/features/acceso/components/TecladoCodigo';
 import { useAuthStore } from '@/features/acceso/useAuthStore';
 import { buscarTarjeta, LARGO_CODIGO, TARJETAS_DEMO } from '@/mocks/tarjetas';
 import { FondoPaisaje } from '@/shared/components/FondoPaisaje';
+import { LluviaEstrellas } from '@/shared/components/LluviaEstrellas';
 import { OsoBurbuja } from '@/shared/components/OsoBurbuja';
 import { useAplicarTema } from '@/shared/hooks/useAplicarTema';
 import { useHablar } from '@/shared/hooks/useHablar';
@@ -225,11 +226,12 @@ export const LoginAlumnoCasaView: React.FC = () => {
           <div className="bg-surface rounded-card border-2 border-borderCustom shadow-card p-6 sm:p-8 [@media(max-height:820px)]:py-4 flex flex-col gap-5 [@media(max-height:820px)]:gap-3">
             {alumno ? (
               <div className="flex flex-col items-center gap-5 text-center py-6">
+                <LluviaEstrellas />
                 {alumno.avatarUrl ? (
                   <img
                     src={alumno.avatarUrl}
                     alt={`Foto de ${alumno.nombre}`}
-                    className="w-36 h-36 rounded-full object-cover border-4 border-brand shadow-card"
+                    className="w-36 h-36 rounded-full object-cover border-4 border-brand shadow-card animate-saltito"
                   />
                 ) : (
                   <span className="w-36 h-36 rounded-full bg-surface border-4 border-brand shadow-card flex items-center justify-center text-6xl font-black text-brand" aria-hidden>
