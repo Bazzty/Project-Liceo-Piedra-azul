@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { ROUTES } from '@/app/routes';
 import { useAuthStore } from '@/features/acceso/useAuthStore';
+import { MarcaPiedra } from '@/features/docente/components/MarcaPiedra';
 import { useThemeStore } from '@/shared/store/useThemeStore';
 
 export type AdminSection = 'dashboard' | 'alumnos' | 'cuentos' | 'aula';
@@ -13,16 +14,6 @@ const NAV_ITEMS: { id: AdminSection; numero: string; etiqueta: string; ruta: str
   { id: 'cuentos', numero: '03', etiqueta: 'Cuentos', ruta: ROUTES.profesorCuentos },
   { id: 'aula', numero: '04', etiqueta: 'Control de aula', ruta: ROUTES.profesorAula },
 ];
-
-/** Piedra facetada: marca del proyecto (Piedra Azul). */
-const MarcaPiedra: React.FC<{ className?: string }> = ({ className = 'w-10 h-10' }) => (
-  <svg viewBox="0 0 32 32" className={className} aria-hidden>
-    <polygon points="16,2 29,10 25,28 7,28 3,10" fill="#2a8da3" />
-    <polygon points="16,2 29,10 16,16" fill="#6cc3d6" />
-    <polygon points="3,10 16,16 7,28" fill="#1a6b7c" />
-    <polygon points="16,16 29,10 25,28 7,28" fill="#238196" fillOpacity="0.9" />
-  </svg>
-);
 
 interface AdminLayoutProps {
   children: React.ReactNode;
