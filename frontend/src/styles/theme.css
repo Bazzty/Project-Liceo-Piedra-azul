@@ -13,6 +13,15 @@
 html[data-theme="suave"] {
   /* Tipografía: redondeada y cálida en el espacio del estudiante */
   --font-body: 'Nunito Variable', ui-rounded, 'Segoe UI', system-ui, sans-serif;
+  --font-display: var(--font-body);
+
+  /* Riel de navegación del panel docente (en el espacio del estudiante no se usa) */
+  --rail-bg: #17233a;
+  --rail-active: #263a61;
+  --rail-line: #243452;
+  --rail-text: #dbe4f0;
+  --rail-muted: #9fb0c8;
+  --rail-accent: #7fd0e0;
 
   /* Superficies y texto: cielo suave de fondo, tarjetas blancas que resaltan */
   --bg-app: #d6ebf5;
@@ -181,35 +190,45 @@ html[data-theme="monocromatica"] {
   --overlay: rgb(0 0 0 / 0.65);
 }
 
-/* Espacio del docente: sobrio, de datos, tipografía neutra (no se ofrece al alumno) */
+/* Espacio del docente: "libro de clases". Sobrio, de datos; serif editorial para títulos y cifras */
 html[data-theme="admin"] {
-  --font-body: 'Inter Variable', 'Segoe UI', system-ui, sans-serif;
+  --font-body: 'Public Sans Variable', 'Segoe UI', system-ui, sans-serif;
+  --font-display: 'Newsreader Variable', Georgia, serif;
 
-  --bg-app: #f8fafc;
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --border-color: #e2e8f0;
-  --border-strong: #8091a7;
+  --bg-app: #eef1f4;
+  --bg-card: #ffffff;
+  --text-primary: #17233a;
+  --text-secondary: #4a566d;
+  --border-color: #d3dae4;
+  --border-strong: #7d8aa3;
 
-  --brand-primary: #1e40af;
-  --brand-hover: #1e3a8a;
+  --brand-primary: #1a6b7c;
+  --brand-hover: #124e5b;
+  --on-brand: #ffffff;
 
-  --status-ok: #15803d;
-  --status-warn: #a15c07;
-  --status-danger: #b91c1c;
-  --status-info: #1e40af;
-  --status-info-bg: #dbeafe;
+  --accent: #f2c14e;
+  --accent-hover: #e5b13a;
+  --on-accent: #3a2600;
 
-  --btn-aprender-bg: #1e40af;
-  --btn-aprender-border: #1e3a8a;
-  --btn-hablar-bg: #0f766e;
-  --btn-hablar-border: #115e59;
-  --btn-colores-bg: #334155;
-  --btn-colores-border: #1e293b;
-  --btn-logros-bg: #15803d;
-  --btn-logros-border: #166534;
+  --status-ok: #1b6e47;
+  --status-ok-bg: #e1f1e8;
+  --status-warn: #8a4b00;
+  --status-warn-bg: #fbeacd;
+  --status-danger: #a3262a;
+  --status-danger-bg: #f9e0df;
+  --status-info: #1f5f8b;
+  --status-info-bg: #e0edf6;
 
-  --radius-control: 0.625rem;
-  --radius-card: 0.875rem;
-  --shadow-card: 0 1px 3px rgb(15 23 42 / 0.08);
+  --btn-aprender-bg: #1a6b7c;
+  --btn-aprender-border: #124e5b;
+  --btn-hablar-bg: #1f5f8b;
+  --btn-hablar-border: #174a6d;
+  --btn-colores-bg: #4a566d;
+  --btn-colores-border: #343e52;
+  --btn-logros-bg: #1b6e47;
+  --btn-logros-border: #145336;
+
+  --radius-control: 0.375rem;
+  --radius-card: 0.25rem;
+  --shadow-card: 0 1px 2px rgb(23 35 58 / 0.08);
 }

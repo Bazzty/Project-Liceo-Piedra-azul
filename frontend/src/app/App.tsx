@@ -13,6 +13,8 @@ import { CatalogoCuentos } from '@/features/aprender/pages/CatalogoCuentos';
 import { LecturaView } from '@/features/aprender/pages/LecturaView';
 import { ControlAulaView } from '@/features/docente/pages/ControlAulaView';
 import { AdminDashboard } from '@/features/docente/pages/AdminDashboard';
+import { CuentosPage } from '@/features/docente/pages/CuentosPage';
+import { EstudiantesPage } from '@/features/docente/pages/EstudiantesPage';
 
 export const App: React.FC = () => (
   <Routes>
@@ -26,6 +28,8 @@ export const App: React.FC = () => (
     <Route element={<RequireDocente />}>
       <Route path={ROUTES.profesorAula} element={<ControlAulaView />} />
       <Route path={ROUTES.profesorPanel} element={<AdminDashboard />} />
+      <Route path={ROUTES.profesorEstudiantes} element={<EstudiantesPage />} />
+      <Route path={ROUTES.profesorCuentos} element={<CuentosPage />} />
     </Route>
 
     {/* Aula */}

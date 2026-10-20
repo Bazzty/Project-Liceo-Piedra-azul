@@ -19,8 +19,19 @@ export default {
     extend: {
       fontFamily: {
         sans: ["var(--font-body)"],
+        display: ["var(--font-display)"],
       },
       colors: {
+        /* Riel de navegación del panel docente */
+        rail: {
+          DEFAULT: "var(--rail-bg)",
+          active: "var(--rail-active)",
+          line: "var(--rail-line)",
+          text: "var(--rail-text)",
+          muted: "var(--rail-muted)",
+          accent: "var(--rail-accent)",
+        },
+
         /* Superficies y texto */
         app: "var(--bg-app)",
         surface: "var(--bg-card)",

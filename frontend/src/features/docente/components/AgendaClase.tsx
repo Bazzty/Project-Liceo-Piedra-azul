@@ -1,7 +1,7 @@
 import React from 'react';
 import { ArrowRight } from 'lucide-react';
 import { useAjustesStore, type PasoAgenda } from '@/shared/store/useAjustesStore';
-import { Card, SectionTitle } from '@/shared/ui';
+import { Hoja } from '@/features/docente/components/Hoja';
 
 const OPCIONES: { valor: PasoAgenda; nombre: string }[] = [
   { valor: 'leer', nombre: 'Leer' },
@@ -18,9 +18,9 @@ export const AgendaClase: React.FC = () => {
   const setAgenda = useAjustesStore((s) => s.setAgenda);
 
   return (
-    <Card padding="lg" className="flex flex-col gap-4">
+    <Hoja className="flex flex-col gap-4">
       <div>
-        <SectionTitle>Agenda visual de la clase</SectionTitle>
+        <h2 className="font-display text-2xl font-semibold text-primary">Agenda visual de la clase</h2>
         <p className="text-sm font-semibold text-secondary mt-1">
           Los niños verán estos dos pasos arriba en su menú: primero uno, después el otro.
         </p>
@@ -48,6 +48,6 @@ export const AgendaClase: React.FC = () => {
           </select>
         </label>
       </div>
-    </Card>
+    </Hoja>
   );
 };

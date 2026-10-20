@@ -4,8 +4,11 @@ export const ROUTES = {
   muestra: '/muestra',
 
   profesorLogin: '/profesor/login',
-  profesorAula: '/profesor/aula',
   profesorPanel: '/profesor/panel',
+  profesorEstudiantes: '/profesor/estudiantes',
+  profesorCuentos: '/profesor/cuentos',
+  profesorTarjetas: '/profesor/tarjetas',
+  profesorAula: '/profesor/aula',
 
   aulaEspera: '/aula/espera',
   aulaAlumnos: '/aula/alumnos',

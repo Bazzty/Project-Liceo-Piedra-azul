@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { ArrowLeft, ChevronRight, Palette, Volume2 } from 'lucide-react';
 import type { VozId } from '@/types';
 import { THEMES_CONFIG } from '@/shared/config/themes';
@@ -92,7 +93,8 @@ const DetalleAlumno: React.FC<{ alumnoId: string; onVolver: () => void }> = ({ a
 /** 9c. Lista de todos los alumnos con acceso al detalle de cada uno. */
 export const AlumnosPanel: React.FC = () => {
   const filas = useListaAlumnos();
-  const [seleccionado, setSeleccionado] = useState<string | null>(null);
+  const [params] = useSearchParams();
+  const [seleccionado, setSeleccionado] = useState<string | null>(params.get('alumno'));
 
   if (seleccionado) {
     return <DetalleAlumno alumnoId={seleccionado} onVolver={() => setSeleccionado(null)} />;

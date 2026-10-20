@@ -18,7 +18,7 @@ export const LoginProfesorView: React.FC = () => {
     if (usuario && password) {
       login();
       setRole('docente');
-      navigate(ROUTES.profesorAula);
+      navigate(ROUTES.profesorPanel);
     } else {
       setError('Por favor ingresa usuario y contraseña válidos.');
     }
