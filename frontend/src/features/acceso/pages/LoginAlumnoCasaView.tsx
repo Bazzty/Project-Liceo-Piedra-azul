@@ -160,7 +160,7 @@ export const LoginAlumnoCasaView: React.FC = () => {
     setActiveStudentId(alumno.id);
     setRole('estudiante');
     setSessionType('casa');
-    navigate(ROUTES.aprender);
+    navigate(ROUTES.menu);
   };
 
   const mensajeOso = alumno

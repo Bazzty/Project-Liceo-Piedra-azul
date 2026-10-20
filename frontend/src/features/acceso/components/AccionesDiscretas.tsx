@@ -2,9 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { HelpCircle, Lock, Palette } from 'lucide-react';
 import { ROUTES } from '@/app/routes';
-import { THEMES_CONFIG } from '@/shared/config/themes';
-import { useThemeStore, type ThemeId } from '@/shared/store/useThemeStore';
-import { Modal, OptionButton } from '@/shared/ui';
+import { SelectorPaleta } from '@/shared/components/SelectorPaleta';
+import { Modal } from '@/shared/ui';
 
 const ICONO =
   'inline-flex items-center justify-center min-h-12 min-w-12 rounded-control border-2 border-borderStrong bg-surface text-primary cursor-pointer hover:border-brand transition-colors';
@@ -12,7 +11,6 @@ const ICONO =
 /** Colores, ayuda y acceso docente: controles pequeños y discretos que no compiten con la acción del niño. */
 export const AccionesDiscretas: React.FC = () => {
   const navigate = useNavigate();
-  const { currentTheme, setTheme } = useThemeStore();
   const [ayudaAbierta, setAyudaAbierta] = useState(false);
   const [paletaAbierta, setPaletaAbierta] = useState(false);
 
@@ -47,25 +45,7 @@ export const AccionesDiscretas: React.FC = () => {
         </ol>
       </Modal>
 
-      <Modal isOpen={paletaAbierta} onClose={() => setPaletaAbierta(false)} title="Colores de la pantalla" size="sm">
-        <div role="radiogroup" aria-label="Paleta de colores" className="flex flex-col gap-3 p-2">
-          {THEMES_CONFIG.map((tema) => (
-            <OptionButton
-              key={tema.id}
-              selected={currentTheme === tema.id}
-              onClick={() => setTheme(tema.id as ThemeId)}
-              className="flex items-center gap-3 px-4 py-3 font-extrabold text-left text-lg"
-            >
-              <span
-                className="w-7 h-7 rounded-full border-2 border-borderStrong shrink-0"
-                style={{ backgroundColor: tema.colorPreviewHex }}
-                aria-hidden
-              />
-              {tema.nombre}
-            </OptionButton>
-          ))}
-        </div>
-      </Modal>
+      <SelectorPaleta isOpen={paletaAbierta} onClose={() => setPaletaAbierta(false)} />
     </>
   );
 };
