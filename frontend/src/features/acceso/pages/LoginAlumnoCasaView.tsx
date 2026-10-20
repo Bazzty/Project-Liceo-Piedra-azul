@@ -4,16 +4,17 @@ import { ArrowLeft, BookOpen, ChevronDown, Clock, CreditCard } from 'lucide-reac
 import { obtenerAlumno } from '@/api';
 import { ROUTES } from '@/app/routes';
 import { CasillasCodigo } from '@/features/acceso/components/CasillasCodigo';
+import { TarjetaIlustrada } from '@/features/acceso/components/TarjetaIlustrada';
 import { TecladoCodigo } from '@/features/acceso/components/TecladoCodigo';
 import { useAuthStore } from '@/features/acceso/useAuthStore';
 import { buscarTarjeta, LARGO_CODIGO, TARJETAS_DEMO } from '@/mocks/tarjetas';
+import { OsoBurbuja } from '@/shared/components/OsoBurbuja';
 import { useAplicarTema } from '@/shared/hooks/useAplicarTema';
 import { Avatar, Button } from '@/shared/ui';
 import type { Alumno } from '@/types';
 
 const MAX_INTENTOS = 5;
 const SEGUNDOS_BLOQUEO = 30;
-const BASE = import.meta.env.BASE_URL || '/';
 
 /** Muestra el nombre y la foto de cada tarjeta de ejemplo, para presentar el prototipo. */
 const TarjetasDeEjemplo: React.FC<{ onElegir: (codigo: string) => void; nombres: Record<string, string> }> = ({
@@ -154,7 +155,7 @@ export const LoginAlumnoCasaView: React.FC = () => {
       ? 'Descansemos un momento.'
       : error
         ? 'Intentemos otra vez.'
-        : 'Pon el código de tu tarjeta.';
+        : 'Toca los números de tu tarjeta.';
 
   return (
     <div className="min-h-screen bg-app text-primary lg:grid lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
@@ -173,17 +174,7 @@ export const LoginAlumnoCasaView: React.FC = () => {
           </div>
         </div>
 
-        <div className="relative flex flex-col items-center gap-6 py-2">
-          <div className="relative bg-surface text-primary rounded-card shadow-card px-6 py-4 max-w-xs text-center" role="status" aria-live="polite">
-            <p className="text-xl sm:text-2xl font-black">{mensajeOso}</p>
-            <span className="absolute left-1/2 -bottom-2 w-5 h-5 -translate-x-1/2 rotate-45 bg-surface" aria-hidden />
-          </div>
-          <img
-            src={`${BASE}assets/personajes/oso/cabeza_base.png`.replace(/\/\//g, '/')}
-            alt="Osito, tu guía de lectura"
-            className="w-32 h-32 lg:w-48 lg:h-48 object-contain bg-surface rounded-full border-4 border-onBrand/60 p-2"
-          />
-        </div>
+        <OsoBurbuja mensaje={mensajeOso} size="md" className="relative py-2" />
 
         <p className="relative hidden lg:block text-base font-semibold max-w-sm">
           Leemos juntos con letras, dibujos y voz.
@@ -221,9 +212,12 @@ export const LoginAlumnoCasaView: React.FC = () => {
             </div>
           ) : (
             <>
-              <div className="flex flex-col gap-1">
-                <h1 className="text-3xl sm:text-4xl font-black text-primary">Entra con tu tarjeta</h1>
-                <p className="text-lg font-bold text-secondary">Escribe el número de tu tarjeta.</p>
+              <div className="flex items-center gap-4">
+                <TarjetaIlustrada className="w-28 shrink-0" />
+                <div className="flex flex-col gap-1">
+                  <h1 className="text-3xl sm:text-4xl font-black text-primary">Tu tarjeta</h1>
+                  <p className="text-lg font-bold text-secondary">Toca los números.</p>
+                </div>
               </div>
 
               <CasillasCodigo valor={codigo} largo={LARGO_CODIGO} error={error || bloqueado} />
