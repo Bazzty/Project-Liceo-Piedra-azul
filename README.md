@@ -21,9 +21,9 @@
 
 ### Frontend (`/frontend`)
 
-* **Core:** React 18 + TypeScript + Vite
+* **Core:** React 19 + TypeScript + Vite
 * **Estilos & Accesibilidad:** Tailwind CSS (Bajo estímulo visual / Ley TEA 21.545) + Lucide Icons
-* **Modo Offline & PWA:** `vite-plugin-pwa` + Workbox
+* **Modo Offline & PWA:** `vite-plugin-pwa` + Workbox *(planificado, aún no integrado)*
 * **Base de Datos Local:** Dexie.js (IndexedDB) para cuentos y progreso offline
 * **Gestión de Estado:** Zustand (Estado UI) + TanStack Query (API)
 
