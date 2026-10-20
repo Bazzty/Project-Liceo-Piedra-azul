@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import type { CuentoPalabra } from '@/types';
 import { usePlayerStore } from '@/shared/store/usePlayerStore';
 import { resolverYGuardarPictograma } from '@/features/tablero/arasaac';
@@ -26,10 +26,14 @@ export const PictogramaCard: React.FC<PictogramaCardProps> = ({
 
 	const initialImageUrl = palabra.pictogramaUrl || picEnDb?.imagenUrl;
 
-	useEffect(() => {
+	// Reinicia la imagen cuando cambia la palabra o su pictograma (ajuste durante el render)
+	const claveImagen = `${palabra.texto}|${initialImageUrl ?? ''}`;
+	const [claveAnterior, setClaveAnterior] = useState('');
+	if (claveAnterior !== claveImagen) {
+		setClaveAnterior(claveImagen);
 		setImgSrc(initialImageUrl || null);
 		setHasError(false);
-	}, [initialImageUrl, palabra.texto]);
+	}
 
 	const handleImageError = async () => {
 		if (!hasError) {

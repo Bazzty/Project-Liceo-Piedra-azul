@@ -93,11 +93,17 @@ export const CharacterGuide: React.FC<CharacterGuideProps> = ({
 		return () => stopLipSync();
 	}, [stopLipSync]);
 
+	// Si suena otro audio, corta la animación de boca
+	const otroAudio = !!audioUrl && currentAudioUrl !== audioUrl;
+	if (otroAudio && currentViseme !== 'NEUTRAL') {
+		setCurrentViseme('NEUTRAL');
+	}
 	useEffect(() => {
-		if (audioUrl && currentAudioUrl !== audioUrl) {
-			stopLipSync();
+		if (otroAudio && timeoutRef.current) {
+			clearTimeout(timeoutRef.current);
+			timeoutRef.current = null;
 		}
-	}, [currentAudioUrl, audioUrl, stopLipSync]);
+	}, [otroAudio]);
 
 	const runLipSync = useCallback((text: string) => {
 		stopLipSync();

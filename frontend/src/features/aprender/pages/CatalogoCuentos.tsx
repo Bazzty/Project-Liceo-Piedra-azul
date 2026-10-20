@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ArrowLeft, BookOpen, Sparkles, Star } from 'lucide-react';
 import { MainLayout } from '@/shared/layouts/MainLayout';
 import { CharacterGuide } from '@/shared/components/CharacterGuide';
@@ -14,10 +14,12 @@ const PortadaCuento: React.FC<{ cuento: Cuento }> = ({ cuento }) => {
 	const [imgSrc, setImgSrc] = useState(cuento.portadaUrl);
 	const [hasError, setHasError] = useState(false);
 
-	useEffect(() => {
+	const [portadaAnterior, setPortadaAnterior] = useState(cuento.portadaUrl);
+	if (portadaAnterior !== cuento.portadaUrl) {
+		setPortadaAnterior(cuento.portadaUrl);
 		setImgSrc(cuento.portadaUrl);
 		setHasError(false);
-	}, [cuento.portadaUrl, cuento.titulo]);
+	}
 
 	const handleImageError = async () => {
 		if (!hasError) {

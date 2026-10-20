@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ArrowLeft, ChevronLeft, ChevronRight, Volume2, CheckCircle2 } from 'lucide-react';
 import { MainLayout } from '@/shared/layouts/MainLayout';
 import { PictogramaCard } from '@/features/aprender/components/PictogramaCard';
@@ -22,10 +22,12 @@ export const LecturaView: React.FC = () => {
 
 	const handleVolver = () => navigate(ROUTES.catalogo(nivelId));
 
-	useEffect(() => {
+	const [cuentoAnterior, setCuentoAnterior] = useState(cuentoId);
+	if (cuentoAnterior !== cuentoId) {
+		setCuentoAnterior(cuentoId);
 		setPaginaActual(0);
 		setActividadCompletada(false);
-	}, [cuentoId]);
+	}
 
 	if (!cuento) {
 		return (
