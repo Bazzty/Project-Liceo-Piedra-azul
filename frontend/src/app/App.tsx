@@ -1,4 +1,5 @@
 import React from 'react';
+import { MuestraComponentes } from '@/features/muestra/MuestraComponentes';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { RequireAlumno, RequireDocente, RequireSesionAula } from './guards';
 import { ROUTES } from './routes';
@@ -22,6 +23,7 @@ export const App: React.FC = () => (
     <Route path={ROUTES.selector} element={<SelectorInicioView />} />
     <Route path={ROUTES.inicio2} element={<Inicio2View />} />
     <Route path={ROUTES.portal} element={<PortalInicioView />} />
+    <Route path={ROUTES.muestra} element={<MuestraComponentes />} />
     <Route path={ROUTES.profesorLogin} element={<LoginProfesorView />} />
     <Route path={ROUTES.casaLogin} element={<LoginAlumnoCasaView />} />
     <Route path={ROUTES.aulaEspera} element={<EsperaAulaView />} />

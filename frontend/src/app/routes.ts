@@ -3,6 +3,7 @@ export const ROUTES = {
   selector: '/',
   inicio2: '/inicio-2',
   portal: '/portal',
+  muestra: '/muestra',
 
   profesorLogin: '/profesor/login',
   profesorAula: '/profesor/aula',
