@@ -1,16 +1,5 @@
 import { create } from 'zustand';
 
-export type ModoInicio = 'selector' | 'inicio-1' | 'inicio-2';
-export type VistaInicio1 =
-  | 'portal'
-  | 'profesor-login'
-  | 'control-aula'
-  | 'panel-docente'
-  | 'aula-mosaico'
-  | 'aula-espera'
-  | 'alumno-casa'
-  | 'menu'
-  | 'aprender';
 export type Role = 'docente' | 'estudiante' | null;
 export type SessionType = 'aula' | 'casa' | null;
 
@@ -22,8 +11,6 @@ export interface User {
 }
 
 export interface AuthState {
-  modoInicio: ModoInicio;
-  vistaInicio1: VistaInicio1;
   activeStudentId: string | null;
   role: Role;
   sessionType: SessionType;
@@ -31,8 +18,6 @@ export interface AuthState {
   isClassroomSessionActive: boolean;
   classroomSessionExpiry: string | null;
   isSessionExpiredModalOpen: boolean;
-  setModoInicio: (modo: ModoInicio) => void;
-  setVistaInicio1: (vista: VistaInicio1) => void;
   setActiveStudentId: (studentId: string | null) => void;
   setRole: (role: Role) => void;
   setSessionType: (type: SessionType) => void;
@@ -51,8 +36,6 @@ const getStoredSessionStatus = (): boolean => {
 };
 
 export const useAuthStore = create<AuthState>()((set, get) => ({
-  modoInicio: 'selector',
-  vistaInicio1: 'portal',
   activeStudentId: null,
   role: null,
   sessionType: null,
@@ -60,8 +43,6 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
   isClassroomSessionActive: getStoredSessionStatus(),
   classroomSessionExpiry: null,
   isSessionExpiredModalOpen: false,
-  setModoInicio: (modo) => set({ modoInicio: modo }),
-  setVistaInicio1: (vista) => set({ vistaInicio1: vista }),
   setActiveStudentId: (studentId) => set({ activeStudentId: studentId }),
   setRole: (role) => set({ role }),
   setSessionType: (type) => set({ sessionType: type }),

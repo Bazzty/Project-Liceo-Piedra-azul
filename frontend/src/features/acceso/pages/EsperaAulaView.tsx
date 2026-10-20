@@ -4,9 +4,12 @@ import { MainLayout } from '@/shared/layouts/MainLayout';
 import { CharacterGuide } from '@/shared/components/CharacterGuide';
 import { useAuthStore } from '@/features/acceso/useAuthStore';
 import { getPersonajeAudio } from '@/shared/config/audioConfig';
+import { useNavigate } from 'react-router-dom';
+import { ROUTES } from '@/app/routes';
 
 export const EsperaAulaView: React.FC = () => {
-	const { setVistaInicio1, isClassroomSessionActive, checkClassroomStatus } = useAuthStore();
+	const { isClassroomSessionActive, checkClassroomStatus } = useAuthStore();
+	const navigate = useNavigate();
 
 	useEffect(() => {
 		const handleStorageChange = () => {
@@ -17,20 +20,20 @@ export const EsperaAulaView: React.FC = () => {
 		const interval = setInterval(checkClassroomStatus, 1000);
 
 		if (isClassroomSessionActive) {
-			setVistaInicio1('aula-mosaico');
+			navigate(ROUTES.aulaAlumnos, { replace: true });
 		}
 
 		return () => {
 			window.removeEventListener('storage', handleStorageChange);
 			clearInterval(interval);
 		};
-	}, [isClassroomSessionActive, setVistaInicio1, checkClassroomStatus]);
+	}, [isClassroomSessionActive, navigate, checkClassroomStatus]);
 
 	return (
 		<MainLayout>
 			<div className="flex flex-col items-center justify-center min-h-[85vh] p-4 gap-6">
 				<button
-					onClick={() => setVistaInicio1('portal')}
+					onClick={() => navigate(ROUTES.portal)}
 					className="flex items-center gap-2 bg-surface px-4 py-2 rounded-2xl border-2 border-borderCustom font-black text-primary hover:border-brand transition-all active:scale-95 self-start cursor-pointer shadow"
 				>
 					<ArrowLeft size={20} />

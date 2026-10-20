@@ -3,27 +3,27 @@ import { Sparkles } from 'lucide-react';
 import type { Alumno } from '@/types';
 import { MainLayout } from '@/shared/layouts/MainLayout';
 import { useAuthStore } from '@/features/acceso/useAuthStore';
-import { useAlumnos } from '@/api';
+import { obtenerAlumno, useAlumnos } from '@/api';
+import { useNavigate } from 'react-router-dom';
+import { ROUTES } from '@/app/routes';
+import { THEMES_CONFIG } from '@/shared/config/themes';
+import { useThemeStore, type ThemeId } from '@/shared/store/useThemeStore';
+import { usePlayerStore } from '@/shared/store/usePlayerStore';
 
-export interface MosaicoAlumnosProps {
-  onSelectStudent?: (studentId: string) => void;
-  selectStudent?: (studentId: string) => void;
-}
-
-export const MosaicoAlumnos: React.FC<MosaicoAlumnosProps> = ({
-  onSelectStudent,
-  selectStudent,
-}) => {
+export const MosaicoAlumnos: React.FC = () => {
   const alumnos = useAlumnos();
-  const { setActiveStudentId, setVistaInicio1 } = useAuthStore();
+  const { setActiveStudentId } = useAuthStore();
+  const navigate = useNavigate();
 
-  const handleStudentClick = (id: string) => {
+  const handleStudentClick = async (id: string) => {
     setActiveStudentId(id);
-    setVistaInicio1('menu');
-    const callback = onSelectStudent || selectStudent;
-    if (typeof callback === 'function') {
-      callback(id);
+    // Aplica el color y la voz que el docente asignó a este alumno
+    const alumno = await obtenerAlumno(id);
+    if (alumno && THEMES_CONFIG.some((t) => t.id === alumno.temaId)) {
+      useThemeStore.getState().setTheme(alumno.temaId as ThemeId);
     }
+    if (alumno?.vozId) usePlayerStore.getState().setSelectedVoice(alumno.vozId);
+    navigate(ROUTES.menu);
   };
 
   return (

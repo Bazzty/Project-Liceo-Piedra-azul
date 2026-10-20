@@ -7,34 +7,20 @@ import { usePlayerStore } from '@/shared/store/usePlayerStore';
 import { useAuthStore } from '@/features/acceso/useAuthStore';
 import { getPersonajeAudio } from '@/shared/config/audioConfig';
 import { registrarProgreso, useCuento } from '@/api';
+import { useNavigate, useParams } from 'react-router-dom';
+import { ROUTES } from '@/app/routes';
 
-export interface LecturaViewProps {
-	cuentoId?: string;
-	onVolver?: () => void;
-	onBack?: () => void;
-}
-
-export const LecturaView: React.FC<LecturaViewProps> = ({
-	cuentoId,
-	onVolver,
-	onBack,
-}) => {
+export const LecturaView: React.FC = () => {
+	const { nivelId = '', cuentoId } = useParams();
+	const navigate = useNavigate();
 	const { playAudio } = usePlayerStore();
-	const { activeStudentId, setVistaInicio1 } = useAuthStore();
+	const { activeStudentId } = useAuthStore();
 	const [paginaActual, setPaginaActual] = useState(0);
 	const [actividadCompletada, setActividadCompletada] = useState(false);
 
 	const cuento = useCuento(cuentoId);
 
-	const handleVolver = () => {
-		if (onVolver) {
-			onVolver();
-		} else if (onBack) {
-			onBack();
-		} else {
-			setVistaInicio1('aula-mosaico');
-		}
-	};
+	const handleVolver = () => navigate(ROUTES.catalogo(nivelId));
 
 	useEffect(() => {
 		setPaginaActual(0);

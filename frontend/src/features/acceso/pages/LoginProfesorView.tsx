@@ -2,19 +2,22 @@ import React, { useState } from 'react';
 import { ArrowLeft, KeyRound, UserCheck, ShieldCheck } from 'lucide-react';
 import { MainLayout } from '@/shared/layouts/MainLayout';
 import { useAuthStore } from '@/features/acceso/useAuthStore';
+import { useNavigate } from 'react-router-dom';
+import { ROUTES } from '@/app/routes';
 
 export const LoginProfesorView: React.FC = () => {
   const [usuario, setUsuario] = useState('profesora@piedraazul.cl');
   const [password, setPassword] = useState('123456');
   const [error, setError] = useState('');
-  const { setVistaInicio1, setRole, login } = useAuthStore();
+  const { setRole, login } = useAuthStore();
+  const navigate = useNavigate();
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     if (usuario && password) {
       login();
       setRole('docente');
-      setVistaInicio1('control-aula');
+      navigate(ROUTES.profesorAula);
     } else {
       setError('Por favor ingresa usuario y contraseña válidos.');
     }
@@ -25,7 +28,7 @@ export const LoginProfesorView: React.FC = () => {
       <div className="flex flex-col gap-6 w-full max-w-md mx-auto py-12 px-4 justify-center h-full">
         
         <button
-          onClick={() => setVistaInicio1('portal')}
+          onClick={() => navigate(ROUTES.portal)}
           className="flex items-center gap-2 bg-surface px-4 py-2 rounded-2xl border-2 border-borderCustom font-black text-primary hover:border-brand transition-all active:scale-95 self-start cursor-pointer shadow"
         >
           <ArrowLeft className="w-4 h-4" />

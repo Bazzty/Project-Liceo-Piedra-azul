@@ -4,9 +4,12 @@ import { MainLayout } from '@/shared/layouts/MainLayout';
 import { useAuthStore } from '@/features/acceso/useAuthStore';
 import type { Alumno } from '@/types';
 import { useAlumnos } from '@/api';
+import { useNavigate } from 'react-router-dom';
+import { ROUTES } from '@/app/routes';
 
 export const ControlAulaView: React.FC = () => {
-  const { setVistaInicio1, isClassroomSessionActive, activarSesionAula, desactivarSesionAula } = useAuthStore();
+  const navigate = useNavigate();
+  const { isClassroomSessionActive, activarSesionAula, desactivarSesionAula } = useAuthStore();
   const alumnos = useAlumnos();
 
   return (
@@ -16,7 +19,7 @@ export const ControlAulaView: React.FC = () => {
         {/* Encabezado */}
         <div className="flex flex-col sm:flex-row items-center justify-between bg-surface/90 backdrop-blur-md p-4 sm:p-6 rounded-3xl shadow-md border-2 border-borderCustom gap-4">
           <button
-            onClick={() => setVistaInicio1('portal')}
+            onClick={() => navigate(ROUTES.portal)}
             className="flex items-center gap-2 bg-app px-4 py-2.5 rounded-2xl border-2 border-borderCustom font-black text-primary hover:border-brand transition-all active:scale-95 cursor-pointer text-sm shadow-sm"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -111,7 +114,7 @@ export const ControlAulaView: React.FC = () => {
 
         {/* Ir al Panel Docente (progreso, alumnos y cuentos) */}
         <button
-          onClick={() => setVistaInicio1('panel-docente')}
+          onClick={() => navigate(ROUTES.profesorPanel)}
           style={{
             backgroundColor: 'var(--btn-hablar-bg)',
             color: 'var(--btn-hablar-text)',
@@ -124,7 +127,7 @@ export const ControlAulaView: React.FC = () => {
 
         {/* Ir al Mosaico */}
         <button
-          onClick={() => setVistaInicio1('aula-mosaico')}
+          onClick={() => navigate(ROUTES.aulaAlumnos)}
           style={{
             backgroundColor: 'var(--btn-aprender-bg)',
             color: 'var(--btn-aprender-text)',

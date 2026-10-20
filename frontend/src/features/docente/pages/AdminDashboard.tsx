@@ -6,20 +6,23 @@ import { AlumnosPanel } from '@/features/docente/components/AlumnosPanel';
 import { NivelesPanel } from '@/features/docente/components/NivelesPanel';
 import { useAuthStore } from '@/features/acceso/useAuthStore';
 import { resetDemoData } from '@/mocks/seed';
+import { useNavigate } from 'react-router-dom';
+import { ROUTES } from '@/app/routes';
 
 /** 9. Vista de profesor: panel principal, alumnos y gestión de niveles/cuentos. */
 export const AdminDashboard: React.FC = () => {
   const [seccion, setSeccion] = useState<Exclude<AdminSection, 'aula'>>('dashboard');
-  const { setVistaInicio1, logout } = useAuthStore();
+  const { logout } = useAuthStore();
+  const navigate = useNavigate();
 
   const navegar = (destino: AdminSection) => {
-    if (destino === 'aula') return setVistaInicio1('control-aula');
+    if (destino === 'aula') return navigate(ROUTES.profesorAula);
     setSeccion(destino);
   };
 
   const cerrarSesion = () => {
     logout();
-    setVistaInicio1('portal');
+    navigate(ROUTES.portal);
   };
 
   const reiniciarDemo = async () => {

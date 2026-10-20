@@ -3,19 +3,20 @@ import { Header } from '@/shared/components/Header';
 import { useThemeStore } from '@/shared/store/useThemeStore';
 import { useSessionTimeout } from '@/features/acceso/useSessionTimeout';
 import { SessionTimeoutModal } from '@/features/acceso/SessionTimeoutModal';
+import { useNavigate } from 'react-router-dom';
+import { ROUTES } from '@/app/routes';
 
 export interface MainLayoutProps {
 	children: React.ReactNode;
-	onSessionTimeoutRedirect?: () => void;
 	allowScroll?: boolean; // Habilita el desplazamiento en vistas con contenido extenso
 }
 
 export const MainLayout: React.FC<MainLayoutProps> = ({
 	children,
-	onSessionTimeoutRedirect,
 	allowScroll = false,
 }) => {
 	const { currentTheme, showCharacterBackground } = useThemeStore();
+	const navigate = useNavigate();
 
 	// Activa el temporizador de sesión de laboratorio de 1.5 horas
 	useSessionTimeout();
@@ -49,16 +50,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
 
 			{/* Modal de Expiración de Sesión de Aula */}
 			<SessionTimeoutModal
-				onContinuar={() => {
-					if (onSessionTimeoutRedirect) {
-						onSessionTimeoutRedirect();
-					}
-				}}
-				onClose={() => {
-					if (onSessionTimeoutRedirect) {
-						onSessionTimeoutRedirect();
-					}
-				}}
+				onContinuar={() => navigate(ROUTES.aulaAlumnos)}
+				onClose={() => navigate(ROUTES.aulaAlumnos)}
 			/>
 		</div>
 	);

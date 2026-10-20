@@ -2,26 +2,29 @@ import React from 'react';
 import { School, UserCheck, Home, ArrowLeft } from 'lucide-react';
 import { MainLayout } from '@/shared/layouts/MainLayout';
 import { useAuthStore } from '@/features/acceso/useAuthStore';
+import { useNavigate } from 'react-router-dom';
+import { ROUTES } from '@/app/routes';
 
 export const PortalInicioView: React.FC = () => {
-  const { setModoInicio, setVistaInicio1, isClassroomSessionActive, setSessionType } = useAuthStore();
+  const { isClassroomSessionActive, setSessionType } = useAuthStore();
+  const navigate = useNavigate();;
 
   const handleIngresoProfesor = () => {
-    setVistaInicio1('profesor-login');
+    navigate(ROUTES.profesorLogin);
   };
 
   const handleIngresoColegio = () => {
     setSessionType('aula');
     if (isClassroomSessionActive) {
-      setVistaInicio1('aula-mosaico');
+      navigate(ROUTES.aulaAlumnos);
     } else {
-      setVistaInicio1('aula-espera');
+      navigate(ROUTES.aulaEspera);
     }
   };
 
   const handleIngresoCasa = () => {
     setSessionType('casa');
-    setVistaInicio1('alumno-casa');
+    navigate(ROUTES.casaLogin);
   };
 
   return (
@@ -30,7 +33,7 @@ export const PortalInicioView: React.FC = () => {
         
         {/* Encabezado */}
         <button
-          onClick={() => setModoInicio('selector')}
+          onClick={() => navigate(ROUTES.selector)}
           className="flex items-center gap-2 bg-surface px-4 py-2 rounded-2xl border-2 border-borderCustom font-black text-primary hover:border-brand transition-all active:scale-95 cursor-pointer shadow"
         >
           <ArrowLeft className="w-4 h-4" />

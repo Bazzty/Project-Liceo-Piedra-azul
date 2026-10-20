@@ -6,6 +6,8 @@ import { useAuthStore } from '@/features/acceso/useAuthStore';
 import type { Cuento, Progreso } from '@/types';
 import { resolverYGuardarPictograma } from '@/features/tablero/arasaac';
 import { useCuentosDeNivel, useNivel, useProgresosDeAlumno } from '@/api';
+import { useNavigate, useParams } from 'react-router-dom';
+import { ROUTES } from '@/app/routes';
 
 // Subcomponente interno para la portada de la tarjeta con fallback a ARASAAC
 const PortadaCuento: React.FC<{ cuento: Cuento }> = ({ cuento }) => {
@@ -48,18 +50,11 @@ const PortadaCuento: React.FC<{ cuento: Cuento }> = ({ cuento }) => {
 	);
 };
 
-export interface CatalogoCuentosProps {
-	nivelId: string;
-	onSelectCuento: (cuentoId: string) => void;
-	onBack: () => void;
-	onSessionTimeoutRedirect?: () => void;
-}
-
-export const CatalogoCuentos: React.FC<CatalogoCuentosProps> = ({
-	nivelId,
-	onSelectCuento,
-	onBack,
-}) => {
+export const CatalogoCuentos: React.FC = () => {
+	const { nivelId = '' } = useParams();
+	const navigate = useNavigate();
+	const onSelectCuento = (cuentoId: string) => navigate(ROUTES.lectura(nivelId, cuentoId));
+	const onBack = () => navigate(ROUTES.aprender);
 	const { activeStudentId } = useAuthStore();
 	const nivel = useNivel(nivelId);
 	const cuentos = useCuentosDeNivel(nivelId);

@@ -1,18 +1,18 @@
 import React from 'react';
 import { School, Sparkles, Layout } from 'lucide-react';
 import { MainLayout } from '@/shared/layouts/MainLayout';
-import { useAuthStore } from '@/features/acceso/useAuthStore';
+import { useNavigate } from 'react-router-dom';
+import { ROUTES } from '@/app/routes';
 
 export const SelectorInicioView: React.FC = () => {
-  const { setModoInicio, setVistaInicio1 } = useAuthStore();
+  const navigate = useNavigate();
 
   const handleSeleccionarInicio1 = () => {
-    setModoInicio('inicio-1');
-    setVistaInicio1('portal');
+    navigate(ROUTES.portal);
   };
 
   const handleSeleccionarInicio2 = () => {
-    setModoInicio('inicio-2');
+    navigate(ROUTES.inicio2);
   };
 
   return (

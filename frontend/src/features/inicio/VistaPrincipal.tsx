@@ -8,17 +8,11 @@ import { CharacterGuide } from '@/shared/components/CharacterGuide';
 import { Modal } from '@/shared/ui';
 import { TableroSAAC } from '@/features/tablero/components/TableroSAAC';
 import { getPersonajeAudio } from '@/shared/config/audioConfig';
+import { useNavigate } from 'react-router-dom';
+import { ROUTES } from '@/app/routes';
 
-export interface VistaPrincipalProps {
-	onNavigateToAprender?: () => void;
-	onOpenHablar?: () => void;
-	onSessionTimeoutRedirect?: () => void;
-}
-
-export const VistaPrincipal: React.FC<VistaPrincipalProps> = ({
-	onNavigateToAprender,
-	onOpenHablar,
-}) => {
+export const VistaPrincipal: React.FC = () => {
+	const navigate = useNavigate();
 	const { activeStudentId } = useAuthStore();
 	const { currentTheme, setTheme } = useThemeStore();
 	const [isHablarModalOpen, setIsHablarModalOpen] = useState(false);
@@ -26,17 +20,11 @@ export const VistaPrincipal: React.FC<VistaPrincipalProps> = ({
 	const nombreAlumno = activeStudentId ? 'Mateo' : 'Amigo';
 
 	const handleAprenderClick = () => {
-		if (typeof onNavigateToAprender === 'function') {
-			onNavigateToAprender();
-		}
+		navigate(ROUTES.aprender);
 	};
 
 	const handleHablarClick = () => {
-		if (typeof onOpenHablar === 'function') {
-			onOpenHablar();
-		} else {
-			setIsHablarModalOpen(true);
-		}
+		setIsHablarModalOpen(true);
 	};
 
 	return (

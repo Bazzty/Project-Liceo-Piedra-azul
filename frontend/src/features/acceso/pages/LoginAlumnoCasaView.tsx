@@ -2,12 +2,15 @@ import React, { useState } from 'react';
 import { ArrowLeft, KeyRound, User, Home } from 'lucide-react';
 import { MainLayout } from '@/shared/layouts/MainLayout';
 import { useAuthStore } from '@/features/acceso/useAuthStore';
+import { useNavigate } from 'react-router-dom';
+import { ROUTES } from '@/app/routes';
 
 export const LoginAlumnoCasaView: React.FC = () => {
   const [usuario, setUsuario] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const { setVistaInicio1, setActiveStudentId, setRole, setSessionType } = useAuthStore();
+  const { setActiveStudentId, setRole, setSessionType } = useAuthStore();
+  const navigate = useNavigate();
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -15,7 +18,7 @@ export const LoginAlumnoCasaView: React.FC = () => {
       setActiveStudentId('estudiante-mateo');
       setRole('estudiante');
       setSessionType('casa');
-      setVistaInicio1('aprender');
+      navigate(ROUTES.aprender);
     } else {
       setError('Ingresa usuario y contraseña.');
     }
@@ -26,7 +29,7 @@ export const LoginAlumnoCasaView: React.FC = () => {
       <div className="flex flex-col gap-6 w-full max-w-md mx-auto py-12 px-4 justify-center h-full">
         
         <button
-          onClick={() => setVistaInicio1('portal')}
+          onClick={() => navigate(ROUTES.portal)}
           className="flex items-center gap-2 bg-surface px-4 py-2 rounded-2xl border-2 border-borderCustom font-black text-primary hover:border-brand transition-all active:scale-95 self-start cursor-pointer shadow"
         >
           <ArrowLeft className="w-4 h-4" />

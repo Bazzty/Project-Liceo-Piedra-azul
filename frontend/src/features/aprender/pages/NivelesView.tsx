@@ -2,22 +2,17 @@ import React from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { MainLayout } from '@/shared/layouts/MainLayout';
 import { CharacterGuide } from '@/shared/components/CharacterGuide';
+import { useNavigate } from 'react-router-dom';
+import { ROUTES } from '@/app/routes';
 
-export interface NivelesViewProps {
-  onSelectNivel: (nivelId: string) => void;
-  onBack: () => void;
-  onSessionTimeoutRedirect?: () => void;
-}
-
-export const NivelesView: React.FC<NivelesViewProps> = ({
-  onSelectNivel,
-  onBack,
-  onSessionTimeoutRedirect,
-}) => {
+export const NivelesView: React.FC = () => {
+  const navigate = useNavigate();
+  const onSelectNivel = (nivelId: string) => navigate(ROUTES.catalogo(nivelId));
+  const onBack = () => navigate(ROUTES.menu);
   const mensajeGuia = '¡Elige el nivel que quieres practicar hoy!';
 
   return (
-    <MainLayout onSessionTimeoutRedirect={onSessionTimeoutRedirect} allowScroll={false}>
+    <MainLayout allowScroll={false}>
       <div className="flex flex-col gap-4 sm:gap-6 w-full max-w-6xl mx-auto h-full justify-center">
         
         {/* Encabezado Fijo con Botón Volver */}
