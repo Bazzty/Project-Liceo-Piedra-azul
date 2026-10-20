@@ -11,9 +11,12 @@ import { sonarAcierto, sonarToque } from '@/shared/audio/sonidos';
 import { LayoutEstudiante } from '@/shared/components/LayoutEstudiante';
 import { LluviaEstrellas } from '@/shared/components/LluviaEstrellas';
 import { OsoBurbuja } from '@/shared/components/OsoBurbuja';
+import { useGuideStore } from '@/shared/store/useGuideStore';
 import { getPersonajeAudio } from '@/shared/config/audioConfig';
+import { useHablar } from '@/shared/hooks/useHablar';
 import { useAjustesStore } from '@/shared/store/useAjustesStore';
 import { Button } from '@/shared/ui';
+import '@/styles/lectura.css';
 
 const pausa = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
@@ -25,6 +28,7 @@ export const LecturaView: React.FC = () => {
   const supervision = useAuthStore((s) => s.supervision);
   const progresos = useProgresosDeAlumno(activeStudentId);
   const cuento = useCuento(cuentoId);
+  const hablar = useHablar();
 
   const [paginaActual, setPaginaActual] = useState(0);
   const [completada, setCompletada] = useState(false);
@@ -98,7 +102,11 @@ export const LecturaView: React.FC = () => {
         setPalabraActiva(i);
         const url = palabras[i].audioUrl;
         if (sonido && url) await reproducir(url);
-        else await pausa(900);
+        else if (sonido) {
+          // Sin audio grabado todavía: se lee con la voz del navegador
+          hablar(palabras[i].texto);
+          await pausa(Math.max(900, palabras[i].texto.length * 110));
+        } else await pausa(900);
         await pausa(150);
       }
     }
@@ -107,16 +115,18 @@ export const LecturaView: React.FC = () => {
       setPalabraActiva(null);
       setReproduciendo(false);
     }
-  }, [detener, palabras, paginaData]);
+  }, [detener, hablar, palabras, paginaData]);
 
   const cambiarPagina = (nueva: number) => {
     detener();
     sonarToque();
+    if (nueva > paginaActual) useGuideStore.getState().reaccionar('animo');
     setPaginaActual(nueva);
   };
 
   const finalizar = async () => {
     detener();
+    useGuideStore.getState().reaccionar('feliz');
     sonarAcierto();
     const yaLeido = !!progresos?.some((p) => p.cuentoId === cuento?.id && p.completado);
     // El sticker nuevo es el siguiente del álbum, solo si es un cuento que no había completado
@@ -145,12 +155,21 @@ export const LecturaView: React.FC = () => {
 
   if (completada) {
     return (
-      <LayoutEstudiante>
+      <LayoutEstudiante
+        osito={{
+          tipo: 'actor',
+          mensaje: '¡Lo lograste!',
+          audioUrl: getPersonajeAudio('felicitaciones'),
+          reaccionInicial: 'baile',
+          tiempoVisible: 9000,
+          posicion: 'max-lg:hidden bottom-8 right-8',
+        }}
+      >
         <LluviaEstrellas />
         <main className="relative flex-1 w-full max-w-3xl mx-auto px-4 py-6 flex flex-col items-center justify-center gap-6 text-center">
           <h1 className="text-4xl sm:text-5xl font-black text-primary bg-surface/90 rounded-full px-8 py-2">¡Muy bien!</h1>
           <div className="flex flex-wrap items-end justify-center gap-8 sm:gap-14">
-            <OsoBurbuja mensaje="¡Lo lograste!" audioUrl={getPersonajeAudio('felicitaciones')} size="md" />
+            <OsoBurbuja mensaje="¡Lo lograste!" audioUrl={getPersonajeAudio('felicitaciones')} size="md" className="lg:hidden" />
             {stickerNuevo !== null && (
               <div className="flex flex-col items-center gap-2">
                 <Sticker indice={stickerNuevo} obtenido size="lg" animar />
@@ -176,7 +195,20 @@ export const LecturaView: React.FC = () => {
   const unaPalabra = palabras.length === 1;
 
   return (
-    <LayoutEstudiante onVolver={volverAlCatalogo}>
+    <LayoutEstudiante
+      onVolver={volverAlCatalogo}
+      osito={{
+        tipo: 'actor',
+        lado: 'izquierda',
+        mensaje: '¡Vamos a leer!',
+        clave: 'elige_cuento',
+        callado: true,
+        reaccionInicial: 'saludo',
+        tiempoVisible: 6000,
+        retraso: 900,
+        posicion: 'max-lg:hidden bottom-28 left-4',
+      }}
+    >
       <main className="relative flex-1 w-full max-w-5xl mx-auto px-4 py-4 sm:py-6 flex flex-col items-center justify-between gap-4">
         <h1 className="sr-only">{cuento.titulo}</h1>
 
@@ -205,6 +237,19 @@ export const LecturaView: React.FC = () => {
             </div>
           )}
         </div>
+
+        {/* La oración completa, con la palabra que suena resaltada */}
+        {palabras.length > 1 && (
+          <p className="oracion-lectura" aria-label={paginaData?.textoCompleto}>
+            {palabras.map((p, i) => (
+              <React.Fragment key={`${paginaActual}-s${i}`}>
+                <span className="palabra-oracion" data-activa={palabraActiva === i ? '1' : '0'} aria-hidden>
+                  {p.texto}
+                </span>{' '}
+              </React.Fragment>
+            ))}
+          </p>
+        )}
 
         {/* Controles grandes: anterior, escuchar y siguiente */}
         <div className="flex items-center justify-center gap-4 sm:gap-8 w-full">

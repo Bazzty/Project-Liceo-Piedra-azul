@@ -2,13 +2,13 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@/app/routes';
 import { useAuthStore } from '@/features/acceso/useAuthStore';
+import { OsoCabeza } from '@/shared/components/OsoCabeza';
 import { useHablar } from '@/shared/hooks/useHablar';
 import { Button, Modal } from '@/shared/ui';
 
 /** Segundos sin tocar nada antes de preguntar "¿sigues ahí?" y segundos extra antes de cerrar la sesión. */
 const SEGUNDOS_AVISO = 90;
 const SEGUNDOS_CIERRE = 30;
-const BASE = import.meta.env.BASE_URL || '/';
 
 /**
  * Fin de sesión amable: si el niño deja de tocar, el osito se "duerme" y pregunta con voz.
@@ -71,11 +71,9 @@ export const AvisoInactividad: React.FC = () => {
     <Modal isOpen={enAviso} onClose={sigoAqui} title="¿Sigues ahí?" size="sm" dismissible={false}>
       <div className="flex flex-col items-center gap-5 p-4 text-center">
         <div className="relative">
-          <img
-            src={`${BASE}assets/personajes/oso/cabeza_base.png`.replace(/\/\//g, '/')}
-            alt="Osito dormido"
-            className="w-36 h-36 object-contain bg-surface rounded-full border-4 border-borderStrong p-2 opacity-80"
-          />
+          <span className="block w-36 h-36 bg-surface rounded-full border-4 border-borderStrong p-2 overflow-hidden opacity-80" role="img" aria-label="Osito dormido">
+            <OsoCabeza ojosFelices boca="REPOSO" />
+          </span>
           <span className="absolute -top-2 -right-4 text-4xl font-black text-brand animate-flotar" aria-hidden>
             Z z z
           </span>

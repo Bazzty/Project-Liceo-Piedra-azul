@@ -1,4 +1,5 @@
 import { db } from '@/db/db';
+import { sembrarCuentosKinder } from '@/mocks/cuentosKinder';
 import type { Cuento } from '@/types';
 
 // ---------------------------------------------------------------------------
@@ -399,6 +400,9 @@ export async function seedDatabase() {
 
 		// 5. Cargar datos simulados para el panel docente
 		await seedDemoDocente();
+
+		// 6. Cuentos de Kinder (nivel D): se agregan también en navegadores que ya tenían datos
+		await sembrarCuentosKinder();
 
 		console.log('✅ Base de datos inicializada correctamente.');
 	} catch (error) {

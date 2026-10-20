@@ -31,8 +31,11 @@ Paletas: `suave` (por defecto), `alto-contraste`, `calida` y `monocromatica`, m�
 Espacio del estudiante (niños que aún no leen): imagen primero, voz al tocar y casi nada de texto.
 Todas sus pantallas usan `shared/components/LayoutEstudiante` (barra con nombre, calma y ajustes, fondo con paisaje
 y aviso amable de inactividad). Ajustes persistentes (sonido, movimiento, voz lenta, agenda "Primero – Después") en
-`shared/store/useAjustesStore`. El osito se usa tal cual (`OsoBurbuja`); no agregar personajes ni fotos sin revisar
-`docs/legal-y-privacidad.md`.
+`shared/store/useAjustesStore`. El osito (autoría del equipo; no agregar otros personajes ni fotos sin revisar
+`docs/legal-y-privacidad.md`) tiene tres formas: `OsoBurbuja` (cabeza que habla al tocarla), `OsitoActor` (cuerpo entero:
+llega caminando, saluda, reacciona y se va) y `OsitoAsoma` (se asoma por un borde). `OsoCabeza` es la cabeza animada
+(parpadea, sigue el dedo y mueve la boca). Cualquier pantalla puede hacerlo reaccionar con
+`useGuideStore.getState().reaccionar('feliz')`, o pedirlo en `LayoutEstudiante` con la prop `osito`.
 
 Reglas: usar colores solo desde los tokens (`bg-brand`, `text-statusDanger`…), nunca de la paleta de Tailwind;
 navegar con `ROUTES`; leer/escribir datos solo a través de `@/api`.

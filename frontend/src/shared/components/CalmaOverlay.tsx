@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
+import { OsoCabeza } from '@/shared/components/OsoCabeza';
 import { useHablar } from '@/shared/hooks/useHablar';
 import { Button } from '@/shared/ui';
-
-const BASE = import.meta.env.BASE_URL || '/';
 
 /**
  * Pantalla de calma: el osito "respira" despacio con un círculo que crece y se encoge.
@@ -40,11 +39,9 @@ export const CalmaOverlay: React.FC<{ abierto: boolean; onCerrar: () => void }> 
       <div className="relative flex items-center justify-center w-72 h-72">
         <span className="absolute inset-0 rounded-full bg-onBrand/20 animate-respiracion" aria-hidden />
         <span className="absolute inset-10 rounded-full bg-onBrand/20 animate-respiracion" style={{ animationDelay: '-0.6s' }} aria-hidden />
-        <img
-          src={`${BASE}assets/personajes/oso/cabeza_base.png`.replace(/\/\//g, '/')}
-          alt="Osito respirando contigo"
-          className="relative w-40 h-40 object-contain bg-surface rounded-full p-2"
-        />
+        <span className="relative block w-40 h-40 bg-surface rounded-full p-2 overflow-hidden" role="img" aria-label="Osito respirando contigo">
+          <OsoCabeza ojosFelices boca="HAPPY" />
+        </span>
       </div>
 
       <Button variant="accent" size="xl" onClick={onCerrar}>

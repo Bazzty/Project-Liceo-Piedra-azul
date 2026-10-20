@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Volume2 } from 'lucide-react';
+import { OsoCabeza } from '@/shared/components/OsoCabeza';
+import { useBocaHabla } from '@/shared/hooks/useBocaHabla';
 import { useHablar } from '@/shared/hooks/useHablar';
 import type { ClaveAudio } from '@/shared/config/audiosInterfaz';
 import { usePlayerStore } from '@/shared/store/usePlayerStore';
-
-const BASE = import.meta.env.BASE_URL || '/';
 
 export interface OsoBurbujaProps {
   /** Texto de la burbuja; también es lo que se lee en voz alta al tocar al osito. */
@@ -31,6 +31,7 @@ export const OsoBurbuja: React.FC<OsoBurbujaProps> = ({ mensaje, audioUrl, clave
   const hablar = useHablar();
   const playAudio = usePlayerStore((s) => s.playAudio);
 
+  const { boca, iniciar } = useBocaHabla();
   const [saltando, setSaltando] = useState(false);
 
   const escuchar = () => {
@@ -39,6 +40,7 @@ export const OsoBurbuja: React.FC<OsoBurbujaProps> = ({ mensaje, audioUrl, clave
     requestAnimationFrame(() => setSaltando(true));
     if (audioUrl) playAudio(audioUrl);
     else hablar(voz ?? mensaje, clave);
+    iniciar(voz ?? mensaje);
   };
 
   return (
@@ -54,11 +56,9 @@ export const OsoBurbuja: React.FC<OsoBurbujaProps> = ({ mensaje, audioUrl, clave
         className={`relative rounded-full cursor-pointer active:scale-95 ${saltando ? 'animate-saltito' : 'animate-respirar'}`}
         onAnimationEnd={() => setSaltando(false)}
       >
-        <img
-          src={`${BASE}assets/personajes/oso/cabeza_base.png`.replace(/\/\//g, '/')}
-          alt=""
-          className={`${TAMANOS[size]} object-contain bg-surface rounded-full border-4 border-onBrand/60 p-2`}
-        />
+        <span className={`${TAMANOS[size]} block bg-surface rounded-full border-4 border-onBrand/60 p-2 overflow-hidden`}>
+          <OsoCabeza boca={boca === 'NEUTRAL' ? 'HAPPY' : boca} />
+        </span>
         <span
           className="absolute -bottom-1 -right-1 w-11 h-11 sm:w-14 sm:h-14 rounded-full animate-pulso bg-accent text-onAccent border-4 border-surface flex items-center justify-center shadow-card"
           aria-hidden

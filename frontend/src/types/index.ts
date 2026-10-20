@@ -41,6 +41,8 @@ export interface Silaba {
 
 export interface CuentoPalabra {
 	texto: string;
+	/** Palabra base para buscar el pictograma si falta (p. ej. «saltar» para «salta»). */
+	clave?: string;
 	pictogramaUrl?: string;
 	audioUrl?: string;
 	silabas?: Silaba[];

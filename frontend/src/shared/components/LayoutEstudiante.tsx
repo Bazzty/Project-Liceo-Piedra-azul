@@ -9,10 +9,15 @@ import { AvisoInactividad } from '@/shared/components/AvisoInactividad';
 import { CalmaOverlay } from '@/shared/components/CalmaOverlay';
 import { DecoracionJardin } from '@/shared/components/DecoracionJardin';
 import { FondoPaisaje } from '@/shared/components/FondoPaisaje';
+import { OsitoActor, type OsitoActorProps } from '@/shared/components/OsitoActor';
+import { OsitoAsoma, type OsitoAsomaProps } from '@/shared/components/OsitoAsoma';
 import { useAplicarTema } from '@/shared/hooks/useAplicarTema';
 
 const BOTON_ICONO =
   'inline-flex items-center justify-center gap-2 min-h-12 min-w-12 px-3 rounded-control border-2 border-borderStrong bg-surface text-primary font-bold cursor-pointer hover:border-brand transition-colors';
+
+/** Osito acompañante: de cuerpo entero (llega caminando y reacciona) o asomándose por un borde. */
+export type OsitoAcompanante = ({ tipo: 'actor' } & OsitoActorProps) | ({ tipo: 'asoma' } & OsitoAsomaProps);
 
 export interface LayoutEstudianteProps {
   children: React.ReactNode;
@@ -21,13 +26,14 @@ export interface LayoutEstudianteProps {
   /** Contenido centrado en la barra superior (p. ej. la agenda visual). */
   centro?: React.ReactNode;
   fondo?: 'paisaje' | 'jardin';
+  osito?: OsitoAcompanante;
 }
 
 /**
  * Marco común de las pantallas del estudiante: barra con su nombre, calma y ajustes,
  * fondo con paisaje, y el aviso amable de fin de sesión por inactividad.
  */
-export const LayoutEstudiante: React.FC<LayoutEstudianteProps> = ({ children, onVolver, centro, fondo = 'paisaje' }) => {
+export const LayoutEstudiante: React.FC<LayoutEstudianteProps> = ({ children, onVolver, centro, fondo = 'paisaje', osito }) => {
   useAplicarTema();
   const activeStudentId = useAuthStore((s) => s.activeStudentId);
   const supervision = useAuthStore((s) => s.supervision);
@@ -94,6 +100,9 @@ export const LayoutEstudiante: React.FC<LayoutEstudianteProps> = ({ children, on
       </header>
 
       <div className="relative flex-1 flex flex-col">{children}</div>
+
+      {osito?.tipo === 'actor' && <OsitoActor {...osito} />}
+      {osito?.tipo === 'asoma' && <OsitoAsoma {...osito} />}
 
       <AjustesEstudiante isOpen={ajustesAbierto} onClose={() => setAjustesAbierto(false)} />
       <CalmaOverlay abierto={calmaAbierta} onCerrar={() => setCalmaAbierta(false)} />

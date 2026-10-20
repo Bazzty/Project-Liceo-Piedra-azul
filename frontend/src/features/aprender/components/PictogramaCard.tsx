@@ -3,6 +3,7 @@ import type { CuentoPalabra } from '@/types';
 import { usePlayerStore } from '@/shared/store/usePlayerStore';
 import { resolverYGuardarPictograma } from '@/features/tablero/arasaac';
 import { usePictogramaPorPalabra } from '@/api';
+import { useHablar } from '@/shared/hooks/useHablar';
 
 export interface PictogramaCardProps {
 	palabra: CuentoPalabra;
@@ -21,6 +22,7 @@ export const PictogramaCard: React.FC<PictogramaCardProps> = ({
 	grande = false,
 }) => {
 	const { playAudio } = usePlayerStore();
+	const hablar = useHablar();
 	const [imgSrc, setImgSrc] = useState<string | null>(null);
 	const [hasError, setHasError] = useState(false);
 
@@ -40,7 +42,7 @@ export const PictogramaCard: React.FC<PictogramaCardProps> = ({
 
 	const handleImageError = async () => {
 		if (!hasError) {
-			const apiUrl = await resolverYGuardarPictograma(palabra.texto);
+			const apiUrl = await resolverYGuardarPictograma(palabra.clave ?? palabra.texto);
 			if (apiUrl && apiUrl !== imgSrc) {
 				setImgSrc(apiUrl);
 			} else {
@@ -50,9 +52,9 @@ export const PictogramaCard: React.FC<PictogramaCardProps> = ({
 	};
 
 	const handlePalabraClick = () => {
-		if (palabra.audioUrl) {
-			playAudio(palabra.audioUrl);
-		}
+		// Si la palabra aún no tiene audio grabado, se lee con la voz del navegador
+		if (palabra.audioUrl) playAudio(palabra.audioUrl);
+		else hablar(palabra.texto);
 		if (onClick) {
 			onClick();
 		}

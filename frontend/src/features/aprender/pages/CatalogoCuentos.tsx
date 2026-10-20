@@ -7,7 +7,6 @@ import { useAuthStore } from '@/features/acceso/useAuthStore';
 import { resolverYGuardarPictograma } from '@/features/tablero/arasaac';
 import { sonarToque } from '@/shared/audio/sonidos';
 import { LayoutEstudiante } from '@/shared/components/LayoutEstudiante';
-import { OsoBurbuja } from '@/shared/components/OsoBurbuja';
 import { useHablar } from '@/shared/hooks/useHablar';
 import { usePlayerStore } from '@/shared/store/usePlayerStore';
 import type { Cuento } from '@/types';
@@ -117,9 +116,12 @@ export const CatalogoCuentos: React.FC = () => {
   const completado = (cuentoId?: string) => !!cuentoId && !!progresos?.some((p) => p.cuentoId === cuentoId && p.completado);
 
   return (
-    <LayoutEstudiante onVolver={() => navigate(ROUTES.aprender)}>
+    <LayoutEstudiante
+      onVolver={() => navigate(ROUTES.aprender)}
+      osito={{ tipo: 'asoma', lado: 'izq', pos: 62, mensaje: '¡Elige un cuento!', clave: 'elige_cuento' }}
+    >
       <main className="relative flex-1 w-full max-w-6xl mx-auto px-4 py-6 sm:py-8 flex flex-col gap-6">
-        <div className="flex items-end justify-center gap-6 sm:gap-10">
+        <div className="flex items-center justify-center gap-6 sm:gap-10">
           <span
             className="w-20 h-20 sm:w-24 sm:h-24 shrink-0 rounded-full bg-brand text-onBrand flex items-center justify-center text-6xl font-black shadow-card"
             aria-hidden
@@ -127,7 +129,6 @@ export const CatalogoCuentos: React.FC = () => {
             {nivel?.codigo ?? '?'}
           </span>
           <h1 className="sr-only">Nivel {nivel?.codigo}</h1>
-          <OsoBurbuja mensaje="Elige tu cuento" voz="Elige el cuento que más te guste." clave="elige_cuento" size="md" />
         </div>
 
         {!cuentos || cuentos.length === 0 ? (
