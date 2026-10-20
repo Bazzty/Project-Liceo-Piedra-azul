@@ -10,9 +10,9 @@ import {
   Sparkles,
   MonitorPlay,
 } from 'lucide-react';
-import { useAuthStore } from '../store/useAuthStore';
-import { useThemeStore } from '../store/useThemeStore';
-import { Button } from '../components/common/Button';
+import { useAuthStore } from '@/store/useAuthStore';
+import { useThemeStore } from '@/store/useThemeStore';
+import { Button } from '@/components/common/Button';
 
 export type AdminSection = 'dashboard' | 'alumnos' | 'cuentos' | 'aula';
 

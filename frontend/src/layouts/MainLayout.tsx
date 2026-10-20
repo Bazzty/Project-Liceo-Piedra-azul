@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
-import { Header } from '../components/common/Header';
-import { useThemeStore } from '../store/useThemeStore';
-import { useSessionTimeout } from '../hooks/useSessionTimeout';
-import { SessionTimeoutModal } from '../components/common/SessionTimeoutModal';
+import { Header } from '@/components/common/Header';
+import { useThemeStore } from '@/store/useThemeStore';
+import { useSessionTimeout } from '@/hooks/useSessionTimeout';
+import { SessionTimeoutModal } from '@/components/common/SessionTimeoutModal';
 
 export interface MainLayoutProps {
 	children: React.ReactNode;
