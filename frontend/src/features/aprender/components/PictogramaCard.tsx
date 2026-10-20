@@ -9,6 +9,8 @@ export interface PictogramaCardProps {
 	isHighlighted?: boolean;
 	onClick?: () => void;
 	className?: string;
+	/** Tamaño grande para quien aún no lee: pictograma enorme y sílabas fáciles de tocar. */
+	grande?: boolean;
 }
 
 export const PictogramaCard: React.FC<PictogramaCardProps> = ({
@@ -16,6 +18,7 @@ export const PictogramaCard: React.FC<PictogramaCardProps> = ({
 	isHighlighted = false,
 	onClick,
 	className = '',
+	grande = false,
 }) => {
 	const { playAudio } = usePlayerStore();
 	const [imgSrc, setImgSrc] = useState<string | null>(null);
@@ -71,14 +74,14 @@ export const PictogramaCard: React.FC<PictogramaCardProps> = ({
 					handlePalabraClick();
 				}
 			}}
-			className={`flex flex-col items-center gap-3 cursor-pointer group transform hover:scale-105 active:scale-95 transition-all bg-app p-4 rounded-3xl border-4 shadow-md ${
+			className={`flex flex-col items-center gap-3 cursor-pointer group transform hover:scale-105 active:scale-95 transition-all bg-surface p-4 rounded-card border-4 shadow-card ${
 				isHighlighted
-					? 'border-brand bg-brand/15 ring-4 ring-brand/30 scale-105'
+					? 'border-brand bg-accent/30 ring-8 ring-accent/70 scale-105'
 					: 'border-borderCustom hover:border-brand'
 			} ${className}`}
 		>
 			{/* Marco del Pictograma */}
-			<div className="w-24 h-24 sm:w-28 sm:h-28 flex items-center justify-center bg-surface rounded-2xl p-2 border-2 border-borderCustom shadow-inner overflow-hidden">
+			<div className={`${grande ? 'w-36 h-36 sm:w-48 sm:h-48 lg:w-60 lg:h-60' : 'w-24 h-24 sm:w-28 sm:h-28'} flex items-center justify-center bg-surface rounded-control p-2 border-2 border-borderCustom shadow-inner overflow-hidden`}>
 				{imgSrc && !hasError ? (
 					<img
 						src={imgSrc}
@@ -94,7 +97,7 @@ export const PictogramaCard: React.FC<PictogramaCardProps> = ({
 			</div>
 
 			{/* Texto de la Palabra */}
-			<span className="font-black text-lg sm:text-xl text-primary text-center">
+			<span className={`font-black text-primary text-center ${grande ? 'text-3xl sm:text-5xl' : 'text-lg sm:text-xl'}`}>
 				{palabra.texto}
 			</span>
 
@@ -105,7 +108,7 @@ export const PictogramaCard: React.FC<PictogramaCardProps> = ({
 						<button
 							key={idx}
 							onClick={(e) => handleSilabaClick(e, silaba.audioUrl)}
-							className="px-3 py-1.5 bg-brand text-onBrand font-black text-sm rounded-xl shadow border-2 border-brand-hover hover:scale-110 active:scale-95 transition-all cursor-pointer"
+							className={`${grande ? 'px-6 py-3 text-2xl min-h-14' : 'px-3 py-1.5 text-sm'} bg-brand text-onBrand font-black rounded-control shadow border-2 border-brand-hover hover:scale-110 active:scale-95 transition-all cursor-pointer`}
 						>
 							{silaba.texto}
 						</button>

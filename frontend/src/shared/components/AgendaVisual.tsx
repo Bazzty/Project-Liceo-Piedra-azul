@@ -8,8 +8,6 @@ const PASOS: Record<PasoAgenda, { nombre: string; icono: React.ReactNode; color:
   estrellas: { nombre: 'Estrellas', icono: <Star className="w-6 h-6" aria-hidden />, color: 'bg-btnLogros-bg text-btnLogros-text' },
 };
 
-export const NOMBRES_PASOS = PASOS;
-
 /**
  * Agenda visual "Primero – Después": predecible para niños con TEA.
  * La docente define los dos pasos; el niño los toca para ir.

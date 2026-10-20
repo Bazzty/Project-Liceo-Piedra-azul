@@ -1,103 +1,154 @@
 import React from 'react';
-import { Button } from '@/shared/ui';
-import { ArrowLeft } from 'lucide-react';
-import { MainLayout } from '@/shared/layouts/MainLayout';
-import { CharacterGuide } from '@/shared/components/CharacterGuide';
 import { useNavigate } from 'react-router-dom';
+import { Lock, Star, Volume2 } from 'lucide-react';
+import { useCuentosDeNivel, useProgresosDeAlumno } from '@/api';
 import { ROUTES } from '@/app/routes';
+import { useAuthStore } from '@/features/acceso/useAuthStore';
+import { sonarToque } from '@/shared/audio/sonidos';
+import { LayoutEstudiante } from '@/shared/components/LayoutEstudiante';
+import { OsoBurbuja } from '@/shared/components/OsoBurbuja';
+import { useHablar } from '@/shared/hooks/useHablar';
 
-export const NivelesView: React.FC = () => {
-  const navigate = useNavigate();
-  const onSelectNivel = (nivelId: string) => navigate(ROUTES.catalogo(nivelId));
-  const onBack = () => navigate(ROUTES.menu);
-  const mensajeGuia = '¡Elige el nivel que quieres practicar hoy!';
+const BASE = import.meta.env.BASE_URL || '/';
+
+interface Parada {
+  id: string;
+  letra: string;
+  nombre: string;
+  /** Pictograma local que ilustra la parada. */
+  imagen: string;
+  color: string;
+}
+
+const PARADAS: Parada[] = [
+  { id: 'nivel-a', letra: 'A', nombre: 'Sílabas', imagen: 'escuchar', color: 'bg-btnAprender-bg text-btnAprender-text' },
+  { id: 'nivel-b', letra: 'B', nombre: 'Cuentos', imagen: 'libro', color: 'bg-btnHablar-bg text-btnHablar-text' },
+  { id: 'nivel-c', letra: 'C', nombre: 'Palabras', imagen: 'jugar', color: 'bg-btnColores-bg text-btnColores-text' },
+  { id: 'nivel-d', letra: 'D', nombre: 'Historias', imagen: 'colegio', color: 'bg-btnLogros-bg text-btnLogros-text' },
+];
+
+const ESTRELLAS_POR_NIVEL = 3;
+
+interface ParadaNivelProps {
+  parada: Parada;
+  orden: number;
+  completados: number;
+  total: number;
+  onElegir: () => void;
+}
+
+/** Una parada del camino: letra grande, pictograma, estrellas ganadas y candado suave si aún no hay contenido. */
+const ParadaNivel: React.FC<ParadaNivelProps> = ({ parada, orden, completados, total, onElegir }) => {
+  const hablar = useHablar();
+  const bloqueada = total === 0;
+  const ganadas = total === 0 ? 0 : Math.ceil((ESTRELLAS_POR_NIVEL * completados) / total);
+
+  const alTocar = () => {
+    sonarToque();
+    if (bloqueada) hablar('Este nivel llega pronto.');
+    else onElegir();
+  };
 
   return (
-    <MainLayout allowScroll={false}>
-      <div className="flex flex-col gap-4 sm:gap-6 w-full max-w-6xl mx-auto h-full justify-center">
-        
-        {/* Encabezado Fijo con Botón Volver */}
-        <div className="flex items-center justify-between bg-surface/90 backdrop-blur-md p-4 rounded-3xl shadow-md border-2 border-borderCustom shrink-0">
-          <Button variant="secondary" size="sm" onClick={onBack}>
-          	<ArrowLeft className="w-4 h-4" />
-          	VOLVER
-          </Button>
-          
-          <h2 className="text-xl sm:text-2xl font-extrabold text-primary tracking-wide">
-            NIVELES DE LECTURA
-          </h2>
-
-          <div className="w-24" /> {/* Espaciador de simetría */}
-        </div>
-
-        {/* Layout de 3 Columnas sin Scroll */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 items-center w-full flex-1 max-h-[70vh]">
-          
-          {/* Lado Izquierdo: Niveles A y B */}
-          <div className="flex flex-col gap-4 h-full">
-            <button
-              onClick={() => onSelectNivel('nivel-a')}
-              style={{
-                backgroundColor: 'var(--btn-aprender-bg)',
-                color: 'var(--btn-aprender-text)',
-                borderColor: 'var(--btn-aprender-border)',
-              }}
-              className="flex-1 p-2 sm:p-4 rounded-3xl border-4 shadow-lg hover:opacity-90 active:scale-95 transition-all flex flex-col items-center justify-center gap-1 group cursor-pointer text-center"
-            >
-              <span className="text-xl sm:text-2xl font-extrabold tracking-wide">NIVEL A</span>
-              <span className="text-xs sm:text-sm font-medium opacity-90">Vocales (A, E, I, O, U)</span>
-            </button>
-
-            <button
-              onClick={() => onSelectNivel('nivel-b')}
-              style={{
-                backgroundColor: 'var(--btn-hablar-bg)',
-                color: 'var(--btn-hablar-text)',
-                borderColor: 'var(--btn-hablar-border)',
-              }}
-              className="flex-1 p-2 sm:p-4 rounded-3xl border-4 shadow-lg hover:opacity-90 active:scale-95 transition-all flex flex-col items-center justify-center gap-1 group cursor-pointer text-center"
-            >
-              <span className="text-xl sm:text-2xl font-extrabold tracking-wide">NIVEL B</span>
-              <span className="text-xs sm:text-sm font-medium opacity-90">Consonantes (M, L, S)</span>
-            </button>
-          </div>
-
-          {/* Centro: Personaje Guía Importado */}
-          <div className="h-full flex flex-col">
-            <CharacterGuide mensaje={mensajeGuia} variant="large" className="h-full" />
-          </div>
-
-          {/* Lado Derecho: Niveles C y D */}
-          <div className="flex flex-col gap-4 h-full">
-            <button
-              onClick={() => onSelectNivel('nivel-c')}
-              style={{
-                backgroundColor: 'var(--btn-colores-bg)',
-                color: 'var(--btn-colores-text)',
-                borderColor: 'var(--btn-colores-border)',
-              }}
-              className="flex-1 p-2 sm:p-4 rounded-3xl border-4 shadow-lg hover:opacity-90 active:scale-95 transition-all flex flex-col items-center justify-center gap-1 group cursor-pointer text-center"
-            >
-              <span className="text-xl sm:text-2xl font-extrabold tracking-wide">NIVEL C</span>
-              <span className="text-xs sm:text-sm font-medium opacity-90">Palabras Funcionales</span>
-            </button>
-
-            <button
-              onClick={() => onSelectNivel('nivel-d')}
-              style={{
-                backgroundColor: 'var(--btn-logros-bg)',
-                color: 'var(--btn-logros-text)',
-                borderColor: 'var(--btn-logros-border)',
-              }}
-              className="flex-1 p-2 sm:p-4 rounded-3xl border-4 shadow-lg hover:opacity-90 active:scale-95 transition-all flex flex-col items-center justify-center gap-1 group cursor-pointer text-center"
-            >
-              <span className="text-xl sm:text-2xl font-extrabold tracking-wide">NIVEL D</span>
-              <span className="text-xs sm:text-sm font-medium opacity-90">Cuentos Cortos Duales</span>
-            </button>
-          </div>
-
-        </div>
+    <li
+      className={`flex flex-col items-center gap-2 animate-aparecer ${orden % 2 === 1 ? 'lg:translate-y-14' : ''}`}
+      style={{ animationDelay: `${orden * 140}ms` }}
+    >
+      <div className="relative">
+        <button
+          type="button"
+          onClick={alTocar}
+          aria-label={bloqueada ? `Nivel ${parada.letra}: llega pronto` : `Nivel ${parada.letra}: ${parada.nombre}`}
+          className={`group relative w-36 h-36 sm:w-44 sm:h-44 lg:w-52 lg:h-52 rounded-full flex flex-col items-center justify-center shadow-card border-b-8 border-black/20 cursor-pointer transition-transform hover:scale-110 active:scale-95 ${
+            bloqueada ? 'bg-app text-secondary !border-borderStrong border-4 border-dashed opacity-90' : parada.color
+          }`}
+        >
+          <span className="text-7xl sm:text-8xl font-black leading-none group-hover:animate-girar">{parada.letra}</span>
+          {bloqueada && <Lock className="absolute top-3 left-3 w-8 h-8" aria-hidden />}
+        </button>
+        <img
+          src={`${BASE}pictogramas/arasaac/${parada.imagen}.png`.replace(/\/\//g, '/')}
+          alt=""
+          className="absolute -bottom-2 -right-2 w-16 h-16 sm:w-20 sm:h-20 object-contain bg-white rounded-full p-1.5 border-4 border-surface shadow-card"
+        />
+        <button
+          type="button"
+          onClick={() => hablar(bloqueada ? `Nivel ${parada.letra}. Llega pronto.` : `Nivel ${parada.letra}. ${parada.nombre}.`)}
+          aria-label={`Escuchar: nivel ${parada.letra}`}
+          className="absolute -top-1 -right-1 w-11 h-11 rounded-full bg-surface text-primary border-2 border-borderStrong flex items-center justify-center cursor-pointer hover:bg-app"
+        >
+          <Volume2 className="w-5 h-5" aria-hidden />
+        </button>
       </div>
-    </MainLayout>
+
+      <p className="text-2xl font-black text-primary bg-surface/90 rounded-full px-4 py-0.5">{bloqueada ? 'Pronto' : parada.nombre}</p>
+      <div className="flex gap-1" role="img" aria-label={`${ganadas} de ${ESTRELLAS_POR_NIVEL} estrellas`}>
+        {Array.from({ length: ESTRELLAS_POR_NIVEL }, (_, i) => (
+          <Star
+            key={i}
+            aria-hidden
+            strokeWidth={2}
+            className={`w-8 h-8 ${i < ganadas ? 'fill-accent text-brand' : 'text-borderStrong'}`}
+          />
+        ))}
+      </div>
+    </li>
+  );
+};
+
+/** Niveles de lectura como un camino con paradas: letra grande, pictograma y estrellas, sin texto que leer. */
+export const NivelesView: React.FC = () => {
+  const navigate = useNavigate();
+  const activeStudentId = useAuthStore((s) => s.activeStudentId);
+  const progresos = useProgresosDeAlumno(activeStudentId);
+  const cuentosPorNivel = [
+    useCuentosDeNivel(PARADAS[0].id),
+    useCuentosDeNivel(PARADAS[1].id),
+    useCuentosDeNivel(PARADAS[2].id),
+    useCuentosDeNivel(PARADAS[3].id),
+  ];
+
+  const completadosDe = (nivelIndex: number) => {
+    const ids = new Set((cuentosPorNivel[nivelIndex] ?? []).map((c) => c.id));
+    return new Set((progresos ?? []).filter((p) => p.completado && ids.has(p.cuentoId)).map((p) => p.cuentoId)).size;
+  };
+
+  return (
+    <LayoutEstudiante onVolver={() => navigate(ROUTES.menu)}>
+      <main className="relative flex-1 w-full max-w-6xl mx-auto px-4 py-6 sm:py-10 flex flex-col items-center justify-center gap-8 lg:gap-16">
+        <h1 className="sr-only">Niveles de lectura</h1>
+
+        <div className="relative w-full">
+          {/* Camino punteado que une las paradas (solo en pantallas anchas) */}
+          <svg viewBox="0 0 1000 160" preserveAspectRatio="none" className="hidden lg:block absolute inset-x-0 top-1/2 -translate-y-1/2 w-full h-40" aria-hidden>
+            <path
+              d="M125 60 C 250 60, 250 130, 375 130 S 500 60, 625 60 S 750 130, 875 130"
+              fill="none"
+              stroke="var(--brand-primary)"
+              strokeOpacity="0.5"
+              strokeWidth="8"
+              strokeDasharray="4 18"
+              strokeLinecap="round"
+              vectorEffect="non-scaling-stroke"
+            />
+          </svg>
+
+          <ol className="relative flex flex-wrap justify-center gap-x-6 gap-y-8 sm:gap-x-12 lg:justify-between lg:gap-x-0 lg:px-4 lg:pb-14">
+            {PARADAS.map((p, i) => (
+              <ParadaNivel
+                key={p.id}
+                parada={p}
+                orden={i}
+                total={(cuentosPorNivel[i] ?? []).length}
+                completados={completadosDe(i)}
+                onElegir={() => navigate(ROUTES.catalogo(p.id))}
+              />
+            ))}
+          </ol>
+        </div>
+
+        <OsoBurbuja mensaje="¿Dónde jugamos?" voz="Elige un nivel para empezar a leer." size="md" />
+      </main>
+    </LayoutEstudiante>
   );
 };

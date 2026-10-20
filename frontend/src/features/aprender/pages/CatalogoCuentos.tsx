@@ -1,170 +1,149 @@
 import React, { useState } from 'react';
-import { Button } from '@/shared/ui';
-import { ArrowLeft, BookOpen, Sparkles, Star } from 'lucide-react';
-import { MainLayout } from '@/shared/layouts/MainLayout';
-import { CharacterGuide } from '@/shared/components/CharacterGuide';
-import { useAuthStore } from '@/features/acceso/useAuthStore';
-import type { Cuento, Progreso } from '@/types';
-import { resolverYGuardarPictograma } from '@/features/tablero/arasaac';
-import { useCuentosDeNivel, useNivel, useProgresosDeAlumno } from '@/api';
 import { useNavigate, useParams } from 'react-router-dom';
+import { BookOpen, Play, Star, Volume2 } from 'lucide-react';
+import { useCuentosDeNivel, useNivel, useProgresosDeAlumno } from '@/api';
 import { ROUTES } from '@/app/routes';
+import { useAuthStore } from '@/features/acceso/useAuthStore';
+import { resolverYGuardarPictograma } from '@/features/tablero/arasaac';
+import { sonarToque } from '@/shared/audio/sonidos';
+import { LayoutEstudiante } from '@/shared/components/LayoutEstudiante';
+import { OsoBurbuja } from '@/shared/components/OsoBurbuja';
+import { useHablar } from '@/shared/hooks/useHablar';
+import type { Cuento } from '@/types';
 
-// Subcomponente interno para la portada de la tarjeta con fallback a ARASAAC
+/** Portada con respaldo: si la imagen local no existe, la pide a ARASAAC una sola vez. */
 const PortadaCuento: React.FC<{ cuento: Cuento }> = ({ cuento }) => {
-	const [imgSrc, setImgSrc] = useState(cuento.portadaUrl);
-	const [hasError, setHasError] = useState(false);
+  const [imgSrc, setImgSrc] = useState(cuento.portadaUrl);
+  const [hasError, setHasError] = useState(false);
 
-	const [portadaAnterior, setPortadaAnterior] = useState(cuento.portadaUrl);
-	if (portadaAnterior !== cuento.portadaUrl) {
-		setPortadaAnterior(cuento.portadaUrl);
-		setImgSrc(cuento.portadaUrl);
-		setHasError(false);
-	}
+  const [portadaAnterior, setPortadaAnterior] = useState(cuento.portadaUrl);
+  if (portadaAnterior !== cuento.portadaUrl) {
+    setPortadaAnterior(cuento.portadaUrl);
+    setImgSrc(cuento.portadaUrl);
+    setHasError(false);
+  }
 
-	const handleImageError = async () => {
-		if (!hasError) {
-			// Intenta obtener la imagen desde ARASAAC si la ruta local no existe en /public/
-			const apiUrl = await resolverYGuardarPictograma(cuento.titulo);
-			if (apiUrl && apiUrl !== imgSrc) {
-				setImgSrc(apiUrl);
-			} else {
-				setHasError(true);
-			}
-		}
-	};
+  const alFallar = async () => {
+    if (hasError) return;
+    const apiUrl = await resolverYGuardarPictograma(cuento.titulo);
+    if (apiUrl && apiUrl !== imgSrc) setImgSrc(apiUrl);
+    else setHasError(true);
+  };
 
-	return (
-		<div className="w-full h-36 flex items-center justify-center bg-app rounded-2xl overflow-hidden p-2">
-			{imgSrc && !hasError ? (
-				<img
-					src={imgSrc}
-					alt={cuento.titulo}
-					onError={handleImageError}
-					className="w-full h-full object-contain group-hover:scale-105 transition-transform"
-				/>
-			) : (
-				<div className="flex flex-col items-center justify-center text-secondary gap-1">
-					<BookOpen size={36} />
-					<span className="text-xs font-bold text-center">{cuento.titulo}</span>
-				</div>
-			)}
-		</div>
-	);
+  return (
+    <div className="w-full aspect-[4/3] flex items-center justify-center bg-app rounded-control overflow-hidden p-3">
+      {imgSrc && !hasError ? (
+        <img
+          src={imgSrc}
+          alt=""
+          onError={alFallar}
+          className="w-full h-full object-contain group-hover:scale-110 transition-transform"
+        />
+      ) : (
+        <BookOpen className="w-16 h-16 text-secondary" aria-hidden />
+      )}
+    </div>
+  );
 };
 
+interface TarjetaCuentoProps {
+  cuento: Cuento;
+  orden: number;
+  completado: boolean;
+  onElegir: () => void;
+}
+
+/** Tarjeta grande de cuento: portada, título, estrella si ya se leyó y un parlante que dice el título. */
+const TarjetaCuento: React.FC<TarjetaCuentoProps> = ({ cuento, orden, completado, onElegir }) => {
+  const hablar = useHablar();
+  return (
+    <li className="relative animate-aparecer" style={{ animationDelay: `${Math.min(orden, 8) * 70}ms` }}>
+      <button
+        type="button"
+        onClick={() => {
+          sonarToque();
+          onElegir();
+        }}
+        className="group w-full flex flex-col gap-3 p-4 rounded-card bg-surface border-2 border-borderCustom shadow-card cursor-pointer text-left transition-transform hover:-translate-y-2 hover:scale-[1.02] active:scale-95"
+      >
+        <PortadaCuento cuento={cuento} />
+        <span className="flex items-center justify-between gap-3">
+          <span className="text-2xl sm:text-3xl font-black text-primary leading-tight">{cuento.titulo}</span>
+          <span
+            className="w-14 h-14 shrink-0 rounded-full bg-brand text-onBrand flex items-center justify-center group-hover:bg-brand-hover"
+            aria-hidden
+          >
+            <Play className="w-7 h-7 fill-current" />
+          </span>
+        </span>
+      </button>
+
+      {completado && (
+        <span
+          className="absolute -top-3 -left-3 w-14 h-14 rounded-full bg-accent border-4 border-surface shadow-card flex items-center justify-center animate-flotar"
+          role="img"
+          aria-label="Ya lo leíste"
+        >
+          <Star className="w-8 h-8 fill-brand text-brand" aria-hidden />
+        </span>
+      )}
+
+      <button
+        type="button"
+        onClick={() => hablar(cuento.titulo)}
+        aria-label={`Escuchar: ${cuento.titulo}`}
+        className="absolute top-6 right-6 w-12 h-12 rounded-full bg-surface text-primary border-2 border-borderStrong flex items-center justify-center cursor-pointer hover:bg-app"
+      >
+        <Volume2 className="w-6 h-6" aria-hidden />
+      </button>
+    </li>
+  );
+};
+
+/** Catálogo del nivel: tarjetas grandes con portada, casi sin texto. */
 export const CatalogoCuentos: React.FC = () => {
-	const { nivelId = '' } = useParams();
-	const navigate = useNavigate();
-	const onSelectCuento = (cuentoId: string) => navigate(ROUTES.lectura(nivelId, cuentoId));
-	const onBack = () => navigate(ROUTES.aprender);
-	const { activeStudentId } = useAuthStore();
-	const nivel = useNivel(nivelId);
-	const cuentos = useCuentosDeNivel(nivelId);
-	const progresos = useProgresosDeAlumno(activeStudentId);
+  const { nivelId = '' } = useParams();
+  const navigate = useNavigate();
+  const activeStudentId = useAuthStore((s) => s.activeStudentId);
+  const nivel = useNivel(nivelId);
+  const cuentos = useCuentosDeNivel(nivelId);
+  const progresos = useProgresosDeAlumno(activeStudentId);
 
-	const cuentoEstaCompletado = (cuentoId?: string) => {
-		if (!cuentoId || !progresos) return false;
-		return progresos.some((p: Progreso) => p.cuentoId === cuentoId && p.completado);
-	};
+  const completado = (cuentoId?: string) => !!cuentoId && !!progresos?.some((p) => p.cuentoId === cuentoId && p.completado);
 
-	return (
-		<MainLayout>
-			<div className="flex flex-col gap-6 max-w-5xl mx-auto w-full p-4 min-h-[85vh]">
-				{/* Encabezado Fijo */}
-				<div className="flex items-center justify-between w-full bg-surface border-4 border-borderCustom rounded-3xl p-4 shadow-md">
-					<Button variant="secondary" size="sm" onClick={onBack}>
-						<ArrowLeft className="w-4 h-4" />
-						VOLVER
-					</Button>
+  return (
+    <LayoutEstudiante onVolver={() => navigate(ROUTES.aprender)}>
+      <main className="relative flex-1 w-full max-w-6xl mx-auto px-4 py-6 sm:py-8 flex flex-col gap-6">
+        <div className="flex items-end justify-center gap-6 sm:gap-10">
+          <span
+            className="w-20 h-20 sm:w-24 sm:h-24 shrink-0 rounded-full bg-brand text-onBrand flex items-center justify-center text-6xl font-black shadow-card"
+            aria-hidden
+          >
+            {nivel?.codigo ?? '?'}
+          </span>
+          <h1 className="sr-only">Nivel {nivel?.codigo}</h1>
+          <OsoBurbuja mensaje="Elige tu cuento" voz="Elige el cuento que más te guste." size="md" />
+        </div>
 
-					<div className="text-center">
-						<span className="text-xs font-black text-brand tracking-wider uppercase">
-							{nivel ? `NIVEL ${nivel.codigo}` : 'NIVEL DE LECTURA'}
-						</span>
-						<h1 className="text-lg sm:text-2xl font-black text-primary">
-							{nivel ? nivel.nombre : 'Catálogo de Cuentos'}
-						</h1>
-					</div>
-
-					<div className="w-16 sm:w-24" />
-				</div>
-
-				{/* Guía en modo compacto */}
-				<CharacterGuide
-					mensaje="Elige una actividad o cuento para comenzar a practicar."
-					variant="compact"
-				/>
-
-				{/* Grilla de Actividades */}
-				<div className="flex flex-col gap-4">
-					<h2 className="text-xl font-black text-primary flex items-center gap-2">
-						<Sparkles className="text-brand" size={24} />
-						Actividades Disponibles
-					</h2>
-
-					{!cuentos || cuentos.length === 0 ? (
-						<div className="flex flex-col items-center justify-center p-12 bg-surface border-4 border-borderCustom rounded-3xl text-center gap-3">
-							<BookOpen size={48} className="text-secondary" />
-							<p className="text-lg font-bold text-secondary">
-								Aún no hay actividades cargadas para este nivel.
-							</p>
-						</div>
-					) : (
-						<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-							{cuentos.map((cuento: Cuento) => {
-								const completado = cuentoEstaCompletado(cuento.id);
-								return (
-									<div
-										key={cuento.id}
-										role="button"
-										tabIndex={0}
-										onClick={() => cuento.id && onSelectCuento(cuento.id)}
-										onKeyDown={(e) => {
-											if ((e.key === 'Enter' || e.key === ' ') && cuento.id) {
-												e.preventDefault();
-												onSelectCuento(cuento.id);
-											}
-										}}
-										className="bg-surface rounded-3xl border-4 border-borderCustom p-4 shadow-xl hover:border-brand transition-all active:scale-98 cursor-pointer flex flex-col justify-between gap-3 group relative overflow-hidden"
-									>
-										{/* Indicador ⭐ COMPLETADO */}
-										{completado && (
-											<div className="absolute top-3 right-3 bg-brand text-onBrand px-3 py-1 rounded-full text-xs font-black flex items-center gap-1 shadow-md z-10">
-												<Star size={14} fill="currentColor" />
-												COMPLETADO
-											</div>
-										)}
-
-										{/* Portada Resiliente con Fallback a ARASAAC */}
-										<PortadaCuento cuento={cuento} />
-
-										{/* Título y Descripción */}
-										<div className="flex flex-col gap-1">
-											<h3 className="font-black text-lg text-primary group-hover:text-brand transition-colors">
-												{cuento.titulo}
-											</h3>
-											<p className="text-xs text-secondary line-clamp-2">
-												{cuento.descripcion}
-											</p>
-										</div>
-
-										{/* Pie de Tarjeta */}
-										<div className="flex items-center justify-between border-t-2 border-borderCustom pt-3 mt-1">
-											<span className="text-xs font-bold text-secondary">
-												{cuento.paginas?.length || 1} {cuento.paginas?.length === 1 ? 'Página' : 'Páginas'}
-											</span>
-											<span className="text-xs font-black text-brand bg-brand/10 px-3 py-1 rounded-xl">
-												{completado ? 'RELEER' : 'LEER'}
-											</span>
-										</div>
-									</div>
-								);
-							})}
-						</div>
-					)}
-				</div>
-			</div>
-		</MainLayout>
-	);
+        {!cuentos || cuentos.length === 0 ? (
+          <div className="flex flex-col items-center gap-4 p-10 bg-surface rounded-card border-2 border-borderCustom text-center">
+            <BookOpen className="w-20 h-20 text-secondary" aria-hidden />
+            <p className="text-3xl font-black text-primary">Pronto habrá cuentos aquí</p>
+          </div>
+        ) : (
+          <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-7">
+            {cuentos.map((cuento, i) => (
+              <TarjetaCuento
+                key={cuento.id}
+                cuento={cuento}
+                orden={i}
+                completado={completado(cuento.id)}
+                onElegir={() => cuento.id && navigate(ROUTES.lectura(nivelId, cuento.id))}
+              />
+            ))}
+          </ul>
+        )}
+      </main>
+    </LayoutEstudiante>
+  );
 };
