@@ -1,0 +1,135 @@
+:root, html[data-theme="calma-azul"] {
+  --bg-app: #f0f9ff;
+  --bg-card: #ffffff;
+  --text-primary: #0c4a6e;
+  --text-secondary: #0369a1;
+  --brand-primary: #0284c7;
+  --brand-hover: #0369a1;
+  --border-color: #bae6fd;
+  --btn-aprender-bg: #0284c7;
+  --btn-aprender-text: #ffffff;
+  --btn-aprender-border: #0369a1;
+  --btn-hablar-bg: #0d9488;
+  --btn-hablar-text: #ffffff;
+  --btn-hablar-border: #0f766e;
+  --btn-colores-bg: #4f46e5;
+  --btn-colores-text: #ffffff;
+  --btn-colores-border: #4338ca;
+  --btn-logros-bg: #059669;
+  --btn-logros-text: #ffffff;
+  --btn-logros-border: #047857;
+  --status-ok: #15803d;
+  --status-ok-bg: #dcfce7;
+  --status-warn: #b45309;
+  --status-warn-bg: #fef3c7;
+  --status-danger: #b91c1c;
+  --status-danger-bg: #fee2e2;
+}
+
+html[data-theme="alto-contraste"] {
+  --bg-app: #000000;
+  --bg-card: #1a1a1a;
+  --text-primary: #ffff00;
+  --text-secondary: #ffffff;
+  --brand-primary: #facc15;
+  --brand-hover: #eab308;
+  --border-color: #ffffff;
+  --btn-aprender-bg: #facc15;
+  --btn-aprender-text: #000000;
+  --btn-aprender-border: #ffffff;
+  --btn-hablar-bg: #38bdf8;
+  --btn-hablar-text: #000000;
+  --btn-hablar-border: #ffffff;
+  --btn-colores-bg: #4ade80;
+  --btn-colores-text: #000000;
+  --btn-colores-border: #ffffff;
+  --btn-logros-bg: #f472b6;
+  --btn-logros-text: #000000;
+  --btn-logros-border: #ffffff;
+}
+
+html[data-theme="verde-bosque"] {
+  --bg-app: #f0fdf4;
+  --bg-card: #ffffff;
+  --text-primary: #14532d;
+  --text-secondary: #15803d;
+  --brand-primary: #16a34a;
+  --brand-hover: #15803d;
+  --border-color: #bbf7d0;
+  --btn-aprender-bg: #16a34a;
+  --btn-aprender-text: #ffffff;
+  --btn-aprender-border: #15803d;
+  --btn-hablar-bg: #0d9488;
+  --btn-hablar-text: #ffffff;
+  --btn-hablar-border: #0f766e;
+  --btn-colores-bg: #65a30d;
+  --btn-colores-text: #ffffff;
+  --btn-colores-border: #4d7c0f;
+  --btn-logros-bg: #059669;
+  --btn-logros-text: #ffffff;
+  --btn-logros-border: #047857;
+}
+
+/* ==========================================================================
+   TEMA ADMINISTRATIVO DOCENTE - MODO DÍA (Claro)
+   ========================================================================== */
+html[data-theme="admin"]:not(.dark) {
+  --bg-app: #f8fafc;
+  --bg-card: #ffffff;
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --brand-primary: #0284c7;
+  --brand-hover: #0369a1;
+  --border-color: #cbd5e1;
+  --btn-aprender-bg: #0284c7;
+  --btn-aprender-text: #ffffff;
+  --btn-aprender-border: #0369a1;
+  --btn-hablar-bg: #0f766e;
+  --btn-hablar-text: #ffffff;
+  --btn-hablar-border: #115e59;
+  --btn-colores-bg: #334155;
+  --btn-colores-text: #ffffff;
+  --btn-colores-border: #1e293b;
+  --btn-logros-bg: #15803d;
+  --btn-logros-text: #ffffff;
+  --btn-logros-border: #166534;
+  --status-ok: #15803d;
+  --status-ok-bg: #dcfce7;
+  --status-warn: #b45309;
+  --status-warn-bg: #fef3c7;
+  --status-danger: #b91c1c;
+  --status-danger-bg: #fee2e2;
+}
+
+/* ==========================================================================
+   TEMA ADMINISTRATIVO DOCENTE - MODO NOCHE (Oscuro)
+   ========================================================================== */
+html.dark[data-theme="admin"],
+html[data-theme="admin"].dark,
+html.dark {
+  --bg-app: #0b0f19;
+  --bg-card: #151d2a;
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --brand-primary: #38bdf8;
+  --brand-hover: #0ea5e9;
+  --border-color: #334155;
+  --btn-aprender-bg: #38bdf8;
+  --btn-aprender-text: #0f172a;
+  --btn-aprender-border: #0ea5e9;
+  --btn-hablar-bg: #14b8a6;
+  --btn-hablar-text: #0f172a;
+  --btn-hablar-border: #0d9488;
+  --btn-colores-bg: #475569;
+  --btn-colores-text: #ffffff;
+  --btn-colores-border: #334155;
+  --btn-logros-bg: #22c55e;
+  --btn-logros-text: #0f172a;
+  --btn-logros-border: #16a34a;
+  --status-ok: #4ade80;
+  --status-ok-bg: #064e3b;
+  --status-warn: #fbbf24;
+  --status-warn-bg: #451a03;
+  --status-danger: #f87171;
+  --status-danger-bg: #450a0a;
+}

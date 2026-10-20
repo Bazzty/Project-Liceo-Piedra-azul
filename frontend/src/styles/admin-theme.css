@@ -1,0 +1,52 @@
+/* ==========================================================================
+ ADMIN THEME: Variables unificadas para la Vista Docente
+ ========================================================================== */
+
+/* --- MODO DÍA (Claro) --- */
+:root,
+html:not(.dark)[data-theme="admin"],
+[data-admin-theme="light"]:not(.dark) {
+  --admin-bg: #f8fafc; /* slate-50: Fondo general */
+  --admin-surface: #ffffff; /* Blanco: Tarjetas y contenedores */
+  --admin-surface-hover: #f1f5f9; /* slate-100: Hover */
+  --admin-border: #cbd5e1; /* slate-300: Borde fino de 1px */
+  --admin-border-strong: #94a3b8; /* slate-400: Bordes de inputs */
+
+  --admin-text-primary: #0f172a; /* slate-900: Texto principal de alto contraste */
+  --admin-text-secondary: #334155; /* slate-700: Texto secundario legible */
+  --admin-text-muted: #64748b; /* slate-500: Placeholders e iconos */
+  --admin-primary: #0284c7; /* sky-600 */
+  --admin-primary-hover: #0369a1;
+  --admin-primary-light: #e0f2fe; /* sky-100: Fondo tenue para badges */
+
+  --admin-sidebar-bg: #f8fafc;
+  --admin-sidebar-text: #334155;
+  --admin-sidebar-active: #0284c7;
+  --admin-sidebar-active-bg: #e0f2fe;
+  --admin-table-header: #f1f5f9;
+  --admin-table-row-even: #f8fafc;
+}
+
+/* --- MODO NOCHE (Oscuro) --- */
+html.dark,
+.dark,
+html[data-theme="admin"].dark,
+html[data-admin-theme="dark"] {
+  --admin-bg: #0b0f19; /* Fondo ultra oscuro */
+  --admin-surface: #151d2a; /* Tarjetas oscuras */
+  --admin-surface-hover: #1e293b; /* Hover */
+  --admin-border: #334155; /* Borde fino oscuro */
+  --admin-border-strong: #475569;
+  --admin-text-primary: #f8fafc; /* slate-50: Texto principal claro */
+  --admin-text-secondary: #cbd5e1; /* slate-300: Texto secundario claro */
+  --admin-text-muted: #94a3b8;
+  --admin-primary: #38bdf8; /* sky-400 */
+  --admin-primary-hover: #0ea5e9;
+  --admin-primary-light: #0c4a6e;
+  --admin-sidebar-bg: #0f172a;
+  --admin-sidebar-text: #cbd5e1;
+  --admin-sidebar-active: #38bdf8;
+  --admin-sidebar-active-bg: #1e293b;
+  --admin-table-header: #1e293b;
+  --admin-table-row-even: #0f172a;
+}

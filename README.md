@@ -19,7 +19,7 @@
 
 ## 🛠️ Stack Tecnológico & Estrategia de Recursos
 
-### Frontend (`/web`)
+### Frontend (`/frontend`)
 
 * **Core:** React 18 + TypeScript + Vite
 * **Estilos & Accesibilidad:** Tailwind CSS (Bajo estímulo visual / Ley TEA 21.545) + Lucide Icons
@@ -45,8 +45,8 @@
 Project-Liceo-Piedra-azul/
 ├── README.md                      # Documentación general del proyecto
 ├── .gitignore                     # Archivos ignorados por Git
-├── api/                           # Espacio reservado para el Backend (Laravel / Supabase API)
-└── web/                           # Aplicación Frontend (React + TypeScript + Vite + PWA)
+├── backend/                       # Backend (Laravel 12, API /api/v1)
+└── frontend/                      # Aplicación Frontend (React + TypeScript + Vite + PWA)
     ├── public/                    # Archivos estáticos y recursos locales (Modo Offline)
     │   ├── favicon.ico
     │   ├── manifest.webmanifest   # Configuración PWA (Nombre, colores, íconos)
@@ -101,7 +101,7 @@ Project-Liceo-Piedra-azul/
 
 2. **Instalar dependencias e iniciar en modo desarrollo:**
    ```bash
-   cd web
+   cd frontend
    npm install
    npm run dev
    ```
