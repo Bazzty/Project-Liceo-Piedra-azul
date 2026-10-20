@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BookOpen, LogOut, MessageCircle, Star, Volume2 } from 'lucide-react';
-import { useAlumno, useProgresosDeAlumno } from '@/api';
+import { useAlumno } from '@/api';
 import { sonarToque } from '@/shared/audio/sonidos';
 import type { PasoAgenda } from '@/shared/store/useAjustesStore';
 import { ROUTES } from '@/app/routes';
 import { useAuthStore } from '@/features/acceso/useAuthStore';
+import { AlbumEstrellas } from '@/features/estrellas/AlbumEstrellas';
 import { TableroSAAC } from '@/features/tablero/components/TableroSAAC';
 import { AgendaVisual } from '@/shared/components/AgendaVisual';
 import { LayoutEstudiante } from '@/shared/components/LayoutEstudiante';
@@ -69,16 +70,12 @@ const Globo: React.FC<GloboProps> = ({ orden, estilo, icono, titulo, onClick }) 
 /** Inicio del estudiante: escena de jardín con el osito, globos para elegir y una puerta para salir. */
 export const VistaPrincipal: React.FC = () => {
   const navigate = useNavigate();
-  const hablar = useHablar();
   const { activeStudentId, logout } = useAuthStore();
   const alumno = useAlumno(activeStudentId);
-  const progresos = useProgresosDeAlumno(activeStudentId);
   const [hablarAbierto, setHablarAbierto] = useState(false);
   const [estrellasAbierto, setEstrellasAbierto] = useState(false);
 
   const nombre = alumno?.nombre ?? 'amigo';
-  const leidos = (progresos ?? []).filter((p) => p.completado).length;
-  const TOTAL_ESTRELLAS = 8;
 
   const salir = () => {
     logout();
@@ -126,33 +123,9 @@ export const VistaPrincipal: React.FC = () => {
         <TableroSAAC />
       </Modal>
 
-      <Modal isOpen={estrellasAbierto} onClose={() => setEstrellasAbierto(false)} title="Mis estrellas" size="sm">
-        <div className="flex flex-col items-center gap-5 p-4 text-center">
-          <div className="flex flex-wrap justify-center gap-2" role="img" aria-label={`${leidos} estrellas de ${TOTAL_ESTRELLAS}`}>
-            {Array.from({ length: TOTAL_ESTRELLAS }, (_, i) => (
-              <Star
-                key={i}
-                aria-hidden
-                className={`w-12 h-12 animate-pop ${i < leidos ? 'fill-accent text-brand' : 'text-borderStrong'}`}
-                style={{ animationDelay: `${i * 90}ms`, animationFillMode: 'backwards' }}
-                strokeWidth={1.8}
-              />
-            ))}
-          </div>
-          <p className="text-3xl font-black text-primary">
-            {leidos === 0 ? '¡Vamos por tu primera estrella!' : `¡Tienes ${leidos} ${leidos === 1 ? 'estrella' : 'estrellas'}!`}
-          </p>
-          <button
-            type="button"
-            onClick={() => hablar(leidos === 0 ? 'Vamos por tu primera estrella' : `Tienes ${leidos} estrellas`)}
-            className="inline-flex items-center gap-2 min-h-12 px-5 rounded-control bg-accent text-onAccent font-extrabold cursor-pointer hover:bg-accent-hover"
-          >
-            <Volume2 className="w-5 h-5" aria-hidden />
-            Escuchar
-          </button>
-        </div>
+      <Modal isOpen={estrellasAbierto} onClose={() => setEstrellasAbierto(false)} title="Mis estrellas" size="md">
+        <AlbumEstrellas alumnoId={activeStudentId} />
       </Modal>
-
     </LayoutEstudiante>
   );
 };
