@@ -1,13 +1,21 @@
 import React, { useMemo, useState } from 'react';
-import { Star, Volume2 } from 'lucide-react';
+import { Crown, Star, Volume2 } from 'lucide-react';
 import { useProgresosDeAlumno, useRegistrosDeAlumno } from '@/api';
 import { Sticker } from '@/features/estrellas/Sticker';
 import { PAGINAS, STICKERS } from '@/features/estrellas/stickers';
 import { useColeccion } from '@/features/estrellas/useColeccion';
 import { sonarToque } from '@/shared/audio/sonidos';
+import { OsoCabeza } from '@/shared/components/OsoCabeza';
 import { useHablar } from '@/shared/hooks/useHablar';
 
-const INICIALES = ['D', 'L', 'M', 'M', 'J', 'V', 'S'];
+const NOMBRES_DIA = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+/** Cada día tiene su color, tomado de la paleta activa. */
+const COLORES_DIA = [
+  'bg-btnAprender-bg text-btnAprender-text',
+  'bg-btnHablar-bg text-btnHablar-text',
+  'bg-btnColores-bg text-btnColores-text',
+  'bg-btnLogros-bg text-btnLogros-text',
+];
 
 const claveDia = (fecha: Date) =>
   `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}-${String(fecha.getDate()).padStart(2, '0')}`;
@@ -36,7 +44,7 @@ export const AlbumEstrellas: React.FC<{ alumnoId: string | null }> = ({ alumnoId
     const lista = Array.from({ length: 7 }, (_, i) => {
       const d = new Date(hoy);
       d.setDate(hoy.getDate() - (6 - i));
-      return { inicial: INICIALES[d.getDay()], activo: conActividad.has(claveDia(d)), esHoy: i === 6 };
+      return { nombre: NOMBRES_DIA[d.getDay()], activo: conActividad.has(claveDia(d)), esHoy: i === 6 };
     });
     // Días seguidos hasta hoy (si hoy aún no jugó, cuenta hasta ayer)
     let contador = 0;
@@ -49,6 +57,8 @@ export const AlbumEstrellas: React.FC<{ alumnoId: string | null }> = ({ alumnoId
   }, [registros, progresos]);
 
   const textoRacha = racha > 0 ? `¡${racha} ${racha === 1 ? 'día seguido' : 'días seguidos'}!` : '¡Hoy empieza tu racha!';
+  const diasActivos = dias.filter((d) => d.activo).length;
+  const semanaCompleta = diasActivos === 7;
   const textoStickers = obtenidos.length === 0 ? 'Gana tu primer sticker' : `Tienes ${obtenidos.length} de ${STICKERS.length} stickers`;
 
   const tocarSticker = (i: number) => {
@@ -61,23 +71,43 @@ export const AlbumEstrellas: React.FC<{ alumnoId: string | null }> = ({ alumnoId
   return (
     <div className="flex flex-col gap-5 p-2 sm:p-4">
       <section className="flex flex-col items-center gap-3" aria-label="Racha de días">
-        <div className="flex gap-2 sm:gap-3" role="img" aria-label={textoRacha}>
+        {/* La semana: cada día aparece con su color, uno tras otro; el osito espera en hoy */}
+        <div className="relative flex gap-2 sm:gap-4 pt-12">
           {dias.map((d, i) => (
-            <div key={i} className="flex flex-col items-center gap-1">
+            <button
+              key={i}
+              type="button"
+              onClick={() => {
+                sonarToque();
+                hablar(d.activo ? `${d.nombre}: ¡jugaste!` : `${d.nombre}: ese día no jugaste`);
+              }}
+              aria-label={`${d.nombre}: ${d.activo ? 'jugaste' : 'no jugaste'}${d.esHoy ? ' (hoy)' : ''}`}
+              className="relative flex flex-col items-center gap-1 cursor-pointer active:scale-90 transition-transform"
+            >
+              {d.esHoy && (
+                <span className="absolute -top-12 sm:-top-14 w-11 h-11 sm:w-14 sm:h-14 rounded-full bg-surface border-2 border-borderStrong overflow-hidden animate-saltito" aria-hidden>
+                  <OsoCabeza ojosFelices boca="HAPPY" />
+                </span>
+              )}
               <span
-                className={`w-11 h-11 sm:w-14 sm:h-14 rounded-full flex items-center justify-center border-4 ${
-                  d.activo ? 'bg-accent border-brand' : 'bg-app border-dashed border-borderStrong'
-                } ${d.esHoy ? 'ring-4 ring-brand/30' : ''}`}
+                style={d.activo ? { animationDelay: `${i * 120}ms`, animationFillMode: 'backwards' } : undefined}
+                className={`w-11 h-11 sm:w-16 sm:h-16 rounded-full flex items-center justify-center border-4 ${
+                  d.activo ? `${COLORES_DIA[i % COLORES_DIA.length]} border-surface shadow-card animate-pop` : 'bg-app border-dashed border-borderStrong'
+                } ${d.esHoy ? 'ring-4 ring-brand/40' : ''}`}
               >
-                <Star className={`w-6 h-6 sm:w-8 sm:h-8 ${d.activo ? 'fill-brand text-brand' : 'text-borderStrong'} ${d.activo && d.esHoy ? 'animate-saltito' : ''}`} aria-hidden />
+                <Star className={`w-6 h-6 sm:w-9 sm:h-9 ${d.activo ? 'fill-current' : 'text-borderStrong'}`} aria-hidden />
               </span>
-              <span className="text-sm font-black text-secondary" aria-hidden>
-                {d.inicial}
+              <span className="text-[0.7rem] sm:text-sm font-black text-secondary capitalize" aria-hidden>
+                {d.nombre.slice(0, 3)}
               </span>
-            </div>
+            </button>
           ))}
         </div>
-        <p className="text-2xl sm:text-3xl font-black text-primary">{textoRacha}</p>
+        <p className="flex items-center gap-2 text-2xl sm:text-3xl font-black text-primary">
+          {semanaCompleta && <Crown className="w-8 h-8 text-accent fill-accent animate-saltito" aria-hidden />}
+          {semanaCompleta ? '¡Semana completa!' : textoRacha}
+        </p>
+        <p className="text-base sm:text-lg font-bold text-secondary">{diasActivos} de 7 días esta semana</p>
       </section>
 
       <section className="flex flex-col items-center gap-4 border-t-2 border-borderCustom pt-5" aria-label="Álbum de stickers">
