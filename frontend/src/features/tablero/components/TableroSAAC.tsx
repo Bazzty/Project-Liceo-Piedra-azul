@@ -1,18 +1,16 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowLeft, Delete, HandHelping, Play, Trash2, Volume2 } from 'lucide-react';
+import { ArrowLeft, Delete, HandHelping, MousePointerClick, Play, Volume2 } from 'lucide-react';
 import type { Pictograma } from '@/types';
-import { crearRegistro, usePictogramas, useRegistrosDeAlumno } from '@/api';
+import { crearRegistro, usePictogramas } from '@/api';
 import { useAuthStore } from '@/features/acceso/useAuthStore';
 import { CATEGORIAS_TABLERO, FRASES_LISTAS, franjaDe } from '@/features/tablero/categoriasTablero';
 import { resolverYGuardarPictograma } from '@/features/tablero/arasaac';
 import { decirSecuencia, type ElementoDeVoz } from '@/shared/audio/decirSecuencia';
 import { sonarAcierto, sonarToque } from '@/shared/audio/sonidos';
-import { FondoPaisaje } from '@/shared/components/FondoPaisaje';
 import { LluviaEstrellas } from '@/shared/components/LluviaEstrellas';
 import { OsoCabeza } from '@/shared/components/OsoCabeza';
 import { useHablar } from '@/shared/hooks/useHablar';
 
-const MAXIMO_FRECUENTES = 12;
 const PALABRAS_POR_FRASE = 8;
 const BOCAS = ['AEI', 'O', 'EE', 'U', 'BMP', 'L', 'AEI'];
 
@@ -46,9 +44,10 @@ const Dibujo: React.FC<{ pic: Pictograma; className: string }> = ({ pic, classNa
   );
 };
 
-/** Una tecla: el dibujo sobre fondo blanco y todo el cuadro del color de su categoría. */
+/** Una tecla: tarjeta blanca con el dibujo grande y una franja fina del color de su categoría. */
 const Tecla: React.FC<{ pic: Pictograma; alTocar: (pic: Pictograma) => void }> = ({ pic, alTocar }) => {
   const [pulsada, setPulsada] = useState(false);
+  const franja = franjaDe(pic.categoria).split(' ')[0];
   return (
     <button
       type="button"
@@ -58,12 +57,13 @@ const Tecla: React.FC<{ pic: Pictograma; alTocar: (pic: Pictograma) => void }> =
         alTocar(pic);
       }}
       aria-label={pic.palabra}
-      className={`flex flex-col items-center gap-1 rounded-[1.75rem] border-4 border-surface p-2 shadow-card cursor-pointer transition-transform hover:-translate-y-1 hover:rotate-1 active:scale-90 ${franjaDe(pic.categoria)} ${pulsada ? 'animate-pop' : ''}`}
+      className={`flex flex-col items-center overflow-hidden rounded-3xl border-4 border-borderStrong bg-surface shadow-card cursor-pointer transition-transform hover:border-brand active:scale-90 ${pulsada ? 'animate-pop' : ''}`}
     >
-      <span className="w-full flex items-center justify-center rounded-3xl bg-surface p-2">
-        <Dibujo pic={pic} className="w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28" />
+      <span className={`h-2.5 w-full ${franja}`} aria-hidden />
+      <span className="flex items-center justify-center p-3">
+        <Dibujo pic={pic} className="w-24 h-24 sm:w-28 sm:h-28 lg:w-32 lg:h-32" />
       </span>
-      <span className="text-lg sm:text-xl font-black leading-tight truncate max-w-full px-1">{pic.palabra}</span>
+      <span className="pb-3 text-xl sm:text-2xl font-black leading-tight truncate max-w-full px-2">{pic.palabra}</span>
     </button>
   );
 };
@@ -74,16 +74,16 @@ const FraseLista: React.FC<{ pics: Pictograma[]; alTocar: (pics: Pictograma[]) =
     type="button"
     onClick={() => alTocar(pics)}
     aria-label={pics.map((p) => p.palabra).join(' ')}
-    className="flex items-center gap-2 rounded-[1.75rem] border-4 border-surface bg-btnColores-bg text-btnColores-text p-2 sm:p-3 shadow-card cursor-pointer transition-transform hover:-translate-y-1 active:scale-95"
+    className="flex items-center gap-3 rounded-3xl border-4 border-borderStrong bg-surface p-3 shadow-card cursor-pointer transition-transform hover:border-brand active:scale-95"
   >
     <span className="flex items-center gap-1.5">
       {pics.map((p) => (
-        <span key={p.id} className="rounded-2xl bg-surface p-1">
-          <Dibujo pic={p} className="w-14 h-14 sm:w-16 sm:h-16" />
+        <span key={p.id}>
+          <Dibujo pic={p} className="w-16 h-16 sm:w-20 sm:h-20" />
         </span>
       ))}
     </span>
-    <span className="ml-auto w-11 h-11 shrink-0 rounded-full bg-accent text-onAccent border-2 border-surface flex items-center justify-center" aria-hidden>
+    <span className="ml-auto w-12 h-12 shrink-0 rounded-full bg-accent text-onAccent flex items-center justify-center" aria-hidden>
       <Play className="w-5 h-5 fill-current" />
     </span>
   </button>
@@ -98,8 +98,7 @@ export const TableroSAAC: React.FC<{ onCerrar: () => void }> = ({ onCerrar }) =>
   const activeStudentId = useAuthStore((s) => s.activeStudentId);
   const supervision = useAuthStore((s) => s.supervision);
   const todos = usePictogramas();
-  const registros = useRegistrosDeAlumno(activeStudentId);
-  const [categoria, setCategoria] = useState<string>('rapidas');
+  const [categoria, setCategoria] = useState<string | null>(null);
   const [frase, setFrase] = useState<Pictograma[]>([]);
   const [sonando, setSonando] = useState<number | null>(null);
   const [celebra, setCelebra] = useState(false);
@@ -112,18 +111,6 @@ export const TableroSAAC: React.FC<{ onCerrar: () => void }> = ({ onCerrar }) =>
     return () => window.removeEventListener('keydown', alTeclear);
   }, [onCerrar]);
 
-  // Las palabras que más usa este niño, para tenerlas a mano
-  const frecuentes = useMemo(() => {
-    if (!todos || !registros) return [];
-    const cuenta = new Map<string, number>();
-    registros.filter((r) => r.tipo === 'tablero').forEach((r) => r.pictogramaIds?.forEach((id) => cuenta.set(id, (cuenta.get(id) ?? 0) + 1)));
-    return [...cuenta.entries()]
-      .sort((a, b) => b[1] - a[1])
-      .map(([id]) => todos.find((p) => p.id === id))
-      .filter((p): p is Pictograma => !!p)
-      .slice(0, MAXIMO_FRECUENTES);
-  }, [todos, registros]);
-
   const frasesListas = useMemo(
     () =>
       FRASES_LISTAS.map((ids) => ids.map((id) => todos?.find((p) => p.id === id)).filter((p): p is Pictograma => !!p)).filter(
@@ -132,9 +119,9 @@ export const TableroSAAC: React.FC<{ onCerrar: () => void }> = ({ onCerrar }) =>
     [todos],
   );
 
-  const tieneFrecuentes = frecuentes.length >= 3;
   const ayuda = todos?.find((p) => p.id === 'pic-ayuda');
-  const visibles = categoria === 'frecuentes' ? frecuentes : (todos ?? []).filter((p) => categoria === 'todos' || p.categoria === categoria);
+  const visibles = (todos ?? []).filter((p) => p.categoria === categoria);
+  const categoriaActual = CATEGORIAS_TABLERO.find((c) => c.id === categoria);
 
   const registrar = (pics: Pictograma[], extra = '') => {
     if (!activeStudentId || supervision || pics.length === 0) return;
@@ -197,25 +184,16 @@ export const TableroSAAC: React.FC<{ onCerrar: () => void }> = ({ onCerrar }) =>
     setFrase((f) => f.slice(0, -1));
   };
 
-  const limpiar = () => {
-    corte.current += 1;
-    setSonando(null);
-    setFrase([]);
-  };
-
-  const BOTON_REDONDO = 'rounded-full border-4 border-borderStrong flex items-center justify-center cursor-pointer active:scale-90 transition-all disabled:opacity-40 disabled:cursor-not-allowed';
-
   return (
     <div role="dialog" aria-modal="true" aria-label="Hablar" className="fixed inset-0 z-50 flex flex-col bg-app text-primary overflow-hidden animate-fadeIn">
-      <FondoPaisaje />
       {celebra && <LluviaEstrellas />}
 
-      <header className="relative z-10 flex items-center justify-between gap-3 px-3 sm:px-6 py-2 sm:py-3">
+      <header className="flex items-center justify-between gap-3 px-3 sm:px-6 py-2 sm:py-3">
         <button
           type="button"
-          onClick={onCerrar}
-          aria-label="Volver"
-          className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-accent text-onAccent border-4 border-borderStrong flex items-center justify-center cursor-pointer hover:bg-accent-hover active:scale-90 transition-all shadow-card"
+          onClick={() => (categoria ? setCategoria(null) : onCerrar())}
+          aria-label={categoria ? 'Volver a las categorías' : 'Volver'}
+          className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-accent text-onAccent border-4 border-borderStrong flex items-center justify-center cursor-pointer hover:bg-accent-hover active:scale-90 transition-all"
         >
           <ArrowLeft className="w-8 h-8" strokeWidth={2.5} aria-hidden />
         </button>
@@ -225,101 +203,95 @@ export const TableroSAAC: React.FC<{ onCerrar: () => void }> = ({ onCerrar }) =>
             type="button"
             onClick={pedirAyuda}
             aria-label="Necesito ayuda"
-            className="flex items-center gap-2 h-14 sm:h-16 pl-4 pr-5 rounded-full bg-statusDanger text-onStatus border-4 border-surface shadow-card cursor-pointer active:scale-90 transition-transform"
+            className="flex items-center gap-2 h-14 pl-4 pr-5 rounded-full bg-statusDanger text-onStatus cursor-pointer active:scale-90 transition-transform"
           >
-            <HandHelping className="w-8 h-8" aria-hidden />
-            <span className="text-xl font-black">Ayuda</span>
+            <HandHelping className="w-7 h-7" aria-hidden />
+            <span className="text-lg font-black">Ayuda</span>
           </button>
         )}
       </header>
 
       {/* El osito y su burbuja: ahí aparecen los dibujos que el niño elige */}
-      <section className="relative z-10 flex items-end gap-2 sm:gap-5 px-3 sm:px-6">
-        <div className={`shrink-0 ${celebra ? 'animate-saltito' : 'animate-respirar'}`}>
-          <span className="block w-24 h-24 sm:w-36 sm:h-36 lg:w-44 lg:h-44 bg-surface rounded-full border-4 border-onBrand/60 p-1.5 overflow-hidden shadow-card" role="img" aria-label="Osito">
+      <section className="flex items-center gap-3 sm:gap-5 px-3 sm:px-6">
+        <div className={`shrink-0 ${celebra ? 'animate-saltito' : ''}`}>
+          <span className="block w-20 h-20 sm:w-28 sm:h-28 bg-surface rounded-full border-4 border-borderStrong p-1 overflow-hidden" role="img" aria-label="Osito">
             <OsoCabeza boca={boca} />
           </span>
         </div>
 
-        <div className="relative flex-1 min-w-0 flex items-center gap-2 sm:gap-3 rounded-[2rem] border-4 border-borderStrong bg-surface p-2 sm:p-3 shadow-card mb-2">
-          <span className="absolute -left-3 bottom-8 w-5 h-5 rotate-45 bg-surface border-l-4 border-b-4 border-borderStrong" aria-hidden />
-          <div className="flex-1 min-w-0 flex items-center gap-2 sm:gap-3 overflow-x-auto py-1 min-h-24 sm:min-h-28" aria-label="Lo que dice el osito" aria-live="polite">
-            {frase.length === 0
-              ? [0, 1, 2].map((i) => <span key={i} aria-hidden className="shrink-0 w-16 h-20 sm:w-20 sm:h-24 rounded-2xl border-4 border-dashed border-borderStrong/60" />)
-              : frase.map((p, i) => (
-                  <span
-                    key={`${p.id}-${i}`}
-                    className={`shrink-0 flex flex-col items-center rounded-2xl border-4 bg-app px-1.5 pt-1 animate-pop transition-all ${sonando === i ? 'border-brand ring-8 ring-accent/70 scale-110' : 'border-transparent'}`}
-                  >
-                    <Dibujo pic={p} className="w-14 h-14 sm:w-20 sm:h-20" />
-                    <span className="text-sm sm:text-base font-black">{p.palabra}</span>
-                  </span>
-                ))}
+        <div className="relative flex-1 min-w-0 flex items-center gap-3 rounded-[2rem] border-4 border-borderStrong bg-surface p-2 sm:p-3">
+          <span className="absolute -left-3 top-1/2 -mt-2.5 w-5 h-5 rotate-45 bg-surface border-l-4 border-b-4 border-borderStrong" aria-hidden />
+          <div className="flex-1 min-w-0 flex items-center gap-2 sm:gap-3 overflow-x-auto min-h-20 sm:min-h-24" aria-label="Lo que dice el osito" aria-live="polite">
+            {frase.length === 0 ? (
+              <MousePointerClick className="mx-auto w-9 h-9 text-borderStrong" aria-hidden />
+            ) : (
+              frase.map((p, i) => (
+                <span
+                  key={`${p.id}-${i}`}
+                  className={`shrink-0 flex flex-col items-center rounded-2xl border-4 px-1.5 pt-1 animate-pop transition-all ${sonando === i ? 'border-brand ring-8 ring-accent/70 scale-110' : 'border-transparent'}`}
+                >
+                  <Dibujo pic={p} className="w-14 h-14 sm:w-20 sm:h-20" />
+                  <span className="text-sm sm:text-base font-black">{p.palabra}</span>
+                </span>
+              ))
+            )}
           </div>
-
-          <div className="flex flex-col sm:flex-row items-center gap-2 shrink-0">
+          <div className="flex items-center gap-2 shrink-0">
+            {frase.length > 0 && (
+              <button type="button" onClick={borrarUltima} aria-label="Borrar la última palabra" className="w-12 h-12 rounded-full border-4 border-borderStrong bg-surface flex items-center justify-center cursor-pointer hover:border-brand active:scale-90 transition-all">
+                <Delete className="w-6 h-6" aria-hidden />
+              </button>
+            )}
             <button
               type="button"
               onClick={decirMiFrase}
               disabled={frase.length === 0}
               aria-label="Que el osito lo diga"
-              className={`${BOTON_REDONDO} w-16 h-16 sm:w-20 sm:h-20 bg-accent text-onAccent hover:bg-accent-hover shadow-card`}
+              className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-4 border-borderStrong bg-accent text-onAccent flex items-center justify-center cursor-pointer hover:bg-accent-hover active:scale-90 transition-all disabled:opacity-35 disabled:cursor-not-allowed"
             >
               <Volume2 className={`w-9 h-9 sm:w-11 sm:h-11 ${sonando !== null ? 'animate-pulso' : ''}`} aria-hidden />
             </button>
-            <div className="flex sm:flex-col gap-2">
-              <button type="button" onClick={borrarUltima} disabled={frase.length === 0} aria-label="Borrar la última palabra" className={`${BOTON_REDONDO} w-11 h-11 sm:w-12 sm:h-12 bg-surface hover:border-brand`}>
-                <Delete className="w-6 h-6" aria-hidden />
-              </button>
-              <button type="button" onClick={limpiar} disabled={frase.length === 0} aria-label="Borrar todo" className={`${BOTON_REDONDO} w-11 h-11 sm:w-12 sm:h-12 bg-statusDanger-bg text-statusDanger border-statusDanger`}>
-                <Trash2 className="w-6 h-6" aria-hidden />
-              </button>
-            </div>
           </div>
         </div>
       </section>
 
-      {/* Categorías como globos de colores: ícono grande; tocar uno dice su nombre */}
-      <nav role="tablist" aria-label="Categorías" className="relative z-10 flex gap-2 sm:gap-3 overflow-x-auto px-3 sm:px-6 pt-3 pb-1">
-        {CATEGORIAS_TABLERO.filter((c) => c.id !== 'frecuentes' || tieneFrecuentes).map((c) => {
-          const seleccionada = c.id === categoria;
-          return (
-            <button
-              key={c.id}
-              type="button"
-              role="tab"
-              aria-selected={seleccionada}
-              onClick={() => {
-                sonarToque();
-                setCategoria(c.id);
-                hablar(c.nombre);
-              }}
-              className={`shrink-0 flex flex-col items-center justify-center gap-0.5 w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 cursor-pointer transition-all active:scale-90 shadow-card ${c.franja} ${
-                seleccionada ? 'border-brand ring-8 ring-accent/70 scale-110' : 'border-surface hover:scale-105'
-              }`}
-            >
-              <c.Icono className="w-8 h-8 sm:w-10 sm:h-10" aria-hidden />
-              <span className="text-xs sm:text-sm font-black">{c.nombre}</span>
-            </button>
-          );
-        })}
-      </nav>
-
-      {/* Frases listas o teclas */}
-      <div role="tabpanel" className="relative z-10 flex-1 overflow-y-auto px-3 sm:px-6 py-3">
-        {categoria === 'rapidas' ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+      {/* Un solo nivel a la vez: primero las categorías, luego lo que hay dentro de la elegida */}
+      <div className="flex-1 overflow-y-auto px-3 sm:px-6 py-4">
+        {categoria === null ? (
+          <ul className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5 max-w-4xl mx-auto">
+            {CATEGORIAS_TABLERO.map((c) => (
+              <li key={c.id}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    sonarToque();
+                    setCategoria(c.id);
+                    hablar(c.nombre);
+                  }}
+                  className="w-full flex flex-col items-center gap-3 rounded-3xl border-4 border-borderStrong bg-surface py-5 sm:py-7 cursor-pointer hover:border-brand active:scale-95 transition-all"
+                >
+                  <span className={`w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center ${c.franja}`}>
+                    <c.Icono className="w-10 h-10 sm:w-12 sm:h-12" aria-hidden />
+                  </span>
+                  <span className="text-xl sm:text-2xl font-black">{c.nombre}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : categoria === 'rapidas' ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 max-w-3xl mx-auto">
             {frasesListas.map((pics) => (
               <FraseLista key={pics.map((p) => p.id).join('-')} pics={pics} alTocar={tocarFraseLista} />
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-[repeat(auto-fill,minmax(7.5rem,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(9rem,1fr))] gap-3 sm:gap-4">
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(8rem,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(9.5rem,1fr))] gap-3 sm:gap-4 max-w-5xl mx-auto">
             {visibles.map((pic) => (
               <Tecla key={pic.id ?? pic.palabra} pic={pic} alTocar={tocarTecla} />
             ))}
           </div>
         )}
+        {categoriaActual && <p className="sr-only">Categoría {categoriaActual.nombre}</p>}
       </div>
     </div>
   );
