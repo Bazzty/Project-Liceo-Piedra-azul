@@ -79,9 +79,9 @@ export const AlbumEstrellas: React.FC<{ alumnoId: string | null }> = ({ alumnoId
               type="button"
               onClick={() => {
                 sonarToque();
-                hablar(d.activo ? `${d.nombre}: ¡jugaste!` : `${d.nombre}: ese día no jugaste`);
+                hablar(d.activo ? `${d.nombre}: ¡jugaste!` : d.nombre);
               }}
-              aria-label={`${d.nombre}: ${d.activo ? 'jugaste' : 'no jugaste'}${d.esHoy ? ' (hoy)' : ''}`}
+              aria-label={`${d.nombre}${d.activo ? ': jugaste' : ''}${d.esHoy ? ' (hoy)' : ''}`}
               className="relative flex flex-col items-center gap-1 cursor-pointer active:scale-90 transition-transform"
             >
               {d.esHoy && (
