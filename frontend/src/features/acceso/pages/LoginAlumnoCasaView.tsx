@@ -119,11 +119,12 @@ export const LoginAlumnoCasaView: React.FC = () => {
 
   const escribir = useCallback(
     (d: string) => {
-      if (bloqueado || alumno) return;
+      if (bloqueado || alumno || codigo.length >= LARGO_CODIGO) return;
       setError(false);
       setCodigo((c) => (c.length < LARGO_CODIGO ? c + d : c));
+      hablar(d); // dice en voz alta el número que tocó el niño
     },
-    [bloqueado, alumno],
+    [bloqueado, alumno, codigo.length, hablar],
   );
 
   const borrar = useCallback(() => {
