@@ -1,7 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { ClipboardList, Trash2 } from 'lucide-react';
+import { CalendarCheck, ClipboardList, Trash2 } from 'lucide-react';
 import { useAlumnos, useCuentos, useRegistros } from '@/api';
+import { usePlanSemanal } from '@/features/docente/components/usePlanSemanal';
 import { EtiquetaTarea } from '@/features/docente/components/BloquesActividad';
 import { EncabezadoPagina, Hoja } from '@/features/docente/components/Hoja';
 import { palabrasDificiles, resultadosDeRegistros } from '@/features/docente/components/resultados';
@@ -14,6 +15,14 @@ const CAMPO = 'w-full min-h-12 rounded-control border border-borderStrong bg-sur
 
 const palabrasDe = (c: Cuento) => new Set(c.paginas.flatMap((p) => p.palabras.map((w) => w.texto.toLowerCase())));
 
+/** Fecha límite por defecto de lo sugerido: el próximo viernes (AAAA-MM-DD). */
+const proximoViernes = () => {
+  const d = new Date();
+  const faltan = (5 - d.getDay() + 7) % 7 || 7;
+  d.setDate(d.getDate() + faltan);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
+
 /** Actividades: dejar un cuento con sus juegos como tarea, ver cómo va cada niño y qué palabras cuestan más. */
 export const ActividadesPanel: React.FC = () => {
   const alumnos = useAlumnos();
@@ -23,6 +32,7 @@ export const ActividadesPanel: React.FC = () => {
   const [params] = useSearchParams();
   const refuerzoDe = params.get('alumno');
 
+  const plan = usePlanSemanal();
   const publicados = useMemo(() => (cuentos ?? []).filter((c) => c.estado === 'publicado'), [cuentos]);
 
   // Si viene de «Asignar refuerzo», se sugieren los cuentos que traen las palabras que le cuestan
@@ -83,6 +93,44 @@ export const ActividadesPanel: React.FC = () => {
         titulo="Actividades"
         descripcion="Deja un cuento con sus juegos como tarea para todo el curso o para algunos niños, y mira quién la hizo y cómo le fue."
       />
+
+      {plan && plan.length > 0 && (
+        <Hoja aria-label="Plan sugerido para la semana">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h2 className="font-display text-2xl font-semibold text-primary inline-flex items-center gap-2">
+                <CalendarCheck className="w-5 h-5 text-brand" aria-hidden /> Plan sugerido para esta semana
+              </h2>
+              <p className="text-xs text-secondary">Sale de cómo va el curso. Es una sugerencia: tú decides qué asignar. Quedan para el viernes.</p>
+            </div>
+            <Button
+              variant="secondary"
+              size="md"
+              onClick={() => plan.forEach((p) => asignar({ cuentoId: p.cuento.id ?? '', alumnos: p.destino, limite: proximoViernes(), nota: p.etiqueta }))}
+            >
+              Asignar todo el plan
+            </Button>
+          </div>
+          <ul className="mt-2 flex flex-col">
+            {plan.map((p) => (
+              <li key={p.id} className="flex flex-wrap items-center justify-between gap-3 border-t border-borderCustom py-3">
+                <div className="min-w-0">
+                  <p className="text-[0.7rem] font-semibold uppercase tracking-[0.09em] text-secondary">{p.etiqueta}</p>
+                  <p className="font-display text-xl font-semibold text-primary">{p.cuento.titulo}</p>
+                  <p className="text-sm text-secondary">{p.motivo}</p>
+                </div>
+                <Button
+                  size="md"
+                  onClick={() => asignar({ cuentoId: p.cuento.id ?? '', alumnos: p.destino, limite: proximoViernes(), nota: p.etiqueta })}
+                  aria-label={`Asignar ${p.cuento.titulo}`}
+                >
+                  Asignar
+                </Button>
+              </li>
+            ))}
+          </ul>
+        </Hoja>
+      )}
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
         <Hoja>
