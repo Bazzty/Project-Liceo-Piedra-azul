@@ -4,6 +4,8 @@ import { BookOpen, Home, RotateCcw, Star, Volume2 } from 'lucide-react';
 import { crearRegistro, useCuento, useCuentos } from '@/api';
 import { ROUTES } from '@/app/routes';
 import { useAuthStore } from '@/features/acceso/useAuthStore';
+import { Sticker } from '@/features/estrellas/Sticker';
+import { useColeccion } from '@/features/estrellas/useColeccion';
 import { PictogramaCard } from '@/features/aprender/components/PictogramaCard';
 import { sonarAcierto, sonarToque } from '@/shared/audio/sonidos';
 import { LayoutEstudiante } from '@/shared/components/LayoutEstudiante';
@@ -395,6 +397,8 @@ export const ActividadesView: React.FC = () => {
 	const [indice, setIndice] = useState(0);
 	const [sinAyuda, setSinAyuda] = useState(0);
 	const [terminado, setTerminado] = useState(false);
+	const [stickerNuevo, setStickerNuevo] = useState<number | null>(null);
+	const coleccion = useColeccion(activeStudentId);
 
 	const rondas = cuento && cuentos ? generarRondas(cuento, cuentos.filter((c) => c.estado === 'publicado' && c.id !== cuento.id), vuelta) : null;
 	const total = rondas?.length ?? 0;
@@ -407,6 +411,9 @@ export const ActividadesView: React.FC = () => {
 			setIndice(indice + 1);
 			return;
 		}
+		// Gana un sticker la primera vez que completa las actividades de este cuento
+		const esPrimera = !!cuento?.id && !coleccion.cuentosConActividad.has(cuento.id);
+		setStickerNuevo(esPrimera && !supervision ? coleccion.siguiente : null);
 		setTerminado(true);
 		sonarAcierto();
 		useGuideStore.getState().reaccionar('baile');
@@ -414,6 +421,7 @@ export const ActividadesView: React.FC = () => {
 			await crearRegistro({
 				alumnoId: activeStudentId,
 				tipo: 'actividad',
+				cuentoId: cuento.id,
 				detalle: `Actividades de «${cuento.titulo}»: ${aciertos} de ${total} sin ayuda`,
 				lugar: 'casa',
 				fecha: new Date().toISOString(),
@@ -425,6 +433,7 @@ export const ActividadesView: React.FC = () => {
 		setVuelta((v) => v + 1);
 		setIndice(0);
 		setSinAyuda(0);
+		setStickerNuevo(null);
 		setTerminado(false);
 	};
 
@@ -466,6 +475,12 @@ export const ActividadesView: React.FC = () => {
 							<Star key={n} className={`w-16 h-16 sm:w-24 sm:h-24 ${n <= estrellas ? 'fill-accent text-borderStrong animate-pop' : 'text-borderStrong opacity-40'}`} strokeWidth={2.5} aria-hidden />
 						))}
 					</div>
+					{stickerNuevo !== null && (
+						<div className="flex flex-col items-center gap-2">
+							<Sticker indice={stickerNuevo} obtenido size="lg" animar />
+							<p className="text-2xl font-black text-primary bg-surface/90 rounded-full px-5 py-1">¡Sticker nuevo!</p>
+						</div>
+					)}
 					<OsoBurbuja mensaje="¡Lo lograste!" audioUrl={getPersonajeAudio('felicitaciones')} size="md" className="lg:hidden" />
 					<div className="flex flex-wrap items-center justify-center gap-4">
 						<Button variant="accent" size="xl" onClick={reiniciar}>

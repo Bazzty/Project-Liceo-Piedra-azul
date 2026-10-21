@@ -66,13 +66,17 @@ async function seedDemoDocente() {
 		fecha: string,
 		extra: { palabrasEscuchadas?: number; pictogramaIds?: string[] } = {}
 	) => ({ alumnoId, tipo, detalle, lugar, fecha, ...extra });
+	const regActividad = (alumnoId: string, cuentoId: string, detalle: string, lugar: 'liceo' | 'casa', fecha: string) => ({
+		...reg(alumnoId, 'actividad', detalle, lugar, fecha),
+		cuentoId,
+	});
 
 	await db.registros.bulkAdd([
 		// Mateo
 		reg('estudiante-mateo', 'sesion', 'Sesión en el liceo', 'liceo', hace(0, 10, 0)),
 		reg('estudiante-mateo', 'lectura', 'Comenzó «Mi Mamá me Ama»', 'liceo', hace(0, 10, 40), { palabrasEscuchadas: 4 }),
 		reg('estudiante-mateo', 'tablero', 'Tablero: «yo quiero agua»', 'liceo', hace(0, 10, 55), { pictogramaIds: ['pic-yo', 'pic-quiero', 'pic-agua'] }),
-		reg('estudiante-mateo', 'actividad', 'Actividades de «El Auto de Ana»: 4 de 5 sin ayuda', 'casa', hace(1, 18, 30)),
+		regActividad('estudiante-mateo', 'cuento-auto-ana', 'Actividades de «El Auto de Ana»: 4 de 5 sin ayuda', 'casa', hace(1, 18, 30)),
 		reg('estudiante-mateo', 'sesion', 'Sesión en casa', 'casa', hace(1, 18, 10)),
 		reg('estudiante-mateo', 'lectura', 'Terminó «El Auto de Ana»', 'casa', hace(1, 18, 15), { palabrasEscuchadas: 5 }),
 		reg('estudiante-mateo', 'lectura', 'Terminó «Mis Primeras Palabras (M, L, S, P, D)»', 'liceo', hace(2, 10, 30), { palabrasEscuchadas: 18 }),
@@ -80,7 +84,7 @@ async function seedDemoDocente() {
 		reg('estudiante-sofia', 'sesion', 'Sesión en el liceo', 'liceo', hace(1, 10, 0)),
 		reg('estudiante-sofia', 'lectura', 'Terminó «Mi Mamá me Ama»', 'liceo', hace(2, 9, 20), { palabrasEscuchadas: 4 }),
 		reg('estudiante-sofia', 'lectura', 'Terminó «El Auto de Ana»', 'liceo', hace(1, 10, 20), { palabrasEscuchadas: 5 }),
-		reg('estudiante-sofia', 'actividad', 'Actividades de «El Auto de Ana»: 5 de 5 sin ayuda', 'liceo', hace(1, 10, 35)),
+		regActividad('estudiante-sofia', 'cuento-auto-ana', 'Actividades de «El Auto de Ana»: 5 de 5 sin ayuda', 'liceo', hace(1, 10, 35)),
 		reg('estudiante-sofia', 'tablero', 'Tablero: «mamá feliz»', 'liceo', hace(1, 10, 45), { pictogramaIds: ['pic-mama', 'pic-feliz'] }),
 		// Benjamín
 		reg('estudiante-benjamin', 'sesion', 'Sesión en el liceo', 'liceo', hace(2, 9, 0)),

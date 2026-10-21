@@ -134,7 +134,7 @@ export const VistaPrincipal: React.FC = () => {
         <TableroSAAC />
       </Modal>
 
-      <Modal isOpen={estrellasAbierto} onClose={() => setEstrellasAbierto(false)} title="Mis estrellas" size="md">
+      <Modal isOpen={estrellasAbierto} onClose={() => setEstrellasAbierto(false)} title="Mis estrellas" size="lg">
         <AlbumEstrellas alumnoId={activeStudentId} />
       </Modal>
     </LayoutEstudiante>

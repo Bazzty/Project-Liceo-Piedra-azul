@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, BookOpen, Check, Gamepad2, Home, Volume2 } from 'lucide-react';
-import { contarCompletados, crearRegistro, registrarProgreso, useCuento, useProgresosDeAlumno } from '@/api';
+import { crearRegistro, registrarProgreso, useCuento } from '@/api';
 import { ROUTES } from '@/app/routes';
 import { useAuthStore } from '@/features/acceso/useAuthStore';
 import { PictogramaCard } from '@/features/aprender/components/PictogramaCard';
 import { Sticker } from '@/features/estrellas/Sticker';
-import { STICKERS } from '@/features/estrellas/stickers';
+import { useColeccion } from '@/features/estrellas/useColeccion';
 import { sonarAcierto, sonarToque } from '@/shared/audio/sonidos';
 import { LayoutEstudiante } from '@/shared/components/LayoutEstudiante';
 import { LluviaEstrellas } from '@/shared/components/LluviaEstrellas';
@@ -26,7 +26,7 @@ export const LecturaView: React.FC = () => {
   const navigate = useNavigate();
   const activeStudentId = useAuthStore((s) => s.activeStudentId);
   const supervision = useAuthStore((s) => s.supervision);
-  const progresos = useProgresosDeAlumno(activeStudentId);
+  const coleccion = useColeccion(activeStudentId);
   const cuento = useCuento(cuentoId);
   const hablar = useHablar();
 
@@ -128,9 +128,9 @@ export const LecturaView: React.FC = () => {
     detener();
     useGuideStore.getState().reaccionar('feliz');
     sonarAcierto();
-    const yaLeido = !!progresos?.some((p) => p.cuentoId === cuento?.id && p.completado);
-    // El sticker nuevo es el siguiente del álbum, solo si es un cuento que no había completado
-    const indiceSticker = yaLeido || supervision ? null : contarCompletados(progresos) % STICKERS.length;
+    const yaLeido = !!coleccion.progresos?.some((p) => p.cuentoId === cuento?.id && p.completado);
+    // El sticker nuevo es el que le toca a este niño, solo si es un cuento que no había completado
+    const indiceSticker = yaLeido || supervision ? null : coleccion.siguiente;
     setStickerNuevo(indiceSticker);
     setCompletada(true);
     if (activeStudentId && cuento?.id && !supervision) {
