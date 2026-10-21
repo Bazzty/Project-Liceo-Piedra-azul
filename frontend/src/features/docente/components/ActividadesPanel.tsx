@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { CalendarCheck, ClipboardList, Trash2 } from 'lucide-react';
 import { useAlumnos, useCuentos, useRegistros } from '@/api';
 import { usePlanSemanal } from '@/features/docente/components/usePlanSemanal';
+import { CrearActividad } from '@/features/docente/components/CrearActividad';
 import { EtiquetaTarea } from '@/features/docente/components/BloquesActividad';
 import { EncabezadoPagina, Hoja } from '@/features/docente/components/Hoja';
 import { palabrasDificiles, resultadosDeRegistros } from '@/features/docente/components/resultados';
@@ -131,6 +132,8 @@ export const ActividadesPanel: React.FC = () => {
           </ul>
         </Hoja>
       )}
+
+      <CrearActividad alCrear={(id) => setCuentoElegido(id)} />
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
         <Hoja>
