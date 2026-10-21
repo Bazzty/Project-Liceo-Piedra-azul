@@ -17,4 +17,5 @@ export const ROUTES = {
   aprender: '/aprender',
   catalogo: (nivelId: string) => `/aprender/${nivelId}`,
   lectura: (nivelId: string, cuentoId: string) => `/aprender/${nivelId}/${cuentoId}`,
+  actividades: (nivelId: string, cuentoId: string) => `/aprender/${nivelId}/${cuentoId}/jugar`,
 } as const;

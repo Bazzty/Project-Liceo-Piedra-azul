@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, BookOpen, Check, Home, Volume2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, BookOpen, Check, Gamepad2, Home, Volume2 } from 'lucide-react';
 import { contarCompletados, crearRegistro, registrarProgreso, useCuento, useProgresosDeAlumno } from '@/api';
 import { ROUTES } from '@/app/routes';
 import { useAuthStore } from '@/features/acceso/useAuthStore';
@@ -178,7 +178,11 @@ export const LecturaView: React.FC = () => {
             )}
           </div>
           <div className="flex flex-wrap items-center justify-center gap-4">
-            <Button variant="accent" size="xl" onClick={volverAlCatalogo}>
+            <Button variant="accent" size="xl" onClick={() => navigate(ROUTES.actividades(nivelId, cuento.id ?? ''))}>
+              <Gamepad2 className="w-8 h-8" aria-hidden />
+              Jugar
+            </Button>
+            <Button variant="secondary" size="xl" onClick={volverAlCatalogo}>
               <BookOpen className="w-8 h-8" aria-hidden />
               Otro cuento
             </Button>

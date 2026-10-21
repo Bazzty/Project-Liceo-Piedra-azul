@@ -10,6 +10,7 @@ import { MosaicoAlumnos } from '@/features/acceso/pages/MosaicoAlumnos';
 import { VistaPrincipal } from '@/features/inicio/VistaPrincipal';
 import { NivelesView } from '@/features/aprender/pages/NivelesView';
 import { CatalogoCuentos } from '@/features/aprender/pages/CatalogoCuentos';
+import { ActividadesView } from '@/features/aprender/actividades/ActividadesView';
 import { LecturaView } from '@/features/aprender/pages/LecturaView';
 import { ControlAulaView } from '@/features/docente/pages/ControlAulaView';
 import { AdminDashboard } from '@/features/docente/pages/AdminDashboard';
@@ -45,6 +46,7 @@ export const App: React.FC = () => (
       <Route path={ROUTES.aprender} element={<NivelesView />} />
       <Route path={`${ROUTES.aprender}/:nivelId`} element={<CatalogoCuentos />} />
       <Route path={`${ROUTES.aprender}/:nivelId/:cuentoId`} element={<LecturaView />} />
+      <Route path={`${ROUTES.aprender}/:nivelId/:cuentoId/jugar`} element={<ActividadesView />} />
     </Route>
 
     <Route path="*" element={<Navigate to={ROUTES.inicio} replace />} />

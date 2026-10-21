@@ -85,7 +85,7 @@ export interface Progreso {
 export interface Registro {
   id?: string;
   alumnoId: string;
-  tipo: 'sesion' | 'lectura' | 'tablero';
+  tipo: 'sesion' | 'lectura' | 'tablero' | 'actividad';
   detalle: string; // Ej: Leyó «El Auto de Ana» hasta la página 1
   lugar: 'liceo' | 'casa';
   fecha: string; // ISO
