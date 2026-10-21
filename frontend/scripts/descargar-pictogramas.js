@@ -20,6 +20,17 @@ const PALABRAS_CLAVE = [
 	'saltar', 'tomar', 'gato', 'pan', 'cama', 'abrazar'
 ];
 
+// Pictogramas revisados a mano, uno por uno, contra la palabra que ilustran. La búsqueda automática se
+// equivocaba (p. ej. «ama» daba una cama, «enojado» una persona barriendo), así que estos IDs mandan.
+// Para cambiar uno: buscar en arasaac.org, anotar el número y ponerlo aquí.
+const ID_FIJOS = {
+	enojado: 35539, frio: 35557, ama: 6898,
+	dado: 2731, dama: 4745, dedo: 3298, lana: 2948, lila: 2940, lima: 15453, lupa: 9927, masa: 32476,
+	mimi: 7114, gato: 7114, mula: 2291 /* burro: ARASAAC no tiene mula */, pala: 2867, pelo: 2851,
+	piso: 2575 /* suelo */, puma: 9068, sala: 6211 /* living */, sapo: 3384, sopa: 2573,
+	saltar: 28441, tomar: 6061, pan: 2494, cama: 2304, abrazar: 6023,
+};
+
 const targetDir = path.join(__dirname, '..', 'public', 'pictogramas', 'arasaac');
 if (!fs.existsSync(targetDir)) {
 	fs.mkdirSync(targetDir, { recursive: true });
@@ -81,7 +92,7 @@ async function run() {
 	console.log('🚀 Buscando e identificando pictogramas exactos en ARASAAC...\n');
 	for (const palabra of PALABRAS_CLAVE) {
 		const cleanName = palabra.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-		const id = await getExactPictogramId(palabra);
+		const id = ID_FIJOS[cleanName] ?? (await getExactPictogramId(palabra));
 		if (id) {
 			await downloadImage(id, cleanName);
 		} else {

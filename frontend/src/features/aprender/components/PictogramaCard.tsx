@@ -40,6 +40,9 @@ export const PictogramaCard: React.FC<PictogramaCardProps> = ({
 		setHasError(false);
 	}
 
+	// Palabra de contenido (con dibujo previsto) vs. palabra funcional, que no lo lleva
+	const sinDibujo = !palabra.pictogramaUrl && !palabra.clave && !picEnDb;
+
 	const handleImageError = async () => {
 		if (!hasError) {
 			const apiUrl = await resolverYGuardarPictograma(palabra.clave ?? palabra.texto);
@@ -82,21 +85,24 @@ export const PictogramaCard: React.FC<PictogramaCardProps> = ({
 					: 'border-borderCustom hover:border-brand'
 			} ${className}`}
 		>
-			{/* Marco del Pictograma */}
-			<div className={`${grande ? 'w-36 h-36 sm:w-48 sm:h-48 lg:w-60 lg:h-60' : 'w-24 h-24 sm:w-28 sm:h-28'} flex items-center justify-center bg-surface rounded-control p-2 border-2 border-borderCustom shadow-inner overflow-hidden`}>
-				{imgSrc && !hasError ? (
-					<img
-						src={imgSrc}
-						alt={palabra.texto}
-						onError={handleImageError}
-						className="w-full h-full object-contain group-hover:scale-110 transition-transform"
-					/>
-				) : (
-					<div className="text-3xl font-black text-secondary">
-						{palabra.texto.charAt(0).toUpperCase()}
-					</div>
-				)}
-			</div>
+			{/* Marco del pictograma. Las palabras sin dibujo (un, mi, con, tengo…) se muestran solo escritas,
+			    en vez de una letra suelta que parece un error. */}
+			{!sinDibujo && (
+				<div className={`${grande ? 'w-36 h-36 sm:w-48 sm:h-48 lg:w-60 lg:h-60' : 'w-24 h-24 sm:w-28 sm:h-28'} flex items-center justify-center bg-surface rounded-control p-2 border-2 border-borderCustom shadow-inner overflow-hidden`}>
+					{imgSrc && !hasError ? (
+						<img
+							src={imgSrc}
+							alt={palabra.texto}
+							onError={handleImageError}
+							className="w-full h-full object-contain group-hover:scale-110 transition-transform"
+						/>
+					) : (
+						<div className="text-3xl font-black text-secondary">
+							{palabra.texto.charAt(0).toUpperCase()}
+						</div>
+					)}
+				</div>
+			)}
 
 			{/* Texto de la Palabra */}
 			<span className={`font-black text-primary text-center ${grande ? 'text-3xl sm:text-5xl' : 'text-lg sm:text-xl'}`}>
