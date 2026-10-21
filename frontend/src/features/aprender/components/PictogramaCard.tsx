@@ -105,7 +105,7 @@ export const PictogramaCard: React.FC<PictogramaCardProps> = ({
 			)}
 
 			{/* Texto de la Palabra */}
-			<span className={`font-black text-primary text-center ${grande ? 'text-3xl sm:text-5xl' : 'text-lg sm:text-xl'}`}>
+			<span className={`font-black text-primary text-center ${grande ? (sinDibujo ? 'text-8xl sm:text-9xl px-8 py-4' : 'text-3xl sm:text-5xl') : 'text-lg sm:text-xl'}`}>
 				{palabra.texto}
 			</span>
 

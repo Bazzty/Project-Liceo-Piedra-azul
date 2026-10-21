@@ -21,6 +21,7 @@ export type Ronda =
 
 const MAXIMO_RONDAS = 5;
 const SILABAS_DE_RESERVA = ['ma', 'pa', 'sa', 'lo', 'ti', 'ra', 'ne'];
+const VOCALES = ['a', 'e', 'i', 'o', 'u'];
 
 /** Primera sílaba aproximada: las consonantes iniciales y la primera vocal («mesa» → «me»). */
 export const primeraSilaba = (texto: string) => {
@@ -95,7 +96,10 @@ export function generarRondas(cuento: Cuento, otros: Cuento[], vuelta: number): 
 	// ¿Con qué sonido empieza? La respuesta y dos sílabas iniciales distintas
 	const metaSonido = metas[2 % metas.length];
 	const correcta = primeraSilaba(metaSonido.texto);
-	const otras = [...new Set([...pool.map((p) => primeraSilaba(p.texto)), ...SILABAS_DE_RESERVA])].filter((sil) => sil[0] !== correcta[0]);
+	// Si la palabra empieza con vocal, las opciones son las otras vocales (así se practican las vocales)
+	const otras = VOCALES.includes(correcta)
+		? VOCALES.filter((v) => v !== correcta)
+		: [...new Set([...pool.map((p) => primeraSilaba(p.texto)), ...SILABAS_DE_RESERVA])].filter((sil) => sil[0] !== correcta[0]);
 	disponibles.sonido = { tipo: 'sonido', meta: metaSonido, correcta, opciones: mezclar([correcta, ...mezclar(otras, azar).slice(0, 2)], azar) };
 
 	// Memoria: tres parejas imagen–palabra

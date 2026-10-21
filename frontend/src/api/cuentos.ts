@@ -18,7 +18,7 @@ export const eliminarCuento = (id: string) =>
 
 export const useCuentos = () => useLiveQuery(() => listarCuentos(), []);
 export const useCuentosDeNivel = (nivelId: string) =>
-  useLiveQuery(() => listarCuentosPorNivel(nivelId), [nivelId]);
+  useLiveQuery(async () => (await listarCuentosPorNivel(nivelId)).sort((a, b) => (a.orden ?? 100) - (b.orden ?? 100)), [nivelId]);
 /** Sin id devuelve el primer cuento (útil para vistas de demostración). */
 export const useCuento = (id?: string | null) =>
   useLiveQuery(async () => (id ? obtenerCuento(id) : obtenerPrimerCuento()), [id]);

@@ -23,7 +23,7 @@ interface Parada {
 }
 
 const PARADAS: Parada[] = [
-  { id: 'nivel-a', letra: 'A', nombre: 'Sílabas', clave: 'nivel_a', imagen: 'escuchar', color: 'bg-btnAprender-bg text-btnAprender-text' },
+  { id: 'nivel-a', letra: 'A', nombre: 'Vocales', clave: 'nivel_a', imagen: 'escuchar', color: 'bg-btnAprender-bg text-btnAprender-text' },
   { id: 'nivel-b', letra: 'B', nombre: 'Cuentos', clave: 'nivel_b', imagen: 'libro', color: 'bg-btnHablar-bg text-btnHablar-text' },
   { id: 'nivel-c', letra: 'C', nombre: 'Palabras', clave: 'nivel_c', imagen: 'jugar', color: 'bg-btnColores-bg text-btnColores-text' },
   { id: 'nivel-d', letra: 'D', nombre: 'Historias', clave: 'nivel_d', imagen: 'colegio', color: 'bg-btnLogros-bg text-btnLogros-text' },

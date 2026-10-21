@@ -1,6 +1,7 @@
 import { db } from '@/db/db';
 import { sembrarCuentosKinder } from '@/mocks/cuentosKinder';
 import { sembrarCuentosPalabras } from '@/mocks/cuentosPalabras';
+import { sembrarCuentosVocales } from '@/mocks/cuentosVocales';
 import type { Cuento } from '@/types';
 
 // ---------------------------------------------------------------------------
@@ -411,6 +412,7 @@ export async function seedDatabase() {
 		// 6. Cuentos de Kinder (nivel D): se agregan también en navegadores que ya tenían datos
 		await sembrarCuentosKinder();
 		await sembrarCuentosPalabras();
+		await sembrarCuentosVocales();
 
 		console.log('✅ Base de datos inicializada correctamente.');
 	} catch (error) {

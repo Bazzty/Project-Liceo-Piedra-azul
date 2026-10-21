@@ -65,6 +65,8 @@ export interface Cuento {
 	paginas: CuentoPagina[];
 	/** borrador → en_revision (la docente lo envía) → publicado (el revisor lo valida) */
 	estado: 'borrador' | 'en_revision' | 'publicado'; // RF-13
+	/** Posición en el catálogo del nivel (menor primero). Sin valor, va después de los que lo tienen. */
+	orden?: number;
 	/** Motivo por el que el revisor devolvió el cuento a borrador. */
 	comentarioRevision?: string;
 	fechaCreacion: string;

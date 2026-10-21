@@ -17,7 +17,9 @@ const PALABRAS_CLAVE = [
 	'dado', 'dama', 'dedo', 'lana', 'lila', 'lima', 'lupa', 'masa',
 	'mimi', 'mula', 'pala', 'pelo', 'piso', 'puma', 'sala', 'sapo', 'sopa',
 	// Cuentos de Kinder (El Sapo Pepe, Mimi y la Lana, Mi Día)
-	'saltar', 'tomar', 'gato', 'pan', 'cama', 'abrazar'
+	'saltar', 'tomar', 'gato', 'pan', 'cama', 'abrazar',
+	// Vocales (Nivel A)
+	'abeja', 'elefante', 'escalera', 'isla', 'iguana', 'iman', 'oso', 'ojo', 'oreja', 'uva', 'unia', 'unicornio'
 ];
 
 // Pictogramas revisados a mano, uno por uno, contra la palabra que ilustran. La búsqueda automática se
@@ -28,6 +30,9 @@ const ID_FIJOS = {
 	dado: 2731, dama: 4745, dedo: 3298, lana: 2948, lila: 2940, lima: 15453, lupa: 9927, masa: 32476,
 	mimi: 7114, gato: 7114, mula: 2291 /* burro: ARASAAC no tiene mula */, pala: 2867, pelo: 2851,
 	piso: 2575 /* suelo */, puma: 9068, sala: 6211 /* living */, sapo: 3384, sopa: 2573,
+	// Vocales (Nivel A): tres palabras que empiezan con cada una. «unia» es uña (el archivo evita el choque con el artículo «una»)
+	abeja: 24823, elefante: 2372, escalera: 2379, isla: 2966, iguana: 26134, iman: 8138,
+	oso: 2488, ojo: 6573, oreja: 2871, uva: 34120, unia: 2783, unicornio: 6237,
 	saltar: 28441, tomar: 6061, pan: 2494, cama: 2304, abrazar: 6023,
 };
 

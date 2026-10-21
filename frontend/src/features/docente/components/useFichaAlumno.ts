@@ -12,7 +12,7 @@ export interface ProgresoNivel {
 }
 
 const NIVELES = [
-  { id: 'nivel-a', etiqueta: 'Nivel A · Sílabas' },
+  { id: 'nivel-a', etiqueta: 'Nivel A · Vocales y sílabas' },
   { id: 'nivel-b', etiqueta: 'Nivel B · Cuentos' },
   { id: 'nivel-c', etiqueta: 'Nivel C · Palabras' },
   { id: 'nivel-d', etiqueta: 'Nivel D · Historias' },
