@@ -69,7 +69,7 @@ const sinRepetir = (palabras: CuentoPalabra[]) => {
  * (si el cuento tiene una oración con 2 a 4 imágenes). Los distractores salen del mismo cuento y,
  * si no alcanzan, de otros cuentos publicados.
  */
-export function generarRondas(cuento: Cuento, otros: Cuento[], vuelta: number): Ronda[] {
+export function generarRondas(cuento: Cuento, otros: Cuento[], vuelta: number, dificiles: string[] = []): Ronda[] {
 	const azar = crearAzar(hash(cuento.id ?? cuento.titulo) + vuelta * 101);
 	const propias = sinRepetir(cuento.paginas.flatMap((p) => p.palabras).filter(conImagen));
 	const ajenas = sinRepetir(otros.flatMap((c) => c.paginas.flatMap((p) => p.palabras)).filter(conImagen));
@@ -78,7 +78,10 @@ export function generarRondas(cuento: Cuento, otros: Cuento[], vuelta: number): 
 	const pool = propias.length >= 3 ? propias : [...propias, ...reserva];
 	if (pool.length < 3) return [];
 
-	const metas = mezclar(propias.length > 0 ? propias : pool, azar);
+	// Las palabras que a este niño le cuestan se trabajan primero: salen en los primeros juegos
+	const cuestan = new Set(dificiles.map((d) => d.toLowerCase()));
+	const mezcladas = mezclar(propias.length > 0 ? propias : pool, azar);
+	const metas = [...mezcladas.filter((p) => cuestan.has(p.texto.toLowerCase())), ...mezcladas.filter((p) => !cuestan.has(p.texto.toLowerCase()))];
 	const opcionesPara = (meta: CuentoPalabra) => {
 		const distractores = mezclar(pool.filter((p) => p.texto !== meta.texto), azar).slice(0, 2);
 		return mezclar([meta, ...distractores], azar);
@@ -104,7 +107,7 @@ export function generarRondas(cuento: Cuento, otros: Cuento[], vuelta: number): 
 
 	// Memoria: tres parejas imagen–palabra
 	if (pool.length >= 3) {
-		const pares = mezclar(metas, azar).slice(0, 3);
+		const pares = [...metas.filter((p) => cuestan.has(p.texto.toLowerCase())), ...mezclar(metas.filter((p) => !cuestan.has(p.texto.toLowerCase())), azar)].slice(0, 3);
 		const cartas = pares.flatMap((p): CartaMemoria[] => [
 			{ clave: p.texto, palabra: p, cara: 'imagen' },
 			{ clave: p.texto, palabra: p, cara: 'texto' },
@@ -145,3 +148,32 @@ export function generarRondas(cuento: Cuento, otros: Cuento[], vuelta: number): 
 	elegidas.sort((a, b) => orden.indexOf(a.tipo) - orden.indexOf(b.tipo));
 	return [disponibles.escucha as Ronda, ...elegidas];
 }
+
+/**
+ * Versión más fácil de un juego (dos opciones en vez de tres, dos parejas en vez de tres): para niños con
+ * el apoyo «pocas opciones» o cuando el juego nota que se está frustrando.
+ */
+export const reducirRonda = (ronda: Ronda): Ronda => {
+	switch (ronda.tipo) {
+		case 'escucha':
+		case 'lee': {
+			const otra = ronda.opciones.find((o) => o.texto !== ronda.meta.texto);
+			return { ...ronda, opciones: ronda.opciones.filter((o) => o.texto === ronda.meta.texto || o === otra) };
+		}
+		case 'completa': {
+			const correcta = ronda.palabras[ronda.hueco].texto;
+			const otra = ronda.opciones.find((o) => o.texto !== correcta);
+			return { ...ronda, opciones: ronda.opciones.filter((o) => o.texto === correcta || o === otra) };
+		}
+		case 'sonido': {
+			const otra = ronda.opciones.find((o) => o !== ronda.correcta);
+			return { ...ronda, opciones: ronda.opciones.filter((o) => o === ronda.correcta || o === otra) };
+		}
+		case 'memoria': {
+			const claves = [...new Set(ronda.cartas.map((c) => c.clave))].slice(0, 2);
+			return { ...ronda, cartas: ronda.cartas.filter((c) => claves.includes(c.clave)) };
+		}
+		default:
+			return ronda;
+	}
+};

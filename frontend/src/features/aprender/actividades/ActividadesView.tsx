@@ -1,9 +1,10 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { BookOpen, Home, Lightbulb, RotateCcw, Star, Volume2 } from 'lucide-react';
-import { crearRegistro, useCuento, useCuentos } from '@/api';
+import { BookOpen, Home, Leaf, Lightbulb, Play, RotateCcw, Star, Volume2 } from 'lucide-react';
+import { crearRegistro, useCuento, useCuentos, useRegistrosDeAlumno } from '@/api';
 import { ROUTES } from '@/app/routes';
 import { useAuthStore } from '@/features/acceso/useAuthStore';
+import { palabrasDificiles, resultadosDeRegistros } from '@/features/docente/components/resultados';
 import { Sticker } from '@/features/estrellas/Sticker';
 import { useColeccion } from '@/features/estrellas/useColeccion';
 import { PictogramaCard } from '@/features/aprender/components/PictogramaCard';
@@ -14,11 +15,14 @@ import { OsoBurbuja } from '@/shared/components/OsoBurbuja';
 import { getPersonajeAudio } from '@/shared/config/audioConfig';
 import type { ClaveAudio } from '@/shared/config/audiosInterfaz';
 import { useHablar } from '@/shared/hooks/useHablar';
+import { OsoCabeza } from '@/shared/components/OsoCabeza';
+import { useAjustesStore } from '@/shared/store/useAjustesStore';
+import { useCalmaStore } from '@/shared/store/useCalmaStore';
 import { usePlayerStore } from '@/shared/store/usePlayerStore';
 import { useGuideStore } from '@/shared/store/useGuideStore';
 import { Button } from '@/shared/ui';
 import type { CuentoPalabra } from '@/types';
-import { generarRondas, type CartaMemoria, type Ronda } from './generarRondas';
+import { generarRondas, reducirRonda, type CartaMemoria, type Ronda } from './generarRondas';
 
 const FALLOS_PARA_AYUDA = 2;
 const PAUSA_TRAS_ACIERTO = 1300;
@@ -255,7 +259,7 @@ const RondaMemoria: React.FC<RondaProps & { ronda: Extract<Ronda, { tipo: 'memor
 	return (
 		<div className="flex-1 w-full flex flex-col items-center justify-center gap-6">
 			<PreguntaVoz texto="Busca las parejas." clave="busca_parejas" />
-			<div className="grid grid-cols-3 gap-3 sm:gap-5">
+			<div className={`grid ${ronda.cartas.length <= 4 ? 'grid-cols-2' : 'grid-cols-3'} gap-3 sm:gap-5`}>
 				{ronda.cartas.map((carta, i) => {
 					const visible = abiertas.includes(i) || parejas.includes(carta.clave);
 					const lograda = parejas.includes(carta.clave);
@@ -417,6 +421,42 @@ const RondaOrdenar: React.FC<RondaProps & { ronda: Extract<Ronda, { tipo: 'orden
 	);
 };
 
+/** El osito nota que el niño se está frustrando y le ofrece descansar o seguir, con dos botones de ícono. */
+const OfertaDescanso: React.FC<{ alElegir: (descansar: boolean) => void }> = ({ alElegir }) => {
+	const hablar = useHablar();
+	useEffect(() => {
+		const id = setTimeout(() => hablar('Descansemos un momento.', 'descansemos'), 400);
+		return () => clearTimeout(id);
+	}, [hablar]);
+	return (
+		<div role="dialog" aria-modal="true" aria-label="¿Descansamos?" className="fixed inset-0 z-50 flex items-center justify-center bg-black/35 p-4 animate-fadeIn">
+			<div className="flex flex-col items-center gap-6 rounded-card bg-surface border-4 border-accent shadow-card p-6 sm:p-10">
+				<span className="block w-32 h-32 sm:w-44 sm:h-44 rounded-full bg-app p-2 overflow-hidden" role="img" aria-label="Osito">
+					<OsoCabeza ojosFelices boca="HAPPY" />
+				</span>
+				<div className="flex items-center gap-5">
+					<button
+						type="button"
+						onClick={() => alElegir(true)}
+						aria-label="Descansar"
+						className="w-28 h-28 sm:w-36 sm:h-36 rounded-full bg-btnHablar-bg text-btnHablar-text border-4 border-borderStrong flex items-center justify-center cursor-pointer active:scale-95 transition-transform shadow-card"
+					>
+						<Leaf className="w-14 h-14 sm:w-20 sm:h-20" aria-hidden />
+					</button>
+					<button
+						type="button"
+						onClick={() => alElegir(false)}
+						aria-label="Seguir jugando"
+						className="w-28 h-28 sm:w-36 sm:h-36 rounded-full bg-accent text-onAccent border-4 border-borderStrong flex items-center justify-center cursor-pointer active:scale-95 transition-transform shadow-card"
+					>
+						<Play className="w-14 h-14 sm:w-20 sm:h-20 fill-current" aria-hidden />
+					</button>
+				</div>
+			</div>
+		</div>
+	);
+};
+
 /** Actividades que siguen a cada cuento: se arman con sus palabras y se hacen con voz e imágenes. */
 export const ActividadesView: React.FC = () => {
 	const { nivelId = '', cuentoId } = useParams();
@@ -434,13 +474,44 @@ export const ActividadesView: React.FC = () => {
 	const coleccion = useColeccion(activeStudentId);
 	// Palabras en las que necesitó ayuda: se guardan para que la docente sepa qué le cuesta
 	const dificiles = useRef<string[]>([]);
+	// El juego se adapta: si pide ayuda dos veces seguidas, ofrece descansar y pasa a dos opciones
+	const seguidasConAyuda = useRef(0);
+	const seguidasSinAyuda = useRef(0);
+	const descansoOfrecido = useRef(false);
+	const [facil, setFacil] = useState(false);
+	const [ofreceDescanso, setOfreceDescanso] = useState(false);
+	const [huboDescanso, setHuboDescanso] = useState(false);
+	const pocasOpciones = useAjustesStore((s) => s.pocasOpciones);
+	const abrirCalma = useCalmaStore((s) => s.abrir);
+	const registrosPropios = useRegistrosDeAlumno(activeStudentId);
 
-	const rondas = cuento && cuentos ? generarRondas(cuento, cuentos.filter((c) => c.estado === 'publicado' && c.id !== cuento.id), vuelta) : null;
+	// Las palabras que a este niño le cuestan (de todos sus juegos) se trabajan primero
+	const cuestan = cuentos && registrosPropios ? palabrasDificiles(resultadosDeRegistros(registrosPropios, cuentos), 8).map((d) => d.palabra) : [];
+	const rondas = cuento && cuentos ? generarRondas(cuento, cuentos.filter((c) => c.estado === 'publicado' && c.id !== cuento.id), vuelta, cuestan) : null;
 	const total = rondas?.length ?? 0;
 	const volver = () => navigate(ROUTES.catalogo(nivelId));
 
 	const alTerminarRonda = async (conAyuda: boolean, tema?: string) => {
 		if (conAyuda && tema) dificiles.current.push(tema);
+		if (conAyuda) {
+			seguidasConAyuda.current += 1;
+			seguidasSinAyuda.current = 0;
+		} else {
+			seguidasSinAyuda.current += 1;
+			seguidasConAyuda.current = 0;
+		}
+		const quedanJuegos = indice + 1 < total;
+		if (seguidasConAyuda.current >= 2 && quedanJuegos) {
+			setFacil(true);
+			if (!descansoOfrecido.current) {
+				descansoOfrecido.current = true;
+				setOfreceDescanso(true);
+			}
+		} else if (facil && seguidasSinAyuda.current >= 2) {
+			// Volvió a ir bien: el osito lo celebra y los juegos vuelven a tres opciones
+			setFacil(false);
+			useGuideStore.getState().reaccionar('baile');
+		}
 		const aciertos = sinAyuda + (conAyuda ? 0 : 1);
 		setSinAyuda(aciertos);
 		if (indice + 1 < total) {
@@ -461,6 +532,7 @@ export const ActividadesView: React.FC = () => {
 				aciertos,
 				total,
 				dificiles: [...new Set(dificiles.current)],
+				...(huboDescanso ? { descanso: true } : {}),
 				detalle: `Actividades de «${cuento.titulo}»: ${aciertos} de ${total} sin ayuda`,
 				lugar: 'casa',
 				fecha: new Date().toISOString(),
@@ -474,6 +546,11 @@ export const ActividadesView: React.FC = () => {
 		setSinAyuda(0);
 		setStickerNuevo(null);
 		dificiles.current = [];
+		seguidasConAyuda.current = 0;
+		seguidasSinAyuda.current = 0;
+		descansoOfrecido.current = false;
+		setFacil(false);
+		setHuboDescanso(false);
 		setTerminado(false);
 	};
 
@@ -541,7 +618,8 @@ export const ActividadesView: React.FC = () => {
 		);
 	}
 
-	const ronda = rondas[indice];
+	const rondaBase = rondas[indice];
+	const ronda = pocasOpciones || facil ? reducirRonda(rondaBase) : rondaBase;
 	return (
 		<LayoutEstudiante
 			onVolver={volver}
@@ -549,6 +627,17 @@ export const ActividadesView: React.FC = () => {
 		>
 			<main className="relative flex-1 w-full max-w-5xl mx-auto px-4 py-4 sm:py-6 flex flex-col items-center gap-4">
 				<h1 className="sr-only">Actividades de {cuento.titulo}</h1>
+				{ofreceDescanso && (
+					<OfertaDescanso
+						alElegir={(descansar) => {
+							setOfreceDescanso(false);
+							if (descansar) {
+								setHuboDescanso(true);
+								abrirCalma();
+							}
+						}}
+					/>
+				)}
 				<ol className="flex items-center justify-center gap-3 bg-surface/90 rounded-full px-5 py-2" aria-label={`Juego ${indice + 1} de ${total}`}>
 					{rondas.map((_, i) => (
 						<li key={i} aria-hidden className={`rounded-full border-2 border-borderStrong transition-all ${i === indice ? 'w-6 h-6 bg-accent border-brand' : i < indice ? 'w-4 h-4 bg-brand' : 'w-4 h-4 bg-surface'}`} />

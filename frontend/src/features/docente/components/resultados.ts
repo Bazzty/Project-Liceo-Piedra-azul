@@ -10,6 +10,8 @@ export interface ResultadoActividad {
   /** % de juegos resueltos sin ayuda. */
   porcentaje: number;
   dificiles: string[];
+  /** El juego le ofreció descansar y aceptó. */
+  descanso: boolean;
 }
 
 /** Resultados de las sesiones de juegos, de la más reciente a la más antigua. */
@@ -30,6 +32,7 @@ export const resultadosDeRegistros = (registros: Registro[], cuentos: Cuento[]):
         total,
         porcentaje: total > 0 ? Math.round((aciertos / total) * 100) : 0,
         dificiles: r.dificiles ?? [],
+        descanso: !!r.descanso,
       };
     })
     .sort((a, b) => b.fecha.localeCompare(a.fecha));

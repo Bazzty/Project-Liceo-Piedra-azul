@@ -23,7 +23,10 @@ export const ResultadosActividades: React.FC<{
           <li key={`${r.fecha}-${r.titulo}`} className="grid grid-cols-[minmax(0,1fr)_minmax(0,7rem)] items-center gap-x-4 gap-y-1">
             <div className="min-w-0">
               <p className="truncate text-sm font-bold text-primary">{r.titulo}</p>
-              <p className="text-xs text-secondary">{formatearFecha(r.fecha)}</p>
+              <p className="text-xs text-secondary">
+                {formatearFecha(r.fecha)}
+                {r.descanso && ' · Tomó un descanso'}
+              </p>
             </div>
             <div className="text-right">
               <p className="text-sm font-semibold text-primary">
