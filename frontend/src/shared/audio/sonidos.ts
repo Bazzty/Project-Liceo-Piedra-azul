@@ -39,3 +39,17 @@ export const sonarAcierto = () => {
   if (!ctx) return;
   [523, 659, 784].forEach((f, i) => tono(ctx, f, i * 0.11, 0.22, 0.08));
 };
+
+/** Burbuja que se revienta: un tono suave y corto, sin sobresaltos. */
+export const sonarBurbuja = () => {
+  if (!useAjustesStore.getState().sonido) return;
+  const ctx = obtenerContexto();
+  if (ctx) tono(ctx, 700 + Math.random() * 180, 0, 0.18, 0.035);
+};
+
+/** Campanita muy baja que marca el cambio entre inhalar y exhalar (más grave al exhalar). */
+export const sonarRespiro = (inhala: boolean) => {
+  if (!useAjustesStore.getState().sonido) return;
+  const ctx = obtenerContexto();
+  if (ctx) tono(ctx, inhala ? 392 : 294, 0, 1.4, 0.03);
+};
