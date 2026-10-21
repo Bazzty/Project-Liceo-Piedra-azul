@@ -1,6 +1,17 @@
 // Voces disponibles (mismas opciones que usePlayerStore)
 export type VozId = 'catalina-cl' | 'profesora-clonada';
 
+/** Ajustes de apoyo que la docente del PIE deja configurados para un niño. */
+export type ApoyoId = 'vozLenta' | 'sinMovimiento' | 'barrido' | 'pocasOpciones';
+
+export interface Apoyo {
+  activo: boolean;
+  /** Por qué se usa este apoyo con este niño (queda en su ficha). */
+  motivo?: string;
+  /** Desde cuándo (ISO). */
+  desde?: string;
+}
+
 // 1. Perfil del Estudiante
 export interface Alumno {
   id?: string;
@@ -11,6 +22,7 @@ export interface Alumno {
   personajeId?: string;
   vozId?: VozId; // Voz asignada por el docente (si no existe, se usa la voz por defecto)
   notaDocente?: string; // Observaciones de la docente (visibles solo para docentes y revisores)
+  apoyos?: Partial<Record<ApoyoId, Apoyo>>; // Apoyos del PIE: se aplican solos cuando el niño entra
   fechaCreacion: string;
 }
 

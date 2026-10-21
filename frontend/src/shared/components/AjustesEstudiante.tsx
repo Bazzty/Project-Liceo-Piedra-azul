@@ -1,5 +1,5 @@
 import React from 'react';
-import { Move, Rabbit, Turtle, Volume2, VolumeX, Zap } from 'lucide-react';
+import { ListMinus, Move, MousePointerClick, Rabbit, Rows2, Turtle, Volume2, VolumeX, Zap } from 'lucide-react';
 import { THEMES_CONFIG } from '@/shared/config/themes';
 import { useAjustesStore } from '@/shared/store/useAjustesStore';
 import { useThemeStore, type ThemeId } from '@/shared/store/useThemeStore';
@@ -8,7 +8,7 @@ import { Interruptor, Modal, OptionButton } from '@/shared/ui';
 /** Ajustes del niño: colores, sonido, movimiento y velocidad de la voz. Todo con ícono y una palabra. */
 export const AjustesEstudiante: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
   const { currentTheme, setTheme } = useThemeStore();
-  const { sonido, movimiento, vozLenta, setSonido, setMovimiento, setVozLenta } = useAjustesStore();
+  const { sonido, movimiento, vozLenta, barrido, pocasOpciones, setSonido, setMovimiento, setVozLenta, setBarrido, setPocasOpciones } = useAjustesStore();
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Mis ajustes" size="sm">
@@ -52,6 +52,18 @@ export const AjustesEstudiante: React.FC<{ isOpen: boolean; onClose: () => void 
             onChange={setVozLenta}
             etiqueta="Voz lenta"
             icono={vozLenta ? <Turtle aria-hidden /> : <Rabbit aria-hidden />}
+          />
+          <Interruptor
+            activo={barrido}
+            onChange={setBarrido}
+            etiqueta="Un botón"
+            icono={<MousePointerClick aria-hidden />}
+          />
+          <Interruptor
+            activo={pocasOpciones}
+            onChange={setPocasOpciones}
+            etiqueta="Pocas opciones"
+            icono={pocasOpciones ? <Rows2 aria-hidden /> : <ListMinus aria-hidden />}
           />
         </section>
       </div>

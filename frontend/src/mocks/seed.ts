@@ -3,7 +3,7 @@ import { sembrarCuentosKinder } from '@/mocks/cuentosKinder';
 import { sembrarNiveles } from '@/mocks/niveles';
 import { sembrarCuentosPalabras } from '@/mocks/cuentosPalabras';
 import { sembrarCuentosVocales } from '@/mocks/cuentosVocales';
-import type { Cuento, Registro } from '@/types';
+import type { Alumno, Cuento, Registro } from '@/types';
 
 // ---------------------------------------------------------------------------
 // DATOS SIMULADOS PARA EL PANEL DOCENTE
@@ -51,6 +51,23 @@ async function sembrarResultadosDeActividades() {
 		act('estudiante-benjamin', 'actividad-palabras-m-l-s-p-d', palabras, 1, 5, 'liceo', hace(1, 9, 50), ['lupa', 'pala', 'pelo']),
 		act('estudiante-joaquin', 'actividad-palabras-m-l-s-p-d', palabras, 4, 5, 'liceo', hace(4, 11, 45), ['sala']),
 	]);
+}
+
+/** Apoyos del PIE de ejemplo, para que la ficha tenga qué mostrar (solo si nadie tiene apoyos aún). */
+async function sembrarApoyosDemo() {
+	const alumnos = await db.alumnos.toArray();
+	if (alumnos.some((a) => a.apoyos)) return;
+	const desde = hace(20, 9);
+	const demo: Record<string, Alumno['apoyos']> = {
+		'estudiante-benjamin': {
+			pocasOpciones: { activo: true, motivo: 'Se abruma cuando hay muchas opciones en pantalla', desde },
+			vozLenta: { activo: true, motivo: 'Necesita más tiempo para procesar lo que escucha', desde },
+		},
+		'estudiante-valentina': { sinMovimiento: { activo: true, motivo: 'Se sobreestimula con el movimiento', desde } },
+	};
+	for (const [id, apoyos] of Object.entries(demo)) {
+		if (alumnos.some((a) => a.id === id)) await db.alumnos.update(id, { apoyos });
+	}
 }
 
 async function seedDemoDocente() {
@@ -444,6 +461,7 @@ export async function seedDatabase() {
 		await sembrarCuentosVocales();
 		await sembrarResultadosDeActividades();
 		await sembrarNiveles();
+		await sembrarApoyosDemo();
 
 		console.log('✅ Base de datos inicializada correctamente.');
 	} catch (error) {

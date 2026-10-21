@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Printer } from 'lucide-react';
 import { ROUTES } from '@/app/routes';
+import { ApoyosEnInforme } from '@/features/docente/components/ApoyosAlumno';
 import { ResultadosActividades, TareasDelAlumno } from '@/features/docente/components/BloquesActividad';
 import { useFichaAlumno } from '@/features/docente/components/useFichaAlumno';
 import { UMBRALES } from '@/features/docente/components/umbrales';
@@ -115,6 +116,11 @@ export const InformeAlumno: React.FC<{ alumnoId: string }> = ({ alumnoId }) => {
         <section className="break-inside-avoid">
           <Titulo>Tareas</Titulo>
           <TareasDelAlumno tareas={ficha.tareas} />
+        </section>
+
+        <section className="break-inside-avoid">
+          <Titulo>Apoyos que usa</Titulo>
+          <ApoyosEnInforme alumno={alumno} />
         </section>
 
         <section className="break-inside-avoid">

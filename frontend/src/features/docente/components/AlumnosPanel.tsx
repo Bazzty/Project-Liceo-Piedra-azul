@@ -5,6 +5,7 @@ import { actualizarAlumno } from '@/api';
 import { ROUTES } from '@/app/routes';
 import { useAuthStore } from '@/features/acceso/useAuthStore';
 import { useTarjetasStore } from '@/features/acceso/useTarjetasStore';
+import { ApoyosAlumno } from '@/features/docente/components/ApoyosAlumno';
 import { BarrasPorDia } from '@/features/docente/components/BarrasPorDia';
 import { ResultadosActividades, TareasDelAlumno } from '@/features/docente/components/BloquesActividad';
 import { EncabezadoPagina, Hoja } from '@/features/docente/components/Hoja';
@@ -221,6 +222,8 @@ const FichaAlumno: React.FC<{ alumnoId: string; onVolver: () => void }> = ({ alu
           </Hoja>
         </div>
       </div>
+
+      <ApoyosAlumno alumno={alumno} />
 
       <Hoja aria-label="Preferencias del niño" className="grid gap-6 md:grid-cols-2">
         <div className="flex flex-col gap-3">

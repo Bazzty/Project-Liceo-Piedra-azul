@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { ArrowLeft, Leaf, Settings } from 'lucide-react';
 import { useAlumno } from '@/api';
 import { useNavigate } from 'react-router-dom';
@@ -6,12 +6,16 @@ import { ROUTES } from '@/app/routes';
 import { useAuthStore } from '@/features/acceso/useAuthStore';
 import { AjustesEstudiante } from '@/shared/components/AjustesEstudiante';
 import { AvisoInactividad } from '@/shared/components/AvisoInactividad';
+import { BarridoUnBoton } from '@/shared/components/BarridoUnBoton';
 import { CalmaOverlay } from '@/shared/components/CalmaOverlay';
 import { DecoracionJardin } from '@/shared/components/DecoracionJardin';
 import { FondoPaisaje } from '@/shared/components/FondoPaisaje';
 import { OsitoActor, type OsitoActorProps } from '@/shared/components/OsitoActor';
 import { OsitoAsoma, type OsitoAsomaProps } from '@/shared/components/OsitoAsoma';
+import { useAplicarApoyos } from '@/shared/hooks/useAplicarApoyos';
 import { useAplicarTema } from '@/shared/hooks/useAplicarTema';
+import { useAjustesStore } from '@/shared/store/useAjustesStore';
+import { useCalmaStore } from '@/shared/store/useCalmaStore';
 
 const BOTON_ICONO =
   'inline-flex items-center justify-center gap-2 min-h-12 min-w-12 px-3 rounded-control border-2 border-borderStrong bg-surface text-primary font-bold cursor-pointer hover:border-brand transition-colors';
@@ -39,12 +43,17 @@ export const LayoutEstudiante: React.FC<LayoutEstudianteProps> = ({ children, on
   const supervision = useAuthStore((s) => s.supervision);
   const navigate = useNavigate();
   const alumno = useAlumno(activeStudentId);
+  useAplicarApoyos(alumno);
+  const barrido = useAjustesStore((s) => s.barrido);
+  const raiz = useRef<HTMLDivElement>(null);
   const [ajustesAbierto, setAjustesAbierto] = useState(false);
-  const [calmaAbierta, setCalmaAbierta] = useState(false);
+  const calmaAbierta = useCalmaStore((s) => s.abierta);
+  const abrirCalma = useCalmaStore((s) => s.abrir);
+  const cerrarCalma = useCalmaStore((s) => s.cerrar);
   const nombre = alumno?.nombre ?? 'amigo';
 
   return (
-    <div className="relative overflow-hidden min-h-screen bg-app text-primary flex flex-col">
+    <div ref={raiz} className="relative overflow-hidden min-h-screen bg-app text-primary flex flex-col">
       <FondoPaisaje />
       {fondo === 'jardin' && <DecoracionJardin />}
 
@@ -87,7 +96,7 @@ export const LayoutEstudiante: React.FC<LayoutEstudianteProps> = ({ children, on
         <div className="justify-self-center">{centro}</div>
 
         <div className="flex items-center justify-end gap-2">
-          <button type="button" className={BOTON_ICONO} onClick={() => setCalmaAbierta(true)}>
+          <button type="button" className={BOTON_ICONO} onClick={abrirCalma}>
             <Leaf className="w-5 h-5" aria-hidden />
             <span className="hidden md:inline">Calma</span>
             <span className="sr-only md:hidden">Calma</span>
@@ -105,7 +114,8 @@ export const LayoutEstudiante: React.FC<LayoutEstudianteProps> = ({ children, on
       {osito?.tipo === 'asoma' && <OsitoAsoma {...osito} />}
 
       <AjustesEstudiante isOpen={ajustesAbierto} onClose={() => setAjustesAbierto(false)} />
-      <CalmaOverlay abierto={calmaAbierta} onCerrar={() => setCalmaAbierta(false)} />
+      <CalmaOverlay abierto={calmaAbierta} onCerrar={cerrarCalma} />
+      {barrido && <BarridoUnBoton raiz={raiz} />}
       {!supervision && <AvisoInactividad />}
     </div>
   );

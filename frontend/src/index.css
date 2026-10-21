@@ -60,6 +60,15 @@
     size: letter;
     margin: 12mm;
   }
+  /* Control de un solo botón: lo que está marcado se ve de lejos */
+  [data-barrido-activo='1'] {
+    outline: 8px solid var(--accent, #ffc83d) !important;
+    outline-offset: 6px !important;
+    box-shadow: 0 0 0 14px rgba(0, 0, 0, 0.55) !important;
+    position: relative;
+    z-index: 5;
+  }
+
   @media print {
     * {
       -webkit-print-color-adjust: exact;
