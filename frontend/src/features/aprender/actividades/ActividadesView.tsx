@@ -15,7 +15,7 @@ import { usePlayerStore } from '@/shared/store/usePlayerStore';
 import { useGuideStore } from '@/shared/store/useGuideStore';
 import { Button } from '@/shared/ui';
 import type { CuentoPalabra } from '@/types';
-import { generarRondas, type Ronda } from './generarRondas';
+import { generarRondas, type CartaMemoria, type Ronda } from './generarRondas';
 
 const FALLOS_PARA_AYUDA = 2;
 const PAUSA_TRAS_ACIERTO = 1300;
@@ -125,6 +125,187 @@ const RondaElegir: React.FC<RondaProps & { ronda: Extract<Ronda, { tipo: 'escuch
 						)}
 					</button>
 				))}
+			</div>
+		</div>
+	);
+};
+
+/** ¿Con qué sonido empieza? Se oye la palabra, se ve su imagen y se elige la sílaba inicial. */
+const RondaSonido: React.FC<RondaProps & { ronda: Extract<Ronda, { tipo: 'sonido' }> }> = ({ ronda, alTerminar }) => {
+	const decir = useDecirPalabra();
+	const hablar = useHablar();
+	const [fallos, setFallos] = useState<string[]>([]);
+	const [acertada, setAcertada] = useState(false);
+	const ayuda = fallos.length >= FALLOS_PARA_AYUDA;
+
+	useEffect(() => {
+		const id = setTimeout(() => decir(ronda.meta), 500);
+		return () => clearTimeout(id);
+	}, [decir, ronda.meta]);
+
+	const elegir = (silaba: string) => {
+		if (acertada) return;
+		hablar(silaba);
+		if (silaba === ronda.correcta) {
+			setAcertada(true);
+			sonarAcierto();
+			useGuideStore.getState().reaccionar('feliz');
+			setTimeout(() => alTerminar(ayuda), PAUSA_TRAS_ACIERTO);
+		} else {
+			sonarToque();
+			useGuideStore.getState().reaccionar('animo');
+			setFallos((f) => [...f, silaba]);
+		}
+	};
+
+	return (
+		<div className="flex-1 w-full flex flex-col items-center justify-center gap-6 sm:gap-8">
+			<PictogramaCard palabra={{ ...ronda.meta, silabas: undefined }} grande />
+			<p className="flex items-center gap-3 text-2xl sm:text-3xl font-black text-primary bg-surface/90 rounded-full px-6 py-2">
+				<Volume2 className="w-8 h-8" aria-hidden />
+				¿Con qué empieza?
+			</p>
+			<div className="flex flex-wrap items-stretch justify-center gap-4 sm:gap-6 w-full">
+				{ronda.opciones.map((silaba) => {
+					const estado = acertada && silaba === ronda.correcta ? 'acierto' : ayuda && !acertada && silaba === ronda.correcta ? 'ayuda' : fallos.includes(silaba) ? 'error' : 'normal';
+					return (
+						<button key={silaba} type="button" onClick={() => elegir(silaba)} className={`${claseOpcion(estado)} min-w-32 sm:min-w-44 min-h-24 sm:min-h-32`}>
+							<span className="text-5xl sm:text-7xl font-black text-primary">{silaba}</span>
+						</button>
+					);
+				})}
+			</div>
+		</div>
+	);
+};
+
+const FALLOS_MEMORIA_SIN_AYUDA = 3;
+
+/** Memoria: se dan vuelta dos cartas y se buscan las parejas de imagen y palabra. */
+const RondaMemoria: React.FC<RondaProps & { ronda: Extract<Ronda, { tipo: 'memoria' }> }> = ({ ronda, alTerminar }) => {
+	const decir = useDecirPalabra();
+	const [abiertas, setAbiertas] = useState<number[]>([]);
+	const [parejas, setParejas] = useState<string[]>([]);
+	const [fallos, setFallos] = useState(0);
+	const bloqueo = useRef(false);
+	const totalPares = ronda.cartas.length / 2;
+
+	const voltear = (i: number) => {
+		const carta: CartaMemoria = ronda.cartas[i];
+		if (bloqueo.current || abiertas.includes(i) || parejas.includes(carta.clave)) return;
+		sonarToque();
+		decir(carta.palabra);
+		const nuevas = [...abiertas, i];
+		setAbiertas(nuevas);
+		if (nuevas.length < 2) return;
+
+		bloqueo.current = true;
+		const [a, b] = nuevas.map((n) => ronda.cartas[n]);
+		if (a.clave === b.clave) {
+			setTimeout(() => {
+				const logradas = [...parejas, a.clave];
+				setParejas(logradas);
+				setAbiertas([]);
+				bloqueo.current = false;
+				sonarAcierto();
+				useGuideStore.getState().reaccionar('feliz');
+				if (logradas.length === totalPares) setTimeout(() => alTerminar(fallos >= FALLOS_MEMORIA_SIN_AYUDA), PAUSA_TRAS_ACIERTO);
+			}, 600);
+		} else {
+			setTimeout(() => {
+				setAbiertas([]);
+				setFallos((f) => f + 1);
+				bloqueo.current = false;
+				useGuideStore.getState().reaccionar('animo');
+			}, 1100);
+		}
+	};
+
+	return (
+		<div className="flex-1 w-full flex flex-col items-center justify-center gap-6">
+			<div className="grid grid-cols-3 gap-3 sm:gap-5">
+				{ronda.cartas.map((carta, i) => {
+					const visible = abiertas.includes(i) || parejas.includes(carta.clave);
+					const lograda = parejas.includes(carta.clave);
+					return (
+						<button
+							key={`${carta.clave}-${carta.cara}`}
+							type="button"
+							onClick={() => voltear(i)}
+							aria-label={visible ? carta.palabra.texto : 'Carta dada vuelta'}
+							className={`w-28 h-28 sm:w-40 sm:h-40 rounded-card border-4 flex items-center justify-center p-2 shadow-card cursor-pointer active:scale-95 transition-all ${
+								lograda ? 'border-statusOk bg-statusOk/15' : visible ? 'border-brand bg-surface' : 'border-borderStrong bg-brand hover:bg-brand-hover'
+							}`}
+						>
+							{visible ? (
+								carta.cara === 'imagen' ? (
+									<img src={carta.palabra.pictogramaUrl} alt="" className="w-full h-full object-contain" />
+								) : (
+									<span className="text-2xl sm:text-4xl font-black text-primary">{carta.palabra.texto}</span>
+								)
+							) : (
+								<Star className="w-12 h-12 sm:w-16 sm:h-16 text-onBrand fill-accent" strokeWidth={2.5} aria-hidden />
+							)}
+						</button>
+					);
+				})}
+			</div>
+		</div>
+	);
+};
+
+/** Completa la frase: falta una palabra y se elige su imagen entre tres. */
+const RondaCompleta: React.FC<RondaProps & { ronda: Extract<Ronda, { tipo: 'completa' }> }> = ({ ronda, alTerminar }) => {
+	const hablar = useHablar();
+	const decir = useDecirPalabra();
+	const [fallos, setFallos] = useState<string[]>([]);
+	const [acertada, setAcertada] = useState(false);
+	const meta = ronda.palabras[ronda.hueco];
+	const ayuda = fallos.length >= FALLOS_PARA_AYUDA;
+
+	const elegir = (p: CuentoPalabra) => {
+		if (acertada) return;
+		decir(p);
+		if (p.texto === meta.texto) {
+			setAcertada(true);
+			sonarAcierto();
+			useGuideStore.getState().reaccionar('feliz');
+			setTimeout(() => hablar(ronda.frase), 500);
+			setTimeout(() => alTerminar(ayuda), PAUSA_TRAS_ACIERTO + 1200);
+		} else {
+			sonarToque();
+			useGuideStore.getState().reaccionar('animo');
+			setFallos((f) => [...f, p.texto]);
+		}
+	};
+
+	return (
+		<div className="flex-1 w-full flex flex-col items-center justify-center gap-6 sm:gap-10">
+			<div className="flex items-center justify-center gap-3 sm:gap-4 bg-surface/90 rounded-card p-3 sm:p-4" aria-label={ronda.frase}>
+				{ronda.palabras.map((p, i) =>
+					i === ronda.hueco && !acertada ? (
+						<div key={i} className="w-24 h-24 sm:w-36 sm:h-36 rounded-control border-4 border-dashed border-borderStrong bg-app flex items-center justify-center text-4xl sm:text-6xl font-black text-secondary" aria-label="Falta una palabra">
+							?
+						</div>
+					) : (
+						<div key={i} className={`w-24 h-24 sm:w-36 sm:h-36 rounded-control border-4 flex items-center justify-center bg-surface ${i === ronda.hueco ? 'border-statusOk bg-statusOk/15 animate-pop' : 'border-borderStrong'}`}>
+							<FichaPalabra p={p} className="p-1" />
+						</div>
+					)
+				)}
+			</div>
+			<p className="text-2xl sm:text-4xl font-black text-primary bg-surface/90 rounded-full px-6 py-2 text-center">
+				{ronda.palabras.map((p, i) => (i === ronda.hueco && !acertada ? '___' : p.texto)).join(' ')}
+			</p>
+			<div className="flex flex-wrap items-stretch justify-center gap-4 sm:gap-6">
+				{ronda.opciones.map((p) => {
+					const estado = acertada && p.texto === meta.texto ? 'acierto' : ayuda && !acertada && p.texto === meta.texto ? 'ayuda' : fallos.includes(p.texto) ? 'error' : 'normal';
+					return (
+						<button key={p.texto} type="button" onClick={() => elegir(p)} aria-label={p.texto} className={`${claseOpcion(estado)} w-28 h-28 sm:w-40 sm:h-40`}>
+							<FichaPalabra p={p} />
+						</button>
+					);
+				})}
 			</div>
 		</div>
 	);
@@ -320,6 +501,12 @@ export const ActividadesView: React.FC = () => {
 				</ol>
 				{ronda.tipo === 'ordena' ? (
 					<RondaOrdenar key={`${vuelta}-${indice}`} ronda={ronda} alTerminar={alTerminarRonda} />
+				) : ronda.tipo === 'sonido' ? (
+					<RondaSonido key={`${vuelta}-${indice}`} ronda={ronda} alTerminar={alTerminarRonda} />
+				) : ronda.tipo === 'memoria' ? (
+					<RondaMemoria key={`${vuelta}-${indice}`} ronda={ronda} alTerminar={alTerminarRonda} />
+				) : ronda.tipo === 'completa' ? (
+					<RondaCompleta key={`${vuelta}-${indice}`} ronda={ronda} alTerminar={alTerminarRonda} />
 				) : (
 					<RondaElegir key={`${vuelta}-${indice}`} ronda={ronda} alTerminar={alTerminarRonda} />
 				)}
