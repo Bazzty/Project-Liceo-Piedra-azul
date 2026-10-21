@@ -82,6 +82,26 @@ async function sembrarResultadosDeActividades() {
 	]);
 }
 
+/** Palabras clave del tablero «Hablar» (sí, no, más…): se agregan también en navegadores que ya tenían datos. */
+async function sembrarPalabrasNucleo() {
+	const nucleo = [
+		['si', 'sí'],
+		['no', 'no'],
+		['mas', 'más'],
+		['terminado', 'terminado'],
+		['gracias', 'gracias'],
+	] as const;
+	await db.pictogramas.bulkPut(
+		nucleo.map(([archivo, palabra]) => ({
+			id: `pic-${archivo}`,
+			palabra,
+			categoria: 'basicas' as const,
+			imagenUrl: `/pictogramas/arasaac/${archivo}.png`,
+			esFotoReal: false,
+		})),
+	);
+}
+
 /** Apoyos del PIE de ejemplo, para que la ficha tenga qué mostrar (solo si nadie tiene apoyos aún). */
 async function sembrarApoyosDemo() {
 	const alumnos = await db.alumnos.toArray();
@@ -491,6 +511,7 @@ export async function seedDatabase() {
 		await sembrarResultadosDeActividades();
 		await sembrarNiveles();
 		await sembrarApoyosDemo();
+		await sembrarPalabrasNucleo();
 
 		console.log('✅ Base de datos inicializada correctamente.');
 	} catch (error) {

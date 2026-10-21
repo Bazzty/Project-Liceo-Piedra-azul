@@ -1,167 +1,307 @@
-import React, { useState } from 'react';
-import { Volume2, Trash2 } from 'lucide-react';
-import type { Pictograma } from '@/types';
-import { usePlayerStore } from '@/shared/store/usePlayerStore';
-import { resolverYGuardarPictograma } from '@/features/tablero/arasaac';
-import { usePictogramasPorCategoria } from '@/api';
+import React, { useMemo, useRef, useState } from "react";
+import { Delete, HandHelping, Trash2, Volume2 } from "lucide-react";
+import type { Pictograma } from "@/types";
+import { crearRegistro, usePictogramas, useRegistrosDeAlumno } from "@/api";
+import { useAuthStore } from "@/features/acceso/useAuthStore";
+import {
+  CATEGORIAS_TABLERO,
+  franjaDe,
+} from "@/features/tablero/categoriasTablero";
+import { resolverYGuardarPictograma } from "@/features/tablero/arasaac";
+import {
+  decirSecuencia,
+  type ElementoDeVoz,
+} from "@/shared/audio/decirSecuencia";
+import { sonarToque } from "@/shared/audio/sonidos";
+import { useHablar } from "@/shared/hooks/useHablar";
 
-interface ItemTableroProps {
-	pic: Pictograma;
-	onSelect: (pic: Pictograma) => void;
-}
+const MAXIMO_FRECUENTES = 12;
+const PALABRAS_POR_FRASE = 8;
 
-const ItemTablero: React.FC<ItemTableroProps> = ({ pic, onSelect }) => {
-	const [imgSrc, setImgSrc] = useState(pic.imagenUrl);
-	const [hasError, setHasError] = useState(false);
+const aVoz = (p: Pictograma): ElementoDeVoz => ({
+  texto: p.palabra,
+  audioUrl: p.audioUrl,
+});
 
-	const handleImageError = async () => {
-		if (!hasError) {
-			const apiUrl = await resolverYGuardarPictograma(pic.palabra);
-			if (apiUrl && apiUrl !== imgSrc) {
-				setImgSrc(apiUrl);
-			} else {
-				setHasError(true);
-			}
-		}
-	};
-
-	return (
-		<div
-			role="button"
-			tabIndex={0}
-			onClick={() => onSelect(pic)}
-			onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onSelect(pic)}
-			className="flex flex-col items-center justify-between p-3 bg-surface border-2 border-borderCustom hover:border-brand rounded-2xl shadow hover:scale-105 active:scale-95 transition-all cursor-pointer h-32 w-full"
-		>
-			<div className="w-16 h-16 flex items-center justify-center overflow-hidden">
-				{!hasError ? (
-					<img
-						src={imgSrc}
-						alt={pic.palabra}
-						onError={handleImageError}
-						className="w-full h-full object-contain"
-					/>
-				) : (
-					<div className="text-2xl font-black text-secondary">
-						{pic.palabra.charAt(0).toUpperCase()}
-					</div>
-				)}
-			</div>
-
-			<span className="font-bold text-sm text-primary text-center truncate w-full">
-				{pic.palabra}
-			</span>
-		</div>
-	);
+/** Dibujo con respaldo: si el archivo no está, lo pide a ARASAAC una vez; si tampoco, muestra la inicial. */
+const Dibujo: React.FC<{ pic: Pictograma; className: string }> = ({
+  pic,
+  className,
+}) => {
+  const [src, setSrc] = useState(pic.imagenUrl);
+  const [fallo, setFallo] = useState(false);
+  const alFallar = async () => {
+    if (fallo) return;
+    const url = await resolverYGuardarPictograma(pic.palabra);
+    if (url && url !== src) setSrc(url);
+    else setFallo(true);
+  };
+  return fallo ? (
+    <span
+      className={`${className} flex items-center justify-center text-4xl font-black text-secondary`}
+    >
+      {pic.palabra.charAt(0).toUpperCase()}
+    </span>
+  ) : (
+    <img
+      src={src}
+      alt=""
+      onError={alFallar}
+      className={`${className} object-contain`}
+    />
+  );
 };
 
+interface TeclaProps {
+  pic: Pictograma;
+  alTocar: (pic: Pictograma) => void;
+}
+
+/** Una tecla del tablero: dibujo grande y, debajo, la palabra sobre la franja de color de su categoría. */
+const Tecla: React.FC<TeclaProps> = ({ pic, alTocar }) => {
+  const [pulsada, setPulsada] = useState(false);
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        setPulsada(true);
+        setTimeout(() => setPulsada(false), 350);
+        alTocar(pic);
+      }}
+      aria-label={pic.palabra}
+      className={`flex flex-col overflow-hidden rounded-card border-4 border-borderStrong bg-surface shadow-card cursor-pointer transition-transform hover:border-brand hover:-translate-y-0.5 active:scale-95 ${pulsada ? "animate-pop" : ""}`}
+    >
+      <span className="flex-1 flex items-center justify-center p-2 min-h-24 sm:min-h-28">
+        <Dibujo pic={pic} className="w-20 h-20 sm:w-24 sm:h-24" />
+      </span>
+      <span
+        className={`px-1 py-1.5 text-center text-base sm:text-lg font-black truncate ${franjaDe(pic.categoria)}`}
+      >
+        {pic.palabra}
+      </span>
+    </button>
+  );
+};
+
+/**
+ * Hablar: tablero de comunicación con pictogramas. El niño toca dibujos (cada uno se dice al tocarlo),
+ * arma una frase arriba y la dice entera con el botón grande. Las categorías tienen color e ícono.
+ */
 export const TableroSAAC: React.FC = () => {
-	const { playAudio } = usePlayerStore();
-	const [categoriaActiva, setCategoriaActiva] = useState('todos');
-	const [fraseConstruida, setFraseConstruida] = useState<Pictograma[]>([]);
+  const hablar = useHablar();
+  const activeStudentId = useAuthStore((s) => s.activeStudentId);
+  const supervision = useAuthStore((s) => s.supervision);
+  const todos = usePictogramas();
+  const registros = useRegistrosDeAlumno(activeStudentId);
+  const [categoria, setCategoria] = useState<string | null>(null);
+  const [frase, setFrase] = useState<Pictograma[]>([]);
+  const [sonando, setSonando] = useState<number | null>(null);
+  const corte = useRef(0);
 
-	const pictogramas = usePictogramasPorCategoria(categoriaActiva as Pictograma['categoria'] | 'todos');
+  // Las palabras que más usa este niño, para tenerlas a mano
+  const frecuentes = useMemo(() => {
+    if (!todos || !registros) return [];
+    const cuenta = new Map<string, number>();
+    registros
+      .filter((r) => r.tipo === "tablero")
+      .forEach((r) =>
+        r.pictogramaIds?.forEach((id) =>
+          cuenta.set(id, (cuenta.get(id) ?? 0) + 1),
+        ),
+      );
+    return [...cuenta.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .map(([id]) => todos.find((p) => p.id === id))
+      .filter((p): p is Pictograma => !!p)
+      .slice(0, MAXIMO_FRECUENTES);
+  }, [todos, registros]);
 
-	const handleSelectPictograma = (pic: Pictograma) => {
-		setFraseConstruida((prev) => [...prev, pic]);
-		if (pic.audioUrl) {
-			playAudio(pic.audioUrl);
-		}
-	};
+  const tieneFrecuentes = frecuentes.length >= 3;
+  const activa = categoria ?? (tieneFrecuentes ? "frecuentes" : "todos");
+  const visibles =
+    activa === "frecuentes"
+      ? frecuentes
+      : (todos ?? []).filter(
+          (p) => activa === "todos" || p.categoria === activa,
+        );
+  const ayuda = todos?.find((p) => p.id === "pic-ayuda");
 
-	const handleReproducirFrase = () => {
-		if (fraseConstruida.length === 0) return;
+  const registrar = (pics: Pictograma[], detalleExtra = "") => {
+    if (!activeStudentId || supervision || pics.length === 0) return;
+    void crearRegistro({
+      alumnoId: activeStudentId,
+      tipo: "tablero",
+      detalle: `Tablero: «${pics.map((p) => p.palabra).join(" ")}»${detalleExtra}`,
+      lugar: "casa",
+      fecha: new Date().toISOString(),
+      pictogramaIds: pics.map((p) => p.id ?? "").filter(Boolean),
+    });
+  };
 
-		let delay = 0;
-		fraseConstruida.forEach((pic) => {
-			if (pic.audioUrl) {
-				setTimeout(() => {
-					playAudio(pic.audioUrl!);
-				}, delay);
-				delay += 900;
-			}
-		});
-	};
+  const tocarTecla = (pic: Pictograma) => {
+    sonarToque();
+    if (frase.length < PALABRAS_POR_FRASE) setFrase((f) => [...f, pic]);
+    // Cada palabra se dice al tocarla: el niño oye lo que eligió
+    corte.current += 1;
+    void decirSecuencia([aVoz(pic)], { cancelada: () => false });
+  };
 
-	const handleLimpiarFrase = () => {
-		setFraseConstruida([]);
-	};
+  const decirFrase = () => {
+    if (frase.length === 0) return;
+    corte.current += 1;
+    const mio = corte.current;
+    void decirSecuencia(frase.map(aVoz), {
+      alDecir: setSonando,
+      cancelada: () => corte.current !== mio,
+    });
+    registrar(frase);
+  };
 
-	const categorias = [
-		{ id: 'todos', label: 'Todos' },
-		{ id: 'necesidades', label: 'Necesidades' },
-		{ id: 'emociones', label: 'Emociones' },
-		{ id: 'personas', label: 'Personas' },
-		{ id: 'acciones', label: 'Acciones' },
-		{ id: 'objetos', label: 'Objetos' },
-	];
+  const pedirAyuda = () => {
+    if (!ayuda) return;
+    sonarToque();
+    corte.current += 1;
+    void decirSecuencia(
+      [{ texto: "Necesito ayuda", audioUrl: ayuda.audioUrl }],
+      { cancelada: () => false },
+    );
+    registrar([ayuda], " (botón de ayuda)");
+  };
 
-	return (
-		<div className="flex flex-col gap-6 w-full">
-			{/* Barra de Construcción de Frase */}
-			<div className="flex items-center justify-between min-h-24 p-4 bg-surface border-4 border-borderCustom rounded-3xl shadow-inner gap-4 overflow-x-auto">
-				<div className="flex items-center gap-3 flex-1 overflow-x-auto py-2">
-					{fraseConstruida.length === 0 ? (
-						<p className="text-secondary font-medium text-sm sm:text-base italic px-2">
-							Toca los pictogramas abajo para construir tu mensaje...
-						</p>
-					) : (
-						fraseConstruida.map((item, index) => (
-							<div
-								key={index}
-								className="flex flex-col items-center bg-app border-2 border-borderCustom rounded-2xl p-2 min-w-[70px] shadow-sm animate-fade-in"
-							>
-								<img src={item.imagenUrl} alt={item.palabra} className="w-12 h-12 object-contain" />
-								<span className="text-xs font-black text-primary mt-1">{item.palabra}</span>
-							</div>
-						))
-					)}
-				</div>
+  const borrarUltima = () => {
+    corte.current += 1;
+    setSonando(null);
+    setFrase((f) => f.slice(0, -1));
+  };
 
-				{fraseConstruida.length > 0 && (
-					<div className="flex items-center gap-2 shrink-0">
-						<button
-							onClick={handleReproducirFrase}
-							className="flex items-center gap-2 bg-brand text-onBrand px-4 py-3 rounded-2xl font-black shadow hover:opacity-90 active:scale-95 transition-all cursor-pointer text-sm"
-							title="Reproducir frase"
-						>
-							<Volume2 size={20} />
-							<span className="hidden sm:inline">LEER</span>
-						</button>
-						<button
-							onClick={handleLimpiarFrase}
-							className="p-3 bg-statusDanger-bg text-statusDanger rounded-2xl border-2 border-statusDanger hover:opacity-80 active:scale-95 transition-all cursor-pointer shadow-sm"
-							title="Limpiar frase"
-						>
-							<Trash2 size={20} />
-						</button>
-					</div>
-				)}
-			</div>
+  const limpiar = () => {
+    corte.current += 1;
+    setSonando(null);
+    setFrase([]);
+  };
 
-			{/* Categorías */}
-			<div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-				{categorias.map((cat) => (
-					<button
-						key={cat.id}
-						onClick={() => setCategoriaActiva(cat.id)}
-						className={`px-4 py-2 rounded-xl font-extrabold text-xs sm:text-sm whitespace-nowrap transition-all cursor-pointer border-2 shadow-sm ${
-							categoriaActiva === cat.id
-								? 'bg-brand text-onBrand border-brand-hover scale-105'
-								: 'bg-surface text-secondary border-borderCustom hover:border-brand'
-						}`}
-					>
-						{cat.label}
-					</button>
-				))}
-			</div>
+  return (
+    <div className="flex flex-col gap-4 w-full">
+      {/* La frase: dibujos grandes y los botones para decirla o borrarla */}
+      <div className="flex flex-wrap items-center gap-3 sm:gap-4 rounded-card border-4 border-borderStrong bg-surface p-3 sm:p-4 shadow-card">
+        <div
+          className="flex-1 min-w-[12rem] flex items-center gap-2 sm:gap-3 overflow-x-auto py-1"
+          aria-label="Mi frase"
+          aria-live="polite"
+        >
+          {frase.length === 0
+            ? [0, 1, 2].map((i) => (
+                <span
+                  key={i}
+                  aria-hidden
+                  className="shrink-0 w-20 h-24 sm:w-24 sm:h-28 rounded-control border-4 border-dashed border-borderStrong bg-app"
+                />
+              ))
+            : frase.map((p, i) => (
+                <span
+                  key={`${p.id}-${i}`}
+                  className={`shrink-0 flex flex-col items-center rounded-control border-4 bg-app px-1.5 pt-1.5 animate-pop transition-all ${sonando === i ? "border-brand ring-8 ring-accent/70 scale-110" : "border-borderStrong"}`}
+                >
+                  <Dibujo pic={p} className="w-16 h-16 sm:w-20 sm:h-20" />
+                  <span className="text-sm sm:text-base font-black text-primary">
+                    {p.palabra}
+                  </span>
+                </span>
+              ))}
+        </div>
 
-			{/* Grilla de Pictogramas */}
-			<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 max-h-[50vh] overflow-y-auto p-1">
-				{pictogramas?.map((pic) => (
-					<ItemTablero key={pic.id || pic.palabra} pic={pic} onSelect={handleSelectPictograma} />
-				))}
-			</div>
-		</div>
-	);
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          <button
+            type="button"
+            onClick={decirFrase}
+            disabled={frase.length === 0}
+            aria-label="Decir mi frase"
+            className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-accent text-onAccent border-4 border-borderStrong flex items-center justify-center shadow-card cursor-pointer hover:bg-accent-hover active:scale-90 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <Volume2
+              className={`w-10 h-10 sm:w-12 sm:h-12 ${sonando !== null ? "animate-pulso" : ""}`}
+              aria-hidden
+            />
+          </button>
+          <button
+            type="button"
+            onClick={borrarUltima}
+            disabled={frase.length === 0}
+            aria-label="Borrar la última palabra"
+            className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-surface text-primary border-4 border-borderStrong flex items-center justify-center cursor-pointer hover:border-brand active:scale-90 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <Delete className="w-7 h-7" aria-hidden />
+          </button>
+          <button
+            type="button"
+            onClick={limpiar}
+            disabled={frase.length === 0}
+            aria-label="Borrar toda la frase"
+            className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-statusDanger-bg text-statusDanger border-4 border-statusDanger flex items-center justify-center cursor-pointer active:scale-90 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <Trash2 className="w-7 h-7" aria-hidden />
+          </button>
+        </div>
+      </div>
+
+      {/* Categorías: ícono grande y su color; tocar una la dice en voz alta */}
+      <div className="flex items-stretch gap-2 sm:gap-3">
+        <div
+          role="tablist"
+          aria-label="Categorías"
+          className="flex-1 min-w-0 flex gap-2 sm:gap-3 overflow-x-auto pb-1"
+        >
+          {CATEGORIAS_TABLERO.filter(
+            (c) => c.id !== "frecuentes" || tieneFrecuentes,
+          ).map((c) => {
+            const seleccionada = c.id === activa;
+            return (
+              <button
+                key={c.id}
+                type="button"
+                role="tab"
+                aria-selected={seleccionada}
+                onClick={() => {
+                  sonarToque();
+                  setCategoria(c.id);
+                  hablar(c.nombre);
+                }}
+                className={`shrink-0 flex flex-col items-center justify-center gap-0.5 w-[4.75rem] h-[4.75rem] sm:w-24 sm:h-24 rounded-card border-4 cursor-pointer transition-all active:scale-95 ${
+                  seleccionada
+                    ? "bg-accent text-onAccent border-brand -translate-y-1 shadow-card"
+                    : "bg-surface text-primary border-borderStrong hover:border-brand"
+                }`}
+              >
+                <c.Icono className="w-8 h-8 sm:w-10 sm:h-10" aria-hidden />
+                <span className="text-xs sm:text-sm font-black">
+                  {c.nombre}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+        {ayuda && (
+          <button
+            type="button"
+            onClick={pedirAyuda}
+            aria-label="Necesito ayuda"
+            className="shrink-0 self-start flex flex-col items-center justify-center gap-0.5 w-[4.75rem] h-[4.75rem] sm:w-24 sm:h-24 rounded-card border-4 border-statusDanger bg-statusDanger text-onStatus cursor-pointer active:scale-90 transition-transform shadow-card"
+          >
+            <HandHelping className="w-8 h-8 sm:w-10 sm:h-10" aria-hidden />
+            <span className="text-xs sm:text-sm font-black">Ayuda</span>
+          </button>
+        )}
+      </div>
+
+      {/* Teclas */}
+      <div
+        role="tabpanel"
+        className="grid grid-cols-[repeat(auto-fill,minmax(7rem,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(8.5rem,1fr))] gap-3 sm:gap-4 max-h-[52vh] overflow-y-auto p-1"
+      >
+        {visibles.map((pic) => (
+          <Tecla key={pic.id ?? pic.palabra} pic={pic} alTocar={tocarTecla} />
+        ))}
+      </div>
+    </div>
+  );
 };

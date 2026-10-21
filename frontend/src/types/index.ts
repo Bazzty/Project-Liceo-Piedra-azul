@@ -39,7 +39,7 @@ export interface Nivel {
 export interface Pictograma {
 	id?: string;
 	palabra: string;
-	categoria: 'necesidades' | 'emociones' | 'personas' | 'acciones' | 'objetos';
+	categoria: 'basicas' | 'necesidades' | 'emociones' | 'personas' | 'acciones' | 'objetos';
 	imagenUrl: string;
 	audioUrl?: string;
 	esFotoReal: boolean;
