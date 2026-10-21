@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowLeft, Delete, HandHelping, MousePointerClick, Play, Volume2 } from 'lucide-react';
+import { ArrowLeft, Delete, HandHelping, LayoutGrid, MousePointerClick, Play, Volume2 } from 'lucide-react';
 import type { Pictograma } from '@/types';
 import { crearRegistro, usePictogramas } from '@/api';
 import { useAuthStore } from '@/features/acceso/useAuthStore';
-import { CATEGORIAS_TABLERO, FRASES_LISTAS, franjaDe } from '@/features/tablero/categoriasTablero';
+import { CATEGORIAS_TABLERO, FRASES_LISTAS, INICIOS_DE_FRASE, franjaDe, type InicioDeFrase } from '@/features/tablero/categoriasTablero';
 import { resolverYGuardarPictograma } from '@/features/tablero/arasaac';
 import { decirSecuencia, type ElementoDeVoz } from '@/shared/audio/decirSecuencia';
 import { sonarAcierto, sonarToque } from '@/shared/audio/sonidos';
@@ -98,6 +98,10 @@ export const TableroSAAC: React.FC<{ onCerrar: () => void }> = ({ onCerrar }) =>
   const activeStudentId = useAuthStore((s) => s.activeStudentId);
   const supervision = useAuthStore((s) => s.supervision);
   const todos = usePictogramas();
+  // Inicio: dos tarjetas grandes («quiero» y «siento»). Con una elegida, se completa la frase con un solo toque.
+  // «libre» es el tablero completo por categorías, para quien ya arma frases más largas.
+  const [modo, setModo] = useState<InicioDeFrase | 'libre' | null>(null);
+  const [elegida, setElegida] = useState<string | null>(null);
   const [categoria, setCategoria] = useState<string | null>(null);
   const [frase, setFrase] = useState<Pictograma[]>([]);
   const [sonando, setSonando] = useState<number | null>(null);
@@ -157,6 +161,28 @@ export const TableroSAAC: React.FC<{ onCerrar: () => void }> = ({ onCerrar }) =>
     void decirSecuencia([aVoz(pic)]);
   };
 
+  /** Un toque completa la frase («yo quiero» + lo elegido) y el osito la dice enseguida. */
+  const completarFrase = (inicio: InicioDeFrase, opcion: Pictograma) => {
+    sonarToque();
+    const prefijo = INICIOS_DE_FRASE[inicio].prefijo.map((id) => todos?.find((p) => p.id === id)).filter((p): p is Pictograma => !!p);
+    const completa = [...prefijo, opcion];
+    setElegida(opcion.id ?? null);
+    setFrase(completa);
+    void decir(completa);
+    registrar(completa);
+  };
+
+  const volver = () => {
+    if (modo === 'libre' && categoria) setCategoria(null);
+    else if (modo) {
+      setModo(null);
+      setElegida(null);
+      setFrase([]);
+      corte.current += 1;
+      setSonando(null);
+    } else onCerrar();
+  };
+
   const tocarFraseLista = (pics: Pictograma[]) => {
     sonarToque();
     setFrase(pics);
@@ -191,8 +217,8 @@ export const TableroSAAC: React.FC<{ onCerrar: () => void }> = ({ onCerrar }) =>
       <header className="flex items-center justify-between gap-3 px-3 sm:px-6 py-2 sm:py-3">
         <button
           type="button"
-          onClick={() => (categoria ? setCategoria(null) : onCerrar())}
-          aria-label={categoria ? 'Volver a las categorías' : 'Volver'}
+          onClick={volver}
+          aria-label="Volver"
           className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-accent text-onAccent border-4 border-borderStrong flex items-center justify-center cursor-pointer hover:bg-accent-hover active:scale-90 transition-all"
         >
           <ArrowLeft className="w-8 h-8" strokeWidth={2.5} aria-hidden />
@@ -255,9 +281,62 @@ export const TableroSAAC: React.FC<{ onCerrar: () => void }> = ({ onCerrar }) =>
         </div>
       </section>
 
-      {/* Un solo nivel a la vez: primero las categorías, luego lo que hay dentro de la elegida */}
       <div className="flex-1 overflow-y-auto px-3 sm:px-6 py-4">
-        {categoria === null ? (
+        {modo === null && (
+          <div className="flex flex-col items-center gap-5 max-w-3xl mx-auto">
+            <ul className="grid grid-cols-2 gap-4 sm:gap-8 w-full">
+              {(Object.keys(INICIOS_DE_FRASE) as InicioDeFrase[]).map((id) => {
+                const inicio = INICIOS_DE_FRASE[id];
+                const pic = todos?.find((p) => p.id === inicio.icono);
+                return (
+                  <li key={id}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        sonarToque();
+                        setModo(id);
+                        hablar(inicio.nombre);
+                      }}
+                      aria-label={inicio.nombre}
+                      className="w-full flex flex-col items-center gap-3 rounded-[2.5rem] border-4 border-borderStrong bg-surface py-6 sm:py-10 cursor-pointer hover:border-brand active:scale-95 transition-all"
+                    >
+                      {pic && <Dibujo pic={pic} className="w-28 h-28 sm:w-40 sm:h-40" />}
+                      <span className="text-3xl sm:text-4xl font-black">{inicio.nombre}</span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+            <button
+              type="button"
+              onClick={() => {
+                sonarToque();
+                setModo('libre');
+                hablar('Más palabras');
+              }}
+              aria-label="Más palabras"
+              className="flex items-center gap-3 h-16 px-6 rounded-full border-4 border-borderStrong bg-surface text-xl font-black cursor-pointer hover:border-brand active:scale-95 transition-all"
+            >
+              <LayoutGrid className="w-8 h-8" aria-hidden />
+              Más palabras
+            </button>
+          </div>
+        )}
+
+        {(modo === 'quiero' || modo === 'siento') && (
+          <ul className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-5 max-w-4xl mx-auto">
+            {INICIOS_DE_FRASE[modo].opciones
+              .map((id) => todos?.find((p) => p.id === id))
+              .filter((p): p is Pictograma => !!p)
+              .map((pic) => (
+                <li key={pic.id} className={`rounded-3xl transition-all [&>button]:w-full ${elegida === pic.id ? 'ring-8 ring-accent/80 scale-105' : ''}`}>
+                  <Tecla pic={pic} alTocar={(p) => completarFrase(modo, p)} />
+                </li>
+              ))}
+          </ul>
+        )}
+
+        {modo === 'libre' && categoria === null && (
           <ul className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5 max-w-4xl mx-auto">
             {CATEGORIAS_TABLERO.map((c) => (
               <li key={c.id}>
@@ -278,13 +357,17 @@ export const TableroSAAC: React.FC<{ onCerrar: () => void }> = ({ onCerrar }) =>
               </li>
             ))}
           </ul>
-        ) : categoria === 'rapidas' ? (
+        )}
+
+        {modo === 'libre' && categoria === 'rapidas' && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 max-w-3xl mx-auto">
             {frasesListas.map((pics) => (
               <FraseLista key={pics.map((p) => p.id).join('-')} pics={pics} alTocar={tocarFraseLista} />
             ))}
           </div>
-        ) : (
+        )}
+
+        {modo === 'libre' && categoria !== null && categoria !== 'rapidas' && (
           <div className="grid grid-cols-[repeat(auto-fill,minmax(8rem,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(9.5rem,1fr))] gap-3 sm:gap-4 max-w-5xl mx-auto">
             {visibles.map((pic) => (
               <Tecla key={pic.id ?? pic.palabra} pic={pic} alTocar={tocarTecla} />

@@ -31,3 +31,25 @@ export const FRASES_LISTAS: string[][] = [
   ['pic-yo', 'pic-dolor'],
   ['pic-quiero', 'pic-abrazar'],
 ];
+
+/**
+ * Frases de un solo toque: el niño elige cómo empezar («quiero» o «siento») y toca UNA cosa; la frase queda
+ * completa y el osito la dice. `prefijo` son los dibujos que ya van puestos.
+ */
+export const INICIOS_DE_FRASE = {
+  quiero: {
+    nombre: 'Quiero',
+    prefijo: ['pic-yo', 'pic-quiero'],
+    opciones: ['pic-agua', 'pic-comer', 'pic-jugar', 'pic-bano', 'pic-abrazar', 'pic-dormir', 'pic-mas', 'pic-libro'],
+    /** Dibujo de la tarjeta de inicio. */
+    icono: 'pic-quiero',
+  },
+  siento: {
+    nombre: 'Siento',
+    prefijo: ['pic-yo'],
+    opciones: ['pic-feliz', 'pic-triste', 'pic-enojado', 'pic-asustado', 'pic-cansado', 'pic-dolor'],
+    icono: 'pic-feliz',
+  },
+} as const;
+
+export type InicioDeFrase = keyof typeof INICIOS_DE_FRASE;
