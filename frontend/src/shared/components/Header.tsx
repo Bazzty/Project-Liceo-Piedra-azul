@@ -111,9 +111,7 @@ export const Header: React.FC = () => {
       </Modal>
 
       {/* Modal del Tablero SAAC */}
-      <Modal isOpen={isHablarOpen} onClose={() => setIsHablarOpen(false)} title="Tablero de Comunicación (SAAC)" size="full">
-        <TableroSAAC />
-      </Modal>
+      {isHablarOpen && <TableroSAAC onCerrar={() => setIsHablarOpen(false)} />}
     </>
   );
 };

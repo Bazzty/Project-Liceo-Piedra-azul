@@ -1,4 +1,4 @@
-import { Footprints, HandHelping, LayoutGrid, Package, Smile, Sparkles, Star, Users, type LucideIcon } from 'lucide-react';
+import { Footprints, HandHelping, LayoutGrid, Package, Smile, Sparkles, Star, Users, Zap, type LucideIcon } from 'lucide-react';
 
 export interface CategoriaTablero {
   id: string;
@@ -9,6 +9,7 @@ export interface CategoriaTablero {
 }
 
 export const CATEGORIAS_TABLERO: CategoriaTablero[] = [
+  { id: 'rapidas', nombre: 'Frases', Icono: Zap, franja: 'bg-btnColores-bg text-btnColores-text' },
   { id: 'frecuentes', nombre: 'Mis palabras', Icono: Star, franja: 'bg-accent text-onAccent' },
   { id: 'todos', nombre: 'Todo', Icono: LayoutGrid, franja: 'bg-surface text-primary' },
   { id: 'basicas', nombre: 'Siempre', Icono: Sparkles, franja: 'bg-btnAprender-bg text-btnAprender-text' },
@@ -20,3 +21,19 @@ export const CATEGORIAS_TABLERO: CategoriaTablero[] = [
 ];
 
 export const franjaDe = (categoria: string): string => CATEGORIAS_TABLERO.find((c) => c.id === categoria)?.franja ?? 'bg-surface text-primary';
+
+/** Frases ya armadas (con los pictogramas del tablero): un toque y se dicen. Estilo telegráfico, como en la comunicación aumentativa. */
+export const FRASES_LISTAS: string[][] = [
+  ['pic-yo', 'pic-quiero', 'pic-agua'],
+  ['pic-yo', 'pic-quiero', 'pic-comer'],
+  ['pic-yo', 'pic-quiero', 'pic-jugar'],
+  ['pic-quiero', 'pic-bano'],
+  ['pic-quiero', 'pic-mas'],
+  ['pic-yo', 'pic-feliz'],
+  ['pic-yo', 'pic-triste'],
+  ['pic-yo', 'pic-cansado'],
+  ['pic-yo', 'pic-dolor'],
+  ['pic-gracias'],
+  ['pic-terminado'],
+  ['pic-quiero', 'pic-abrazar'],
+];

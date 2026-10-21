@@ -169,9 +169,7 @@ export const VistaPrincipal: React.FC = () => {
         <span className="text-base sm:text-lg font-black">Salir</span>
       </button>
 
-      <Modal isOpen={hablarAbierto} onClose={() => setHablarAbierto(false)} title="Hablar" size="full">
-        <TableroSAAC />
-      </Modal>
+      {hablarAbierto && <TableroSAAC onCerrar={() => setHablarAbierto(false)} />}
 
       <Modal isOpen={estrellasAbierto} onClose={() => setEstrellasAbierto(false)} title="Mis estrellas" size="lg">
         <AlbumEstrellas alumnoId={activeStudentId} />

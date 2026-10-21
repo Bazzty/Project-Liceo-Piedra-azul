@@ -90,12 +90,13 @@ async function sembrarPalabrasNucleo() {
 		['mas', 'más'],
 		['terminado', 'terminado'],
 		['gracias', 'gracias'],
+		['abrazar', 'abrazo'],
 	] as const;
 	await db.pictogramas.bulkPut(
 		nucleo.map(([archivo, palabra]) => ({
 			id: `pic-${archivo}`,
 			palabra,
-			categoria: 'basicas' as const,
+			categoria: (archivo === 'abrazar' ? 'acciones' : 'basicas') as 'acciones' | 'basicas',
 			imagenUrl: `/pictogramas/arasaac/${archivo}.png`,
 			esFotoReal: false,
 		})),
