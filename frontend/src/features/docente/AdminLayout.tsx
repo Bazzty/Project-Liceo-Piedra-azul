@@ -6,15 +6,16 @@ import { useAuthStore } from '@/features/acceso/useAuthStore';
 import { MarcaPiedra } from '@/features/docente/components/MarcaPiedra';
 import { useThemeStore } from '@/shared/store/useThemeStore';
 
-export type AdminSection = 'dashboard' | 'alumnos' | 'actividades' | 'cuentos' | 'tarjetas' | 'aula';
+export type AdminSection = 'dashboard' | 'alumnos' | 'actividades' | 'curriculo' | 'cuentos' | 'tarjetas' | 'aula';
 
 const NAV_ITEMS: { id: AdminSection; numero: string; etiqueta: string; ruta: string }[] = [
   { id: 'dashboard', numero: '01', etiqueta: 'Resumen', ruta: ROUTES.profesorPanel },
   { id: 'alumnos', numero: '02', etiqueta: 'Estudiantes', ruta: ROUTES.profesorEstudiantes },
   { id: 'actividades', numero: '03', etiqueta: 'Actividades', ruta: ROUTES.profesorActividades },
-  { id: 'cuentos', numero: '04', etiqueta: 'Cuentos', ruta: ROUTES.profesorCuentos },
-  { id: 'tarjetas', numero: '05', etiqueta: 'Tarjetas de acceso', ruta: ROUTES.profesorTarjetas },
-  { id: 'aula', numero: '06', etiqueta: 'Control de aula', ruta: ROUTES.profesorAula },
+  { id: 'curriculo', numero: '04', etiqueta: 'Cobertura curricular', ruta: ROUTES.profesorCurriculo },
+  { id: 'cuentos', numero: '05', etiqueta: 'Cuentos', ruta: ROUTES.profesorCuentos },
+  { id: 'tarjetas', numero: '06', etiqueta: 'Tarjetas de acceso', ruta: ROUTES.profesorTarjetas },
+  { id: 'aula', numero: '07', etiqueta: 'Control de aula', ruta: ROUTES.profesorAula },
 ];
 
 interface AdminLayoutProps {
