@@ -25,6 +25,7 @@ export const AUDIOS_INTERFAZ = {
   nivel_b: '/audio/interfaz/nivel_b.mp3',
   nivel_c: '/audio/interfaz/nivel_c.mp3',
   nivel_d: '/audio/interfaz/nivel_d.mp3',
+  nivel_e: '/audio/interfaz/nivel_e.mp3',
   pronto: '/audio/interfaz/pronto.mp3',
   respira: '/audio/interfaz/respira.mp3',
   sigues_ahi: '/audio/interfaz/sigues_ahi.mp3',

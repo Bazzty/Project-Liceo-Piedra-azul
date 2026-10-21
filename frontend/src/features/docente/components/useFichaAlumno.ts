@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import type { Registro } from '@/types';
 import { useAlumno, useCuentos, useProgresosDeAlumno, useRegistrosDeAlumno } from '@/api';
+import { NIVELES_CAMINO } from '@/shared/config/niveles';
 import { esDeLosUltimosDias } from '@/features/docente/components/format';
 import { palabrasDificiles, promedioReciente, resultadosDeRegistros, type ResultadoActividad } from '@/features/docente/components/resultados';
 import { esParaAlumno, estadoTarea, resultadoDeTarea, type EstadoTarea } from '@/features/tareas/estadoTarea';
@@ -14,12 +15,7 @@ export interface ProgresoNivel {
   porcentaje: number;
 }
 
-const NIVELES = [
-  { id: 'nivel-a', etiqueta: 'Nivel A · Vocales y sílabas' },
-  { id: 'nivel-b', etiqueta: 'Nivel B · Cuentos' },
-  { id: 'nivel-c', etiqueta: 'Nivel C · Palabras' },
-  { id: 'nivel-d', etiqueta: 'Nivel D · Historias' },
-];
+const NIVELES = NIVELES_CAMINO.map((n) => ({ id: n.id, etiqueta: `Nivel ${n.letra} · ${n.nombre}` }));
 
 export interface TareaDeAlumno {
   asignacion: Asignacion;

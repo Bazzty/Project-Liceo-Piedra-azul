@@ -25,10 +25,11 @@ Guardar cada una como `frontend/public/audio/interfaz/<clave>.mp3`.
 | `estrellas` | Mis estrellas. |
 | `elige_nivel` | Elige un nivel para empezar a leer. |
 | `elige_cuento` | Elige el cuento que más te guste. |
-| `nivel_a` | Nivel A. Sílabas. |
-| `nivel_b` | Nivel B. Cuentos. |
+| `nivel_a` | Nivel A. Vocales. |
+| `nivel_b` | Nivel B. Sílabas. |
 | `nivel_c` | Nivel C. Palabras. |
-| `nivel_d` | Nivel D. Historias. |
+| `nivel_d` | Nivel D. Cuentos. |
+| `nivel_e` | Nivel E. Historias. |
 | `pronto` | Este nivel llega pronto. |
 | `respira` | Respira conmigo. Inhala... y exhala. |
 | `sigues_ahi` | ¿Sigues ahí? |

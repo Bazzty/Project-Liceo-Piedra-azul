@@ -2,7 +2,7 @@ import { db } from '@/db/db';
 import type { Cuento, CuentoPagina, CuentoPalabra } from '@/types';
 
 /* ============================================================
-   Nivel A · Las vocales: una colección por vocal. Primero se ve y se oye la letra
+   Nivel A (id «nivel-vocales») · Las vocales: una colección por vocal. Primero se ve y se oye la letra
    (/public/audio/fonemas) y luego tres palabras que empiezan con ella, con su dibujo.
    Las palabras sin audio grabado se leen con la voz del dispositivo hasta que se grabe
    (ver scripts/audios.manifest.json).
@@ -41,7 +41,7 @@ const VOCALES: Vocal[] = [
 
 export const CUENTOS_VOCALES: Cuento[] = VOCALES.map((v, i) => ({
 	id: `vocal-${v.letra}`,
-	nivelId: 'nivel-a',
+	nivelId: 'nivel-vocales',
 	titulo: `La vocal ${v.letra.toUpperCase()}`,
 	descripcion: `Conoce la ${v.letra.toUpperCase()} y palabras que empiezan con ella`,
 	portadaUrl: dibujo(v.palabras[0][1]),
@@ -59,6 +59,10 @@ export const CUENTOS_VOCALES: Cuento[] = VOCALES.map((v, i) => ({
 
 export async function sembrarCuentosVocales() {
 	for (const cuento of CUENTOS_VOCALES) {
-		if (cuento.id && !(await db.cuentos.get(cuento.id))) await db.cuentos.put(cuento);
+		if (!cuento.id) continue;
+		const existente = await db.cuentos.get(cuento.id);
+		if (!existente) await db.cuentos.put(cuento);
+		// Navegadores que ya los tenían dentro del nivel de sílabas: pasan a su propio nivel
+		else if (existente.nivelId !== cuento.nivelId) await db.cuentos.update(cuento.id, { nivelId: cuento.nivelId });
 	}
 }

@@ -1,5 +1,6 @@
 import { db } from '@/db/db';
 import { sembrarCuentosKinder } from '@/mocks/cuentosKinder';
+import { sembrarNiveles } from '@/mocks/niveles';
 import { sembrarCuentosPalabras } from '@/mocks/cuentosPalabras';
 import { sembrarCuentosVocales } from '@/mocks/cuentosVocales';
 import type { Cuento, Registro } from '@/types';
@@ -442,6 +443,7 @@ export async function seedDatabase() {
 		await sembrarCuentosPalabras();
 		await sembrarCuentosVocales();
 		await sembrarResultadosDeActividades();
+		await sembrarNiveles();
 
 		console.log('✅ Base de datos inicializada correctamente.');
 	} catch (error) {

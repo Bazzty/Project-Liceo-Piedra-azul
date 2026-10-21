@@ -33,11 +33,11 @@
   },
   {
     "archivo": "interfaz/nivel_a.mp3",
-    "texto": "Nivel A. Vocales y sílabas."
+    "texto": "Nivel A. Vocales."
   },
   {
     "archivo": "interfaz/nivel_b.mp3",
-    "texto": "Nivel B. Cuentos."
+    "texto": "Nivel B. Sílabas."
   },
   {
     "archivo": "interfaz/nivel_c.mp3",
@@ -45,7 +45,11 @@
   },
   {
     "archivo": "interfaz/nivel_d.mp3",
-    "texto": "Nivel D. Historias."
+    "texto": "Nivel D. Cuentos."
+  },
+  {
+    "archivo": "interfaz/nivel_e.mp3",
+    "texto": "Nivel E. Historias."
   },
   {
     "archivo": "interfaz/pronto.mp3",

@@ -4,30 +4,16 @@ import { Lock, Star, Volume2 } from 'lucide-react';
 import { useCuentosDeNivel, useProgresosDeAlumno } from '@/api';
 import { ROUTES } from '@/app/routes';
 import { useAuthStore } from '@/features/acceso/useAuthStore';
-import type { ClaveAudio } from '@/shared/config/audiosInterfaz';
 import { sonarToque } from '@/shared/audio/sonidos';
 import { LayoutEstudiante } from '@/shared/components/LayoutEstudiante';
 import { OsoBurbuja } from '@/shared/components/OsoBurbuja';
+import { NIVELES_CAMINO, type NivelCamino } from '@/shared/config/niveles';
 import { useHablar } from '@/shared/hooks/useHablar';
 
 const BASE = import.meta.env.BASE_URL || '/';
 
-interface Parada {
-  id: string;
-  letra: string;
-  nombre: string;
-  clave: ClaveAudio;
-  /** Pictograma local que ilustra la parada. */
-  imagen: string;
-  color: string;
-}
-
-const PARADAS: Parada[] = [
-  { id: 'nivel-a', letra: 'A', nombre: 'Vocales', clave: 'nivel_a', imagen: 'escuchar', color: 'bg-btnAprender-bg text-btnAprender-text' },
-  { id: 'nivel-b', letra: 'B', nombre: 'Cuentos', clave: 'nivel_b', imagen: 'libro', color: 'bg-btnHablar-bg text-btnHablar-text' },
-  { id: 'nivel-c', letra: 'C', nombre: 'Palabras', clave: 'nivel_c', imagen: 'jugar', color: 'bg-btnColores-bg text-btnColores-text' },
-  { id: 'nivel-d', letra: 'D', nombre: 'Historias', clave: 'nivel_d', imagen: 'colegio', color: 'bg-btnLogros-bg text-btnLogros-text' },
-];
+const PARADAS = NIVELES_CAMINO;
+type Parada = NivelCamino;
 
 const ESTRELLAS_POR_NIVEL = 3;
 
@@ -61,7 +47,7 @@ const ParadaNivel: React.FC<ParadaNivelProps> = ({ parada, orden, completados, t
           type="button"
           onClick={alTocar}
           aria-label={bloqueada ? `Nivel ${parada.letra}: llega pronto` : `Nivel ${parada.letra}: ${parada.nombre}`}
-          className={`group relative w-36 h-36 sm:w-44 sm:h-44 lg:w-52 lg:h-52 rounded-full flex flex-col items-center justify-center shadow-card border-b-8 border-black/20 cursor-pointer transition-transform hover:scale-110 active:scale-95 ${
+          className={`group relative w-32 h-32 sm:w-40 sm:h-40 lg:w-44 lg:h-44 rounded-full flex flex-col items-center justify-center shadow-card border-b-8 border-black/20 cursor-pointer transition-transform hover:scale-110 active:scale-95 ${
             bloqueada ? 'bg-app text-secondary !border-borderStrong border-4 border-dashed opacity-90' : parada.color
           }`}
         >
@@ -108,6 +94,7 @@ export const NivelesView: React.FC = () => {
     useCuentosDeNivel(PARADAS[1].id),
     useCuentosDeNivel(PARADAS[2].id),
     useCuentosDeNivel(PARADAS[3].id),
+    useCuentosDeNivel(PARADAS[4].id),
   ];
 
   const publicados = (nivelIndex: number) => (cuentosPorNivel[nivelIndex] ?? []).filter((c) => c.estado === 'publicado');
@@ -126,7 +113,7 @@ export const NivelesView: React.FC = () => {
           {/* Camino punteado que une las paradas (solo en pantallas anchas) */}
           <svg viewBox="0 0 1000 160" preserveAspectRatio="none" className="hidden lg:block absolute inset-x-0 top-1/2 -translate-y-1/2 w-full h-40" aria-hidden>
             <path
-              d="M125 60 C 250 60, 250 130, 375 130 S 500 60, 625 60 S 750 130, 875 130"
+              d="M100 60 C 200 60, 200 130, 300 130 S 400 60, 500 60 S 600 130, 700 130 S 800 60, 900 60"
               fill="none"
               stroke="var(--brand-primary)"
               strokeOpacity="0.5"

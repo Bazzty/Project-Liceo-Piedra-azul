@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import type { Alumno } from '@/types';
 import { useAlumnos, useCuentos, useProgresos, useRegistros } from '@/api';
+import { NIVELES_CAMINO } from '@/shared/config/niveles';
 import { esDeLosUltimosDias } from '@/features/docente/components/format';
 import { palabrasDificiles, promedioReciente, resultadosDeRegistros } from '@/features/docente/components/resultados';
 import { UMBRALES } from '@/features/docente/components/umbrales';
@@ -11,7 +12,8 @@ export type EstadoAlumno = 'al_dia' | 'atencion' | 'sin_actividad';
 
 export interface FilaLibro {
   alumno: Alumno;
-  nivel: 'A' | 'B';
+  /** Letra del nivel más avanzado en el que completó un cuento (A si aún no completa ninguno). */
+  nivel: string;
   /** Un valor por día, de hace 6 días a hoy: ¿hubo actividad ese día? */
   semana: boolean[];
   cuentos: number;
@@ -81,7 +83,7 @@ export function useLibroCurso(): LibroCurso | null {
       d.setDate(hoy.getDate() - (6 - i));
       return d;
     });
-    const nivelB = new Set(cuentos.filter((c) => c.nivelId === 'nivel-b').map((c) => c.id));
+    const nivelDeCuento = new Map(cuentos.map((c) => [c.id, c.nivelId]));
 
     const filas: FilaLibro[] = alumnos.map((alumno) => {
       const fechas = [
@@ -120,7 +122,7 @@ export function useLibroCurso(): LibroCurso | null {
 
       return {
         alumno,
-        nivel: [...completados].some((id) => nivelB.has(id)) ? 'B' : 'A',
+        nivel: NIVELES_CAMINO.filter((n) => [...completados].some((id) => nivelDeCuento.get(id) === n.id)).at(-1)?.letra ?? 'A',
         semana,
         cuentos: completados.size,
         ultimoAcceso,
