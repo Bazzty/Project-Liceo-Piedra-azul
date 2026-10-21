@@ -2,7 +2,7 @@ import { db } from '@/db/db';
 import { sembrarCuentosKinder } from '@/mocks/cuentosKinder';
 import { sembrarCuentosPalabras } from '@/mocks/cuentosPalabras';
 import { sembrarCuentosVocales } from '@/mocks/cuentosVocales';
-import type { Cuento } from '@/types';
+import type { Cuento, Registro } from '@/types';
 
 // ---------------------------------------------------------------------------
 // DATOS SIMULADOS PARA EL PANEL DOCENTE
@@ -17,6 +17,40 @@ const hace = (dias: number, hora: number, minuto = 0): string => {
 	d.setHours(hora, minuto, 0, 0);
 	return d.toISOString();
 };
+
+/**
+ * Resultados de juegos de ejemplo (con aciertos y palabras difíciles) para que el panel docente tenga qué mostrar.
+ * Se agregan también en navegadores que ya tenían datos; reemplazan los dos registros de ejemplo antiguos, que
+ * solo traían el texto. Los juegos que haga un niño de verdad (con aciertos) no se tocan.
+ */
+async function sembrarResultadosDeActividades() {
+	const actuales = await db.registros.toArray();
+	if (actuales.some((r) => r.tipo === 'actividad' && r.aciertos !== undefined)) return;
+
+	const antiguos = new Set(['Actividades de «El Auto de Ana»: 4 de 5 sin ayuda', 'Actividades de «El Auto de Ana»: 5 de 5 sin ayuda']);
+	const sobran = actuales.filter((r) => r.tipo === 'actividad' && antiguos.has(r.detalle)).map((r) => r.id).filter((id): id is string => id !== undefined);
+	if (sobran.length > 0) await db.registros.bulkDelete(sobran);
+
+	const act = (alumnoId: string, cuentoId: string, titulo: string, aciertos: number, total: number, lugar: 'liceo' | 'casa', fecha: string, dificiles: string[] = []): Registro => ({
+		alumnoId,
+		tipo: 'actividad',
+		cuentoId,
+		detalle: `Actividades de «${titulo}»: ${aciertos} de ${total} sin ayuda`,
+		lugar,
+		fecha,
+		aciertos,
+		total,
+		dificiles,
+	});
+	const palabras = 'Mis Primeras Palabras (M, L, S, P, D)';
+	await db.registros.bulkAdd([
+		act('estudiante-mateo', 'cuento-auto-ana', 'El Auto de Ana', 4, 5, 'casa', hace(1, 18, 30), ['azul']),
+		act('estudiante-sofia', 'cuento-auto-ana', 'El Auto de Ana', 5, 5, 'liceo', hace(1, 10, 35)),
+		act('estudiante-benjamin', 'actividad-palabras-m-l-s-p-d', palabras, 2, 5, 'liceo', hace(2, 9, 45), ['pelo', 'lupa']),
+		act('estudiante-benjamin', 'actividad-palabras-m-l-s-p-d', palabras, 1, 5, 'liceo', hace(1, 9, 50), ['lupa', 'pala', 'pelo']),
+		act('estudiante-joaquin', 'actividad-palabras-m-l-s-p-d', palabras, 4, 5, 'liceo', hace(4, 11, 45), ['sala']),
+	]);
+}
 
 async function seedDemoDocente() {
 	// Solo se ejecuta una vez (si ya hay bitácora, no se vuelve a sembrar)
@@ -67,17 +101,12 @@ async function seedDemoDocente() {
 		fecha: string,
 		extra: { palabrasEscuchadas?: number; pictogramaIds?: string[] } = {}
 	) => ({ alumnoId, tipo, detalle, lugar, fecha, ...extra });
-	const regActividad = (alumnoId: string, cuentoId: string, detalle: string, lugar: 'liceo' | 'casa', fecha: string) => ({
-		...reg(alumnoId, 'actividad', detalle, lugar, fecha),
-		cuentoId,
-	});
 
 	await db.registros.bulkAdd([
 		// Mateo
 		reg('estudiante-mateo', 'sesion', 'Sesión en el liceo', 'liceo', hace(0, 10, 0)),
 		reg('estudiante-mateo', 'lectura', 'Comenzó «Mi Mamá me Ama»', 'liceo', hace(0, 10, 40), { palabrasEscuchadas: 4 }),
 		reg('estudiante-mateo', 'tablero', 'Tablero: «yo quiero agua»', 'liceo', hace(0, 10, 55), { pictogramaIds: ['pic-yo', 'pic-quiero', 'pic-agua'] }),
-		regActividad('estudiante-mateo', 'cuento-auto-ana', 'Actividades de «El Auto de Ana»: 4 de 5 sin ayuda', 'casa', hace(1, 18, 30)),
 		reg('estudiante-mateo', 'sesion', 'Sesión en casa', 'casa', hace(1, 18, 10)),
 		reg('estudiante-mateo', 'lectura', 'Terminó «El Auto de Ana»', 'casa', hace(1, 18, 15), { palabrasEscuchadas: 5 }),
 		reg('estudiante-mateo', 'lectura', 'Terminó «Mis Primeras Palabras (M, L, S, P, D)»', 'liceo', hace(2, 10, 30), { palabrasEscuchadas: 18 }),
@@ -85,7 +114,6 @@ async function seedDemoDocente() {
 		reg('estudiante-sofia', 'sesion', 'Sesión en el liceo', 'liceo', hace(1, 10, 0)),
 		reg('estudiante-sofia', 'lectura', 'Terminó «Mi Mamá me Ama»', 'liceo', hace(2, 9, 20), { palabrasEscuchadas: 4 }),
 		reg('estudiante-sofia', 'lectura', 'Terminó «El Auto de Ana»', 'liceo', hace(1, 10, 20), { palabrasEscuchadas: 5 }),
-		regActividad('estudiante-sofia', 'cuento-auto-ana', 'Actividades de «El Auto de Ana»: 5 de 5 sin ayuda', 'liceo', hace(1, 10, 35)),
 		reg('estudiante-sofia', 'tablero', 'Tablero: «mamá feliz»', 'liceo', hace(1, 10, 45), { pictogramaIds: ['pic-mama', 'pic-feliz'] }),
 		// Benjamín
 		reg('estudiante-benjamin', 'sesion', 'Sesión en el liceo', 'liceo', hace(2, 9, 0)),
@@ -413,6 +441,7 @@ export async function seedDatabase() {
 		await sembrarCuentosKinder();
 		await sembrarCuentosPalabras();
 		await sembrarCuentosVocales();
+		await sembrarResultadosDeActividades();
 
 		console.log('✅ Base de datos inicializada correctamente.');
 	} catch (error) {

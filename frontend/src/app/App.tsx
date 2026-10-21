@@ -11,6 +11,8 @@ import { VistaPrincipal } from '@/features/inicio/VistaPrincipal';
 import { NivelesView } from '@/features/aprender/pages/NivelesView';
 import { CatalogoCuentos } from '@/features/aprender/pages/CatalogoCuentos';
 import { ActividadesView } from '@/features/aprender/actividades/ActividadesView';
+import { ActividadesPage } from '@/features/docente/pages/ActividadesPage';
+import { InformePage } from '@/features/docente/pages/InformePage';
 import { LecturaView } from '@/features/aprender/pages/LecturaView';
 import { ControlAulaView } from '@/features/docente/pages/ControlAulaView';
 import { AdminDashboard } from '@/features/docente/pages/AdminDashboard';
@@ -31,6 +33,8 @@ export const App: React.FC = () => (
       <Route path={ROUTES.profesorAula} element={<ControlAulaView />} />
       <Route path={ROUTES.profesorPanel} element={<AdminDashboard />} />
       <Route path={ROUTES.profesorEstudiantes} element={<EstudiantesPage />} />
+      <Route path={ROUTES.profesorActividades} element={<ActividadesPage />} />
+      <Route path={ROUTES.profesorInforme(':alumnoId')} element={<InformePage />} />
       <Route path={ROUTES.profesorCuentos} element={<CuentosPage />} />
       <Route path={ROUTES.profesorTarjetas} element={<TarjetasPage />} />
     </Route>

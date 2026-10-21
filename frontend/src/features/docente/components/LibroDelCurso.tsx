@@ -61,6 +61,7 @@ export const LibroDelCurso: React.FC<{ filas: FilaLibro[]; titulo?: string }> = 
                     >
                       <span className="font-display text-xl font-semibold">{fila.alumno.nombre}</span>
                       <span className="block text-xs text-secondary">Nivel {fila.nivel}</span>
+                      {fila.motivos.length > 0 && <span className="block text-xs font-semibold text-statusWarn">{fila.motivos.join(' · ')}</span>}
                     </Link>
                   </td>
                   <td className="py-3 pr-3">

@@ -4,6 +4,7 @@ import { ROUTES } from '@/app/routes';
 import { LibroDelCurso } from '@/features/docente/components/LibroDelCurso';
 import { BarrasPorDia } from '@/features/docente/components/BarrasPorDia';
 import { EncabezadoPagina, Hoja } from '@/features/docente/components/Hoja';
+import { UMBRALES } from '@/features/docente/components/umbrales';
 import { useLibroCurso, type EstadoAlumno } from '@/features/docente/components/useLibroCurso';
 
 const COLOR_NUMERO: Record<EstadoAlumno, string> = {
@@ -27,7 +28,7 @@ export const ResumenCurso: React.FC = () => {
 
   const hoy = new Date().toLocaleDateString('es-CL', { weekday: 'long', day: 'numeric', month: 'long' });
   const fecha = hoy.charAt(0).toUpperCase() + hoy.slice(1);
-  const requierenApoyo = libro.filas.filter((f) => f.estado !== 'al_dia').length;
+  const requierenApoyo = libro.filas.filter((f) => f.motivos.length > 0).length;
   const diferencia = libro.cuentosSemana - libro.cuentosSemanaAnterior;
 
   return (
@@ -74,6 +75,10 @@ export const ResumenCurso: React.FC = () => {
         <div className="flex flex-col gap-5 min-w-0">
           <Hoja aria-label="Notas del día">
             <h2 className="font-display text-2xl font-semibold text-primary">Notas del día</h2>
+            <p className="text-xs text-secondary">
+              Avisan si pasan {UMBRALES.diasSinEntrar} días sin entrar, si hay {UMBRALES.diasActivosMinimos} día o menos de actividad en la semana, si menos del{' '}
+              {UMBRALES.porcentajeSinAyudaBajo} % de los juegos sale sin ayuda o si hay tareas vencidas. Criterios provisionales.
+            </p>
             {libro.notas.length === 0 ? (
               <p className="mt-3 text-sm text-secondary">Todo en orden: nadie necesita apoyo especial hoy.</p>
             ) : (
@@ -83,14 +88,31 @@ export const ResumenCurso: React.FC = () => {
                     <span className={`font-display text-3xl font-semibold leading-none ${COLOR_NUMERO[nota.estado]}`}>{i + 1}</span>
                     <div>
                       <p className="text-sm font-bold text-primary">{nota.titulo}</p>
-                      <p className="mt-0.5 text-sm leading-snug text-primary">{nota.consejo}</p>
+                      {nota.motivos.length > 0 && (
+                        <ul className="mt-1 flex flex-wrap gap-1.5" aria-label="Otros motivos">
+                          {nota.motivos.map((m) => (
+                            <li key={m} className="rounded-sm bg-statusWarn-bg px-2 py-0.5 text-xs font-semibold text-statusWarn">
+                              {m}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                      <p className="mt-1 text-sm leading-snug text-primary">{nota.consejo}</p>
                       {nota.alumnoId && (
-                        <Link
-                          to={`${ROUTES.profesorEstudiantes}?alumno=${nota.alumnoId}`}
-                          className="mt-1 inline-block text-sm font-semibold text-brand hover:text-brand-hover"
-                        >
-                          Abrir ficha
-                        </Link>
+                        <div className="mt-1 flex flex-wrap gap-x-4">
+                          <Link
+                            to={`${ROUTES.profesorEstudiantes}?alumno=${nota.alumnoId}`}
+                            className="inline-block text-sm font-semibold text-brand hover:text-brand-hover"
+                          >
+                            Abrir ficha
+                          </Link>
+                          <Link
+                            to={`${ROUTES.profesorActividades}?alumno=${nota.alumnoId}`}
+                            className="inline-block text-sm font-semibold text-brand hover:text-brand-hover"
+                          >
+                            Asignar refuerzo
+                          </Link>
+                        </div>
                       )}
                     </div>
                   </li>

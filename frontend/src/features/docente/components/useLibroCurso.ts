@@ -2,6 +2,10 @@ import { useMemo } from 'react';
 import type { Alumno } from '@/types';
 import { useAlumnos, useCuentos, useProgresos, useRegistros } from '@/api';
 import { esDeLosUltimosDias } from '@/features/docente/components/format';
+import { palabrasDificiles, promedioReciente, resultadosDeRegistros } from '@/features/docente/components/resultados';
+import { UMBRALES } from '@/features/docente/components/umbrales';
+import { esParaAlumno, estadoTarea } from '@/features/tareas/estadoTarea';
+import { useAsignacionesStore } from '@/features/tareas/useAsignacionesStore';
 
 export type EstadoAlumno = 'al_dia' | 'atencion' | 'sin_actividad';
 
@@ -14,6 +18,13 @@ export interface FilaLibro {
   ultimoAcceso: string | null;
   diasSinActividad: number | null;
   estado: EstadoAlumno;
+  /** % de juegos sin ayuda en sus últimas sesiones (null si aún no juega). */
+  sinAyuda: number | null;
+  /** Palabras que más le cuestan. */
+  palabrasDificiles: string[];
+  tareasVencidas: number;
+  /** Razones por las que conviene apoyarlo, de la más grave a la menos (vacío si va al día). */
+  motivos: string[];
 }
 
 export interface NotaDelDia {
@@ -21,6 +32,9 @@ export interface NotaDelDia {
   estado: EstadoAlumno;
   titulo: string;
   consejo: string;
+  motivos: string[];
+  /** Palabras para reforzar con una tarea. */
+  refuerzo: string[];
 }
 
 export interface LibroCurso {
@@ -56,6 +70,7 @@ export function useLibroCurso(): LibroCurso | null {
   const cuentos = useCuentos();
   const progresos = useProgresos();
   const registros = useRegistros();
+  const asignaciones = useAsignacionesStore((s) => s.asignaciones);
 
   return useMemo(() => {
     if (!alumnos || !cuentos || !progresos || !registros) return null;
@@ -83,8 +98,25 @@ export function useLibroCurso(): LibroCurso | null {
       const diasActivos = semana.filter(Boolean).length;
 
       let estado: EstadoAlumno = 'al_dia';
-      if (diasSinActividad === null || diasSinActividad >= 5) estado = 'sin_actividad';
-      else if (diasActivos <= 1) estado = 'atencion';
+      if (diasSinActividad === null || diasSinActividad >= UMBRALES.diasSinEntrar) estado = 'sin_actividad';
+      else if (diasActivos <= UMBRALES.diasActivosMinimos) estado = 'atencion';
+
+      // Cómo le va en los juegos y si dejó tareas sin hacer
+      const delAlumno = registros.filter((r) => r.alumnoId === alumno.id);
+      const resultados = resultadosDeRegistros(delAlumno, cuentos);
+      const sinAyuda = promedioReciente(resultados);
+      const dificiles = palabrasDificiles(resultados, 3).map((d) => d.palabra);
+      const tareasVencidas = asignaciones.filter(
+        (a) => alumno.id && esParaAlumno(a, alumno.id) && estadoTarea(a, alumno.id, registros) === 'vencida',
+      ).length;
+      const lecturaBaja = sinAyuda !== null && sinAyuda < UMBRALES.porcentajeSinAyudaBajo;
+
+      const motivos: string[] = [];
+      if (estado === 'sin_actividad') motivos.push(diasSinActividad === null ? 'aún no ha entrado' : `${diasSinActividad} días sin entrar`);
+      else if (estado === 'atencion') motivos.push(diasActivos === 0 ? 'sin sesiones esta semana' : `solo ${diasActivos} día con actividad esta semana`);
+      if (lecturaBaja) motivos.push(`le cuestan los juegos (${sinAyuda} % sin ayuda)`);
+      if (tareasVencidas > 0) motivos.push(`${tareasVencidas} ${tareasVencidas === 1 ? 'tarea vencida' : 'tareas vencidas'}`);
+      if (estado === 'al_dia' && motivos.length > 0) estado = 'atencion';
 
       return {
         alumno,
@@ -94,6 +126,10 @@ export function useLibroCurso(): LibroCurso | null {
         ultimoAcceso,
         diasSinActividad,
         estado,
+        sinAyuda,
+        palabrasDificiles: dificiles,
+        tareasVencidas,
+        motivos,
       };
     });
 
@@ -108,26 +144,26 @@ export function useLibroCurso(): LibroCurso | null {
     ).length;
 
     const gravedad: Record<EstadoAlumno, number> = { sin_actividad: 0, atencion: 1, al_dia: 2 };
+    const CONSEJOS: Record<EstadoAlumno, string> = {
+      sin_actividad: 'Revisa si tiene su tarjeta o conversa con su familia.',
+      atencion: 'Acompaña su sesión en el laboratorio para retomar el ritmo.',
+      al_dia: '',
+    };
     const notas: NotaDelDia[] = filas
-      .filter((f) => f.estado !== 'al_dia')
-      .sort((a, b) => gravedad[a.estado] - gravedad[b.estado] || (b.diasSinActividad ?? 99) - (a.diasSinActividad ?? 99))
-      .slice(0, 3)
+      .filter((f) => f.motivos.length > 0)
+      .sort((a, b) => gravedad[a.estado] - gravedad[b.estado] || b.motivos.length - a.motivos.length || (b.diasSinActividad ?? 99) - (a.diasSinActividad ?? 99))
+      .slice(0, 4)
       .map((f) => {
-        const nombre = f.alumno.nombre;
-        const activos = f.semana.filter(Boolean).length;
-        if (f.estado === 'sin_actividad') {
-          return {
-            alumnoId: f.alumno.id,
-            estado: f.estado,
-            titulo: f.diasSinActividad === null ? `${nombre} · aún no ha entrado` : `${nombre} · ${f.diasSinActividad} días sin entrar`,
-            consejo: 'Revisa si tiene su tarjeta o conversa con su familia.',
-          };
-        }
+        const apoyoEnJuegos = f.sinAyuda !== null && f.sinAyuda < UMBRALES.porcentajeSinAyudaBajo;
         return {
           alumnoId: f.alumno.id,
           estado: f.estado,
-          titulo: `${nombre} · ${activos === 0 ? 'sin sesiones' : `${activos} día con actividad`} esta semana`,
-          consejo: 'Acompaña su sesión en el laboratorio para retomar el ritmo.',
+          titulo: `${f.alumno.nombre} · ${f.motivos[0]}`,
+          consejo: apoyoEnJuegos && f.palabrasDificiles.length > 0
+            ? `Refuerza con una tarea: ${f.palabrasDificiles.join(', ')}.`
+            : CONSEJOS[f.estado] || 'Revisa su ficha y deja una tarea de refuerzo.',
+          motivos: f.motivos.slice(1),
+          refuerzo: f.palabrasDificiles,
         };
       });
 
@@ -143,5 +179,5 @@ export function useLibroCurso(): LibroCurso | null {
       cuentosPorDia,
       notas,
     };
-  }, [alumnos, cuentos, progresos, registros]);
+  }, [alumnos, cuentos, progresos, registros, asignaciones]);
 }

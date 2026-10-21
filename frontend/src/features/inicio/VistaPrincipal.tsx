@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BookOpen, LogOut, MessageCircle, Star, Volume2 } from 'lucide-react';
+import { BookOpen, ClipboardList, LogOut, MessageCircle, Star, Volume2 } from 'lucide-react';
 import { useAlumno } from '@/api';
 import { sonarToque } from '@/shared/audio/sonidos';
 import type { ClaveAudio } from '@/shared/config/audiosInterfaz';
 import type { PasoAgenda } from '@/shared/store/useAjustesStore';
 import { ROUTES } from '@/app/routes';
 import { useAuthStore } from '@/features/acceso/useAuthStore';
+import { useTareasPendientes } from '@/features/tareas/useTareasPendientes';
 import { AlbumEstrellas } from '@/features/estrellas/AlbumEstrellas';
 import { TableroSAAC } from '@/features/tablero/components/TableroSAAC';
 import { AgendaVisual } from '@/shared/components/AgendaVisual';
@@ -69,6 +70,42 @@ const Globo: React.FC<GloboProps> = ({ orden, estilo, icono, titulo, clave, onCl
   );
 };
 
+/** Aviso de la tarea que dejó la docente: la portada del cuento y un botón grande para ir directo. */
+const TareaDeLaProfe: React.FC<{ alumnoId: string | null }> = ({ alumnoId }) => {
+  const navigate = useNavigate();
+  const hablar = useHablar();
+  const tareas = useTareasPendientes(alumnoId);
+  const primera = tareas[0];
+  if (!primera?.cuento.id) return null;
+  const { cuento } = primera;
+
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        sonarToque();
+        hablar(`Tarea de la profe. ${cuento.titulo}`);
+        navigate(ROUTES.lectura(cuento.nivelId, cuento.id ?? ''));
+      }}
+      className="animate-aparecer flex items-center gap-4 rounded-full bg-surface/95 border-4 border-accent shadow-card pl-3 pr-6 py-2 cursor-pointer hover:scale-105 active:scale-95 transition-transform"
+    >
+      <span className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-app border-2 border-borderStrong overflow-hidden p-1.5 flex items-center justify-center">
+        {cuento.portadaUrl ? <img src={cuento.portadaUrl} alt="" className="w-full h-full object-contain" /> : <BookOpen className="w-8 h-8 text-secondary" aria-hidden />}
+      </span>
+      <span className="flex flex-col items-start leading-tight">
+        <span className="inline-flex items-center gap-2 text-2xl sm:text-3xl font-black text-primary">
+          <ClipboardList className="w-7 h-7 text-brand" aria-hidden />
+          Tarea
+        </span>
+        <span className="text-base sm:text-lg font-bold text-secondary">{cuento.titulo}</span>
+      </span>
+      <span className="w-12 h-12 rounded-full bg-accent text-onAccent flex items-center justify-center animate-pulso" aria-hidden>
+        <Volume2 className="w-6 h-6" />
+      </span>
+    </button>
+  );
+};
+
 /** Inicio del estudiante: escena de jardín con el osito, globos para elegir y una puerta para salir. */
 export const VistaPrincipal: React.FC = () => {
   const navigate = useNavigate();
@@ -116,6 +153,8 @@ export const VistaPrincipal: React.FC = () => {
             onClick={() => setEstrellasAbierto(true)}
           />
         </div>
+
+        <TareaDeLaProfe alumnoId={activeStudentId} />
 
         <OsoBurbuja mensaje={`¡Hola, ${nombre}!`} voz={`Hola ${nombre}. ¿Qué quieres hacer?`} clave="hola" size="xl" />
       </main>

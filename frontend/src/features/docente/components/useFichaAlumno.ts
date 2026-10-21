@@ -2,6 +2,9 @@ import { useMemo } from 'react';
 import type { Registro } from '@/types';
 import { useAlumno, useCuentos, useProgresosDeAlumno, useRegistrosDeAlumno } from '@/api';
 import { esDeLosUltimosDias } from '@/features/docente/components/format';
+import { palabrasDificiles, promedioReciente, resultadosDeRegistros, type ResultadoActividad } from '@/features/docente/components/resultados';
+import { esParaAlumno, estadoTarea, resultadoDeTarea, type EstadoTarea } from '@/features/tareas/estadoTarea';
+import { useAsignacionesStore, type Asignacion } from '@/features/tareas/useAsignacionesStore';
 
 export interface ProgresoNivel {
   id: string;
@@ -18,6 +21,14 @@ const NIVELES = [
   { id: 'nivel-d', etiqueta: 'Nivel D · Historias' },
 ];
 
+export interface TareaDeAlumno {
+  asignacion: Asignacion;
+  titulo: string;
+  estado: EstadoTarea;
+  /** % sin ayuda con que la hizo, si ya la hizo. */
+  porcentaje: number | null;
+}
+
 const claveDia = (fecha: Date) =>
   `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}-${String(fecha.getDate()).padStart(2, '0')}`;
 
@@ -27,6 +38,7 @@ export function useFichaAlumno(alumnoId: string) {
   const cuentos = useCuentos();
   const progresos = useProgresosDeAlumno(alumnoId);
   const registros = useRegistrosDeAlumno(alumnoId);
+  const asignaciones = useAsignacionesStore((s) => s.asignaciones);
 
   return useMemo(() => {
     if (!alumno || !cuentos || !progresos || !registros) return null;
@@ -57,6 +69,21 @@ export function useFichaAlumno(alumnoId: string) {
       };
     });
 
+    const resultados: ResultadoActividad[] = resultadosDeRegistros(registros, cuentos);
+    const tareas: TareaDeAlumno[] = asignaciones
+      .filter((a) => esParaAlumno(a, alumnoId))
+      .map((a) => {
+        const hecha = resultadoDeTarea(a, alumnoId, registros);
+        const total = hecha?.total ?? 0;
+        return {
+          asignacion: a,
+          titulo: cuentos.find((c) => c.id === a.cuentoId)?.titulo ?? 'Cuento',
+          estado: estadoTarea(a, alumnoId, registros),
+          porcentaje: hecha && total > 0 ? Math.round(((hecha.aciertos ?? 0) / total) * 100) : null,
+        };
+      })
+      .sort((a, b) => b.asignacion.creada.localeCompare(a.asignacion.creada));
+
     const recientes: Registro[] = [...registros].sort((a, b) => b.fecha.localeCompare(a.fecha)).slice(0, 6);
 
     return {
@@ -64,11 +91,15 @@ export function useFichaAlumno(alumnoId: string) {
       niveles,
       actividadPorDia,
       recientes,
+      resultados,
+      palabrasDificiles: palabrasDificiles(resultados),
+      sinAyuda: promedioReciente(resultados),
+      tareas,
       cuentosCompletados: completados.size,
       cuentosPublicados: publicados.length,
       palabrasEscuchadas: registros.reduce((t, r) => t + (r.palabrasEscuchadas ?? 0), 0),
       sesionesSemana: registros.filter((r) => r.tipo === 'sesion' && esDeLosUltimosDias(r.fecha, 7)).length,
       ultimoAcceso: [...fechas].sort((a, b) => b.localeCompare(a))[0] ?? null,
     };
-  }, [alumno, cuentos, progresos, registros]);
+  }, [alumno, alumnoId, cuentos, progresos, registros, asignaciones]);
 }

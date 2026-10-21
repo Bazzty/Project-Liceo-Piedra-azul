@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Eye, Palette, Volume2 } from 'lucide-react';
+import { ArrowLeft, ClipboardList, Eye, Palette, Printer, Volume2 } from 'lucide-react';
 import { actualizarAlumno } from '@/api';
 import { ROUTES } from '@/app/routes';
 import { useAuthStore } from '@/features/acceso/useAuthStore';
 import { useTarjetasStore } from '@/features/acceso/useTarjetasStore';
 import { BarrasPorDia } from '@/features/docente/components/BarrasPorDia';
+import { ResultadosActividades, TareasDelAlumno } from '@/features/docente/components/BloquesActividad';
 import { EncabezadoPagina, Hoja } from '@/features/docente/components/Hoja';
 import { LibroDelCurso } from '@/features/docente/components/LibroDelCurso';
 import { formatearFecha } from '@/features/docente/components/format';
@@ -81,6 +82,12 @@ const FichaAlumno: React.FC<{ alumnoId: string; onVolver: () => void }> = ({ alu
             Kínder A · Última sesión: {ficha.ultimoAcceso ? formatearFecha(ficha.ultimoAcceso) : 'sin actividad'}
           </p>
         </div>
+        <Button variant="secondary" size="lg" onClick={() => navigate(ROUTES.profesorInforme(alumnoId))}>
+          <Printer className="w-5 h-5" aria-hidden /> Informe imprimible
+        </Button>
+        <Button variant="secondary" size="lg" onClick={() => navigate(`${ROUTES.profesorActividades}?alumno=${alumnoId}`)}>
+          <ClipboardList className="w-5 h-5" aria-hidden /> Asignar tarea
+        </Button>
         <Button variant="secondary" size="lg" onClick={regenerarCodigo}>
           Regenerar código
         </Button>
@@ -144,6 +151,20 @@ const FichaAlumno: React.FC<{ alumnoId: string; onVolver: () => void }> = ({ alu
           </Hoja>
 
           <Hoja>
+            <div className="flex items-baseline justify-between gap-3">
+              <h2 className="font-display text-2xl font-semibold text-primary">Juegos y actividades</h2>
+              {ficha.sinAyuda !== null && (
+                <p className="text-xs text-secondary">
+                  Últimas sesiones: <strong className="text-primary">{ficha.sinAyuda} % sin ayuda</strong>
+                </p>
+              )}
+            </div>
+            <div className="mt-3">
+              <ResultadosActividades resultados={ficha.resultados} palabras={ficha.palabrasDificiles} />
+            </div>
+          </Hoja>
+
+          <Hoja>
             <h2 className="font-display text-2xl font-semibold text-primary">Actividad por día</h2>
             <p className="text-xs text-secondary">Lecturas y sesiones de los últimos 7 días</p>
             <BarrasPorDia datos={ficha.actividadPorDia} titulo="Actividad por día" />
@@ -151,6 +172,13 @@ const FichaAlumno: React.FC<{ alumnoId: string; onVolver: () => void }> = ({ alu
         </div>
 
         <div className="flex flex-col gap-5 min-w-0">
+          <Hoja>
+            <h2 className="font-display text-2xl font-semibold text-primary">Tareas</h2>
+            <div className="mt-3">
+              <TareasDelAlumno tareas={ficha.tareas} />
+            </div>
+          </Hoja>
+
           <Hoja>
             <h2 className="font-display text-2xl font-semibold text-primary">Sesiones recientes</h2>
             {ficha.recientes.length === 0 ? (

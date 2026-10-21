@@ -55,3 +55,10 @@ Criterios para el diseño:
 - [ ] Redactar aviso de privacidad y formulario de consentimiento para apoderados.
 - [ ] Definir política de retención y borrado de datos.
 - [ ] Revisión final por un abogado o el encargado de datos del Liceo.
+
+## Resultados de juegos, tareas e informe para la familia
+
+- El prototipo guarda, por niño, cuántos juegos resolvió sin ayuda y en qué palabras la pidió. Es información sobre el desempeño de un menor: solo debe verla la docente y los revisores, nunca otros niños ni adultos ajenos al curso.
+- El informe imprimible puede incluir las observaciones de la docente solo si ella lo marca. Lleva la advertencia de entregarlo únicamente al apoderado.
+- Los criterios de «necesita apoyo» (días sin entrar, % de juegos sin ayuda, tareas vencidas) están en `frontend/src/features/docente/components/umbrales.ts` y son provisionales: deben validarlos las docentes. Las alertas orientan, no diagnostican.
+- Con backend, estos datos deben guardarse con acceso por rol y por curso, y con el consentimiento de las familias para el uso de datos de sus hijos.

@@ -7,6 +7,8 @@ export const ROUTES = {
   profesorPanel: '/profesor/panel',
   profesorEstudiantes: '/profesor/estudiantes',
   profesorCuentos: '/profesor/cuentos',
+  profesorActividades: '/profesor/actividades',
+  profesorInforme: (alumnoId: string) => `/profesor/informe/${alumnoId}`,
   profesorTarjetas: '/profesor/tarjetas',
   profesorAula: '/profesor/aula',
 

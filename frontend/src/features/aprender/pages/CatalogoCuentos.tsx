@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { BookOpen, Play, Star, Volume2 } from 'lucide-react';
+import { BookOpen, ClipboardList, Play, Star, Volume2 } from 'lucide-react';
 import { useCuentosDeNivel, useNivel, useProgresosDeAlumno } from '@/api';
 import { ROUTES } from '@/app/routes';
 import { useAuthStore } from '@/features/acceso/useAuthStore';
+import { useTareasPendientes } from '@/features/tareas/useTareasPendientes';
 import { resolverYGuardarPictograma } from '@/features/tablero/arasaac';
 import { sonarToque } from '@/shared/audio/sonidos';
 import { LayoutEstudiante } from '@/shared/components/LayoutEstudiante';
@@ -50,11 +51,13 @@ interface TarjetaCuentoProps {
   cuento: Cuento;
   orden: number;
   completado: boolean;
+  /** La docente lo dejó de tarea y todavía no lo hace. */
+  tarea: boolean;
   onElegir: () => void;
 }
 
 /** Tarjeta grande de cuento: portada, título, estrella si ya se leyó y un parlante que dice el título. */
-const TarjetaCuento: React.FC<TarjetaCuentoProps> = ({ cuento, orden, completado, onElegir }) => {
+const TarjetaCuento: React.FC<TarjetaCuentoProps> = ({ cuento, orden, completado, tarea, onElegir }) => {
   const hablar = useHablar();
   const reproducir = usePlayerStore((s) => s.playAudio);
   // Las actividades de una sola palabra ya tienen su audio grabado: se usa ese
@@ -80,6 +83,17 @@ const TarjetaCuento: React.FC<TarjetaCuentoProps> = ({ cuento, orden, completado
           </span>
         </span>
       </button>
+
+      {tarea && (
+        <span
+          className="absolute top-6 left-6 inline-flex items-center gap-2 rounded-full bg-accent text-onAccent border-4 border-surface shadow-card px-4 py-1.5 text-xl font-black animate-pulso"
+          role="img"
+          aria-label="Tarea de la profe"
+        >
+          <ClipboardList className="w-6 h-6" aria-hidden />
+          Tarea
+        </span>
+      )}
 
       {completado && (
         <span
@@ -112,6 +126,7 @@ export const CatalogoCuentos: React.FC = () => {
   // Los niños solo ven los cuentos validados por el revisor
   const cuentos = useCuentosDeNivel(nivelId)?.filter((c) => c.estado === 'publicado');
   const progresos = useProgresosDeAlumno(activeStudentId);
+  const tareas = useTareasPendientes(activeStudentId);
 
   const completado = (cuentoId?: string) => !!cuentoId && !!progresos?.some((p) => p.cuentoId === cuentoId && p.completado);
 
@@ -144,6 +159,7 @@ export const CatalogoCuentos: React.FC = () => {
                 cuento={cuento}
                 orden={i}
                 completado={completado(cuento.id)}
+                tarea={tareas.some((t) => t.cuento.id === cuento.id)}
                 onElegir={() => cuento.id && navigate(ROUTES.lectura(nivelId, cuento.id))}
               />
             ))}

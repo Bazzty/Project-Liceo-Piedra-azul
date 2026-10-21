@@ -44,8 +44,8 @@ const FichaPalabra: React.FC<{ p: CuentoPalabra; className?: string }> = ({ p, c
 
 interface RondaProps {
 	ronda: Ronda;
-	/** `conAyuda` es true si el niño necesitó que le mostráramos la respuesta. */
-	alTerminar: (conAyuda: boolean) => void;
+	/** `conAyuda` es true si el niño necesitó que le mostráramos la respuesta; `tema` es la palabra o frase trabajada. */
+	alTerminar: (conAyuda: boolean, tema?: string) => void;
 }
 
 /** Marco de una opción: se mueve si no era, se ilumina si es la ayuda y se pone verde si acertó. */
@@ -81,7 +81,7 @@ const RondaElegir: React.FC<RondaProps & { ronda: Extract<Ronda, { tipo: 'escuch
 			setAcertada(true);
 			sonarAcierto();
 			useGuideStore.getState().reaccionar('feliz');
-			setTimeout(() => alTerminar(ayuda), PAUSA_TRAS_ACIERTO);
+			setTimeout(() => alTerminar(ayuda, ronda.meta.texto), PAUSA_TRAS_ACIERTO);
 		} else {
 			sonarToque();
 			useGuideStore.getState().reaccionar('animo');
@@ -152,7 +152,7 @@ const RondaSonido: React.FC<RondaProps & { ronda: Extract<Ronda, { tipo: 'sonido
 			setAcertada(true);
 			sonarAcierto();
 			useGuideStore.getState().reaccionar('feliz');
-			setTimeout(() => alTerminar(ayuda), PAUSA_TRAS_ACIERTO);
+			setTimeout(() => alTerminar(ayuda, ronda.meta.texto), PAUSA_TRAS_ACIERTO);
 		} else {
 			sonarToque();
 			useGuideStore.getState().reaccionar('animo');
@@ -273,7 +273,7 @@ const RondaCompleta: React.FC<RondaProps & { ronda: Extract<Ronda, { tipo: 'comp
 			sonarAcierto();
 			useGuideStore.getState().reaccionar('feliz');
 			setTimeout(() => hablar(ronda.frase), 500);
-			setTimeout(() => alTerminar(ayuda), PAUSA_TRAS_ACIERTO + 1200);
+			setTimeout(() => alTerminar(ayuda, meta.texto), PAUSA_TRAS_ACIERTO + 1200);
 		} else {
 			sonarToque();
 			useGuideStore.getState().reaccionar('animo');
@@ -339,7 +339,7 @@ const RondaOrdenar: React.FC<RondaProps & { ronda: Extract<Ronda, { tipo: 'orden
 				completaRef.current = true;
 				sonarAcierto();
 				useGuideStore.getState().reaccionar('baile');
-				setTimeout(() => alTerminar(porAyuda || hubeAyuda), PAUSA_TRAS_ACIERTO + 600);
+				setTimeout(() => alTerminar(porAyuda || hubeAyuda, ronda.frase), PAUSA_TRAS_ACIERTO + 600);
 			}
 		} else {
 			sonarToque();
@@ -399,12 +399,15 @@ export const ActividadesView: React.FC = () => {
 	const [terminado, setTerminado] = useState(false);
 	const [stickerNuevo, setStickerNuevo] = useState<number | null>(null);
 	const coleccion = useColeccion(activeStudentId);
+	// Palabras en las que necesitó ayuda: se guardan para que la docente sepa qué le cuesta
+	const dificiles = useRef<string[]>([]);
 
 	const rondas = cuento && cuentos ? generarRondas(cuento, cuentos.filter((c) => c.estado === 'publicado' && c.id !== cuento.id), vuelta) : null;
 	const total = rondas?.length ?? 0;
 	const volver = () => navigate(ROUTES.catalogo(nivelId));
 
-	const alTerminarRonda = async (conAyuda: boolean) => {
+	const alTerminarRonda = async (conAyuda: boolean, tema?: string) => {
+		if (conAyuda && tema) dificiles.current.push(tema);
 		const aciertos = sinAyuda + (conAyuda ? 0 : 1);
 		setSinAyuda(aciertos);
 		if (indice + 1 < total) {
@@ -422,6 +425,9 @@ export const ActividadesView: React.FC = () => {
 				alumnoId: activeStudentId,
 				tipo: 'actividad',
 				cuentoId: cuento.id,
+				aciertos,
+				total,
+				dificiles: [...new Set(dificiles.current)],
 				detalle: `Actividades de «${cuento.titulo}»: ${aciertos} de ${total} sin ayuda`,
 				lugar: 'casa',
 				fecha: new Date().toISOString(),
@@ -434,6 +440,7 @@ export const ActividadesView: React.FC = () => {
 		setIndice(0);
 		setSinAyuda(0);
 		setStickerNuevo(null);
+		dificiles.current = [];
 		setTerminado(false);
 	};
 

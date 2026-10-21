@@ -89,6 +89,9 @@ export interface Registro {
   alumnoId: string;
   tipo: 'sesion' | 'lectura' | 'tablero' | 'actividad';
   cuentoId?: string; // Solo para tipo 'actividad': cuento al que pertenecen los juegos
+  aciertos?: number; // Solo para tipo 'actividad': juegos resueltos sin ayuda
+  total?: number; // Solo para tipo 'actividad': juegos de la sesión
+  dificiles?: string[]; // Solo para tipo 'actividad': palabras en las que necesitó ayuda
   detalle: string; // Ej: Leyó «El Auto de Ana» hasta la página 1
   lugar: 'liceo' | 'casa';
   fecha: string; // ISO
