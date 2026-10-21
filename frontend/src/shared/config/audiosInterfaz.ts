@@ -29,6 +29,16 @@ export const AUDIOS_INTERFAZ = {
   pronto: '/audio/interfaz/pronto.mp3',
   respira: '/audio/interfaz/respira.mp3',
   sigues_ahi: '/audio/interfaz/sigues_ahi.mp3',
+  // Preguntas de los juegos
+  cual_es: '/audio/interfaz/cual_es.mp3',
+  que_empieza: '/audio/interfaz/que_empieza.mp3',
+  busca_parejas: '/audio/interfaz/busca_parejas.mp3',
+  que_falta: '/audio/interfaz/que_falta.mp3',
+  pon_en_orden: '/audio/interfaz/pon_en_orden.mp3',
+  // Zona de calma
+  inhala: '/audio/interfaz/inhala.mp3',
+  exhala: '/audio/interfaz/exhala.mp3',
+  burbujas: '/audio/interfaz/burbujas.mp3',
 } as const;
 
 export type ClaveAudio = keyof typeof AUDIOS_INTERFAZ;

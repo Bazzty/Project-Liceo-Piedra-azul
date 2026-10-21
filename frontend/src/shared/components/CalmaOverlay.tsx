@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Check, RotateCcw, Sparkles, Wind } from 'lucide-react';
+import { Check, LayoutGrid, RotateCcw, Sparkles, Volume2, Wind } from 'lucide-react';
 import { sonarBurbuja, sonarRespiro } from '@/shared/audio/sonidos';
 import { OsoCabeza } from '@/shared/components/OsoCabeza';
+import type { ClaveAudio } from '@/shared/config/audiosInterfaz';
 import { useHablar } from '@/shared/hooks/useHablar';
 import { useAjustesStore } from '@/shared/store/useAjustesStore';
 import { Button } from '@/shared/ui';
@@ -19,6 +20,7 @@ type Actividad = 'menu' | 'respirar' | 'burbujas';
 /** Respiración guiada: el círculo crece al inhalar (4 s) y se achica al exhalar (6 s), cinco veces. */
 const Respirar: React.FC<{ alTerminar: () => void }> = ({ alTerminar }) => {
   const movimiento = useAjustesStore((s) => s.movimiento);
+  const hablar = useHablar();
   const [inhala, setInhala] = useState(true);
   const [respiros, setRespiros] = useState(0);
   // El círculo arranca chico y crece un instante después de montar, para que la primera inhalación también se anime
@@ -30,6 +32,8 @@ const Respirar: React.FC<{ alTerminar: () => void }> = ({ alTerminar }) => {
       return;
     }
     sonarRespiro(inhala);
+    // Quien no lee sigue la respiración por la voz: «inhala» y «exhala» suenan en cada cambio
+    hablar(inhala ? 'Inhala' : 'Exhala', inhala ? 'inhala' : 'exhala');
     const empezar = setTimeout(() => setCrece(inhala), 60);
     const id = setTimeout(() => {
       if (inhala) setInhala(false);
@@ -42,7 +46,7 @@ const Respirar: React.FC<{ alTerminar: () => void }> = ({ alTerminar }) => {
       clearTimeout(empezar);
       clearTimeout(id);
     };
-  }, [inhala, respiros, alTerminar]);
+  }, [inhala, respiros, alTerminar, hablar]);
 
   const duracion = inhala ? INHALA_MS : EXHALA_MS;
 
@@ -125,17 +129,30 @@ const Burbujas: React.FC = () => {
   );
 };
 
-/** Una opción grande del menú de calma. */
-const Opcion: React.FC<{ icono: React.ReactNode; texto: string; onClick: () => void }> = ({ icono, texto, onClick }) => (
-  <button
-    type="button"
-    onClick={onClick}
-    className="flex flex-col items-center justify-center gap-4 w-52 h-52 sm:w-64 sm:h-64 rounded-card bg-white/15 border-4 border-white/70 text-3xl sm:text-4xl font-black cursor-pointer hover:bg-white/25 active:scale-95 transition-all"
-  >
-    {icono}
-    {texto}
-  </button>
-);
+/** Una opción grande del menú de calma, con un parlante que dice su nombre (sin leer). */
+const Opcion: React.FC<{ icono: React.ReactNode; texto: string; clave: ClaveAudio; onClick: () => void }> = ({ icono, texto, clave, onClick }) => {
+  const hablar = useHablar();
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={onClick}
+        className="flex flex-col items-center justify-center gap-4 w-52 h-52 sm:w-64 sm:h-64 rounded-card bg-white/15 border-4 border-white/70 text-3xl sm:text-4xl font-black cursor-pointer hover:bg-white/25 active:scale-95 transition-all"
+      >
+        {icono}
+        {texto}
+      </button>
+      <button
+        type="button"
+        onClick={() => hablar(texto, clave)}
+        aria-label={`Escuchar: ${texto}`}
+        className="absolute top-3 right-3 w-12 h-12 rounded-full bg-white text-[#23506b] flex items-center justify-center cursor-pointer hover:bg-white/90"
+      >
+        <Volume2 className="w-6 h-6" aria-hidden />
+      </button>
+    </div>
+  );
+};
 
 /**
  * Pantalla de calma: el niño elige respirar con el osito o tocar burbujas.
@@ -170,7 +187,6 @@ export const CalmaOverlay: React.FC<{ abierto: boolean; onCerrar: () => void }> 
   if (!abierto) return null;
 
   const elegir = (a: Actividad) => {
-    if (a === 'respirar') hablar('Respira conmigo. Inhala... y exhala.', 'respira');
     setFin(false);
     setVuelta((v) => v + 1);
     setActividad(a);
@@ -191,8 +207,8 @@ export const CalmaOverlay: React.FC<{ abierto: boolean; onCerrar: () => void }> 
               <OsoCabeza ojosFelices boca="HAPPY" />
             </span>
             <div className="flex flex-wrap items-center justify-center gap-6">
-              <Opcion icono={<Wind className="w-16 h-16 sm:w-20 sm:h-20" aria-hidden />} texto="Respirar" onClick={() => elegir('respirar')} />
-              <Opcion icono={<Sparkles className="w-16 h-16 sm:w-20 sm:h-20" aria-hidden />} texto="Burbujas" onClick={() => elegir('burbujas')} />
+              <Opcion icono={<Wind className="w-16 h-16 sm:w-20 sm:h-20" aria-hidden />} texto="Respirar" clave="respira" onClick={() => elegir('respirar')} />
+              <Opcion icono={<Sparkles className="w-16 h-16 sm:w-20 sm:h-20" aria-hidden />} texto="Burbujas" clave="burbujas" onClick={() => elegir('burbujas')} />
             </div>
           </>
         )}
@@ -216,8 +232,8 @@ export const CalmaOverlay: React.FC<{ abierto: boolean; onCerrar: () => void }> 
 
       <div className="flex flex-wrap items-center justify-center gap-4">
         {actividad !== 'menu' && (
-          <Button variant="secondary" size="xl" onClick={() => setActividad('menu')}>
-            Otra cosa
+          <Button variant="secondary" size="xl" onClick={() => setActividad('menu')} aria-label="Otra cosa">
+            <LayoutGrid className="w-8 h-8" aria-hidden />
           </Button>
         )}
         <Button variant="accent" size="xl" onClick={onCerrar}>

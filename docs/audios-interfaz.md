@@ -30,6 +30,14 @@ Guardar cada una como `frontend/public/audio/interfaz/<clave>.mp3`.
 | `nivel_c` | Nivel C. Palabras. |
 | `nivel_d` | Nivel D. Cuentos. |
 | `nivel_e` | Nivel E. Historias. |
+| `cual_es` | ¿Cuál es? |
+| `que_empieza` | ¿Con qué empieza? |
+| `busca_parejas` | Busca las parejas. |
+| `que_falta` | ¿Qué falta? |
+| `pon_en_orden` | Pon en orden. |
+| `inhala` | Inhala. |
+| `exhala` | Exhala. |
+| `burbujas` | Toca las burbujas. |
 | `pronto` | Este nivel llega pronto. |
 | `respira` | Respira conmigo. Inhala... y exhala. |
 | `sigues_ahi` | ¿Sigues ahí? |

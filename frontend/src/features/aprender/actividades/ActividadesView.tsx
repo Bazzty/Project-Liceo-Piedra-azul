@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { BookOpen, Home, RotateCcw, Star, Volume2 } from 'lucide-react';
+import { BookOpen, Home, Lightbulb, RotateCcw, Star, Volume2 } from 'lucide-react';
 import { crearRegistro, useCuento, useCuentos } from '@/api';
 import { ROUTES } from '@/app/routes';
 import { useAuthStore } from '@/features/acceso/useAuthStore';
@@ -12,6 +12,7 @@ import { LayoutEstudiante } from '@/shared/components/LayoutEstudiante';
 import { LluviaEstrellas } from '@/shared/components/LluviaEstrellas';
 import { OsoBurbuja } from '@/shared/components/OsoBurbuja';
 import { getPersonajeAudio } from '@/shared/config/audioConfig';
+import type { ClaveAudio } from '@/shared/config/audiosInterfaz';
 import { useHablar } from '@/shared/hooks/useHablar';
 import { usePlayerStore } from '@/shared/store/usePlayerStore';
 import { useGuideStore } from '@/shared/store/useGuideStore';
@@ -42,6 +43,28 @@ const FichaPalabra: React.FC<{ p: CuentoPalabra; className?: string }> = ({ p, c
 		<span className="text-2xl sm:text-4xl font-black text-primary">{p.texto}</span>
 	);
 
+/**
+ * La pregunta del juego, dicha en voz alta (los niños todavía no leen): suena sola al empezar y el
+ * parlante la repite cuando quieran. Sin texto en pantalla.
+ */
+const PreguntaVoz: React.FC<{ texto: string; clave?: ClaveAudio; retraso?: number }> = ({ texto, clave, retraso = 700 }) => {
+	const hablar = useHablar();
+	useEffect(() => {
+		const id = setTimeout(() => hablar(texto, clave), retraso);
+		return () => clearTimeout(id);
+	}, [hablar, texto, clave, retraso]);
+	return (
+		<button
+			type="button"
+			onClick={() => hablar(texto, clave)}
+			aria-label={`Escuchar la pregunta: ${texto}`}
+			className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-accent text-onAccent border-4 border-borderStrong flex items-center justify-center cursor-pointer hover:bg-accent-hover active:scale-95 transition-all shadow-card"
+		>
+			<Volume2 className="w-8 h-8 sm:w-10 sm:h-10" aria-hidden />
+		</button>
+	);
+};
+
 interface RondaProps {
 	ronda: Ronda;
 	/** `conAyuda` es true si el niño necesitó que le mostráramos la respuesta; `tema` es la palabra o frase trabajada. */
@@ -68,15 +91,16 @@ const RondaElegir: React.FC<RondaProps & { ronda: Extract<Ronda, { tipo: 'escuch
 	const esEscucha = ronda.tipo === 'escucha';
 	const ayuda = fallos.length >= FALLOS_PARA_AYUDA;
 
+	// En los dos juegos se dice la palabra al empezar: quien no lee la escucha y la busca
 	useEffect(() => {
-		if (esEscucha) {
-			const id = setTimeout(() => decir(ronda.meta), 500);
-			return () => clearTimeout(id);
-		}
-	}, [esEscucha, decir, ronda.meta]);
+		const id = setTimeout(() => decir(ronda.meta), 500);
+		return () => clearTimeout(id);
+	}, [decir, ronda.meta]);
 
 	const elegir = (p: CuentoPalabra) => {
 		if (acertada) return;
+		// Al tocar una palabra escrita se oye, para que pueda comparar con lo que escuchó
+		if (!esEscucha) decir(p);
 		if (p.texto === ronda.meta.texto) {
 			setAcertada(true);
 			sonarAcierto();
@@ -86,7 +110,7 @@ const RondaElegir: React.FC<RondaProps & { ronda: Extract<Ronda, { tipo: 'escuch
 			sonarToque();
 			useGuideStore.getState().reaccionar('animo');
 			setFallos((f) => [...f, p.texto]);
-			decir(p);
+			if (esEscucha) decir(p);
 		}
 	};
 
@@ -101,6 +125,7 @@ const RondaElegir: React.FC<RondaProps & { ronda: Extract<Ronda, { tipo: 'escuch
 
 	return (
 		<div className="flex-1 w-full flex flex-col items-center justify-center gap-6 sm:gap-8">
+			{!esEscucha && <PreguntaVoz texto="¿Cuál es?" clave="cual_es" retraso={1800} />}
 			{esEscucha ? (
 				<button
 					type="button"
@@ -109,12 +134,19 @@ const RondaElegir: React.FC<RondaProps & { ronda: Extract<Ronda, { tipo: 'escuch
 					className="min-h-20 sm:min-h-24 px-8 sm:px-12 rounded-full bg-accent text-onAccent border-4 border-borderStrong flex items-center gap-4 text-3xl sm:text-4xl font-black cursor-pointer hover:bg-accent-hover active:scale-95 transition-all shadow-card"
 				>
 					<Volume2 className="w-10 h-10 sm:w-12 sm:h-12" aria-hidden />
-					Escucha
+					<Volume2 className="w-7 h-7 sm:w-9 sm:h-9 opacity-60" aria-hidden />
 				</button>
 			) : (
-				<div className="pointer-events-none">
-					<PictogramaCard palabra={{ ...ronda.meta, silabas: undefined }} grande className="pointer-events-auto" onClick={() => undefined} />
-				</div>
+				// Solo la imagen (si se viera la palabra, bastaría con copiarla); tocarla dice la palabra
+				<button
+					type="button"
+					onClick={() => decir(ronda.meta)}
+					aria-label="Escuchar la palabra"
+					className="relative w-44 h-44 sm:w-60 sm:h-60 rounded-card border-4 border-borderStrong bg-surface p-3 shadow-card cursor-pointer active:scale-95 transition-transform"
+				>
+					<img src={ronda.meta.pictogramaUrl} alt="" className="w-full h-full object-contain" />
+					<Volume2 className="absolute bottom-2 right-2 w-9 h-9 p-1.5 rounded-full bg-accent text-onAccent border-2 border-borderStrong" aria-hidden />
+				</button>
 			)}
 
 			<div className="flex flex-wrap items-stretch justify-center gap-4 sm:gap-6 w-full">
@@ -163,10 +195,7 @@ const RondaSonido: React.FC<RondaProps & { ronda: Extract<Ronda, { tipo: 'sonido
 	return (
 		<div className="flex-1 w-full flex flex-col items-center justify-center gap-6 sm:gap-8">
 			<PictogramaCard palabra={{ ...ronda.meta, silabas: undefined }} grande />
-			<p className="flex items-center gap-3 text-2xl sm:text-3xl font-black text-primary bg-surface/90 rounded-full px-6 py-2">
-				<Volume2 className="w-8 h-8" aria-hidden />
-				¿Con qué empieza?
-			</p>
+			<PreguntaVoz texto="¿Con qué empieza?" clave="que_empieza" retraso={1900} />
 			<div className="flex flex-wrap items-stretch justify-center gap-4 sm:gap-6 w-full">
 				{ronda.opciones.map((silaba) => {
 					const estado = acertada && silaba === ronda.correcta ? 'acierto' : ayuda && !acertada && silaba === ronda.correcta ? 'ayuda' : fallos.includes(silaba) ? 'error' : 'normal';
@@ -225,6 +254,7 @@ const RondaMemoria: React.FC<RondaProps & { ronda: Extract<Ronda, { tipo: 'memor
 
 	return (
 		<div className="flex-1 w-full flex flex-col items-center justify-center gap-6">
+			<PreguntaVoz texto="Busca las parejas." clave="busca_parejas" />
 			<div className="grid grid-cols-3 gap-3 sm:gap-5">
 				{ronda.cartas.map((carta, i) => {
 					const visible = abiertas.includes(i) || parejas.includes(carta.clave);
@@ -283,6 +313,7 @@ const RondaCompleta: React.FC<RondaProps & { ronda: Extract<Ronda, { tipo: 'comp
 
 	return (
 		<div className="flex-1 w-full flex flex-col items-center justify-center gap-6 sm:gap-10">
+			<PreguntaVoz texto={`${ronda.palabras.slice(0, ronda.hueco).map((p) => p.texto).join(' ')}... ¿qué falta?`} />
 			<div className="flex items-center justify-center gap-3 sm:gap-4 bg-surface/90 rounded-card p-3 sm:p-4" aria-label={ronda.frase}>
 				{ronda.palabras.map((p, i) =>
 					i === ronda.hueco && !acertada ? (
@@ -353,6 +384,7 @@ const RondaOrdenar: React.FC<RondaProps & { ronda: Extract<Ronda, { tipo: 'orden
 
 	return (
 		<div className="flex-1 w-full flex flex-col items-center justify-center gap-6 sm:gap-10">
+			<PreguntaVoz texto="Pon en orden." clave="pon_en_orden" />
 			<div className="flex items-center justify-center gap-3 sm:gap-4 bg-surface/90 rounded-card p-3 sm:p-4 border-4 border-dashed border-borderStrong" aria-label="Tu oración">
 				{ronda.orden.map((_, i) => {
 					const p = colocadas[i];
@@ -376,8 +408,9 @@ const RondaOrdenar: React.FC<RondaProps & { ronda: Extract<Ronda, { tipo: 'orden
 				</div>
 			)}
 			{ayuda && (
-				<Button variant="accent" size="xl" onClick={() => siguiente && colocar(siguiente, true)}>
-					Te ayudo
+				<Button variant="accent" size="xl" onClick={() => siguiente && colocar(siguiente, true)} aria-label="Te ayudo">
+					<Lightbulb className="w-9 h-9" aria-hidden />
+					<Volume2 className="w-7 h-7 opacity-60" aria-hidden />
 				</Button>
 			)}
 		</div>

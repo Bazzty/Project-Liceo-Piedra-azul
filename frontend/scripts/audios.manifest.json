@@ -52,6 +52,38 @@
     "texto": "Nivel E. Historias."
   },
   {
+    "archivo": "interfaz/cual_es.mp3",
+    "texto": "¿Cuál es?"
+  },
+  {
+    "archivo": "interfaz/que_empieza.mp3",
+    "texto": "¿Con qué empieza?"
+  },
+  {
+    "archivo": "interfaz/busca_parejas.mp3",
+    "texto": "Busca las parejas."
+  },
+  {
+    "archivo": "interfaz/que_falta.mp3",
+    "texto": "¿Qué falta?"
+  },
+  {
+    "archivo": "interfaz/pon_en_orden.mp3",
+    "texto": "Pon en orden."
+  },
+  {
+    "archivo": "interfaz/inhala.mp3",
+    "texto": "Inhala."
+  },
+  {
+    "archivo": "interfaz/exhala.mp3",
+    "texto": "Exhala."
+  },
+  {
+    "archivo": "interfaz/burbujas.mp3",
+    "texto": "Toca las burbujas."
+  },
+  {
     "archivo": "interfaz/pronto.mp3",
     "texto": "Este nivel llega pronto."
   },
