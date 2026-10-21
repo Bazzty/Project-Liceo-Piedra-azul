@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Printer } from 'lucide-react';
 import { ROUTES } from '@/app/routes';
 import { ApoyosEnInforme } from '@/features/docente/components/ApoyosAlumno';
+import { GraficoEvolucion } from '@/features/docente/components/GraficoEvolucion';
 import { ResultadosActividades, TareasDelAlumno } from '@/features/docente/components/BloquesActividad';
 import { useFichaAlumno } from '@/features/docente/components/useFichaAlumno';
 import { UMBRALES } from '@/features/docente/components/umbrales';
@@ -106,6 +107,11 @@ export const InformeAlumno: React.FC<{ alumnoId: string }> = ({ alumnoId }) => {
               </li>
             ))}
           </ul>
+        </section>
+
+        <section className="break-inside-avoid">
+          <Titulo>Su evolución</Titulo>
+          <GraficoEvolucion evolucion={ficha.evolucion} />
         </section>
 
         <section className="break-inside-avoid">

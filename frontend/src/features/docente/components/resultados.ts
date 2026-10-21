@@ -55,3 +55,27 @@ export const promedioReciente = (resultados: ResultadoActividad[]): number | nul
   const total = ultimas.reduce((t, r) => t + r.total, 0);
   return Math.round((aciertos / total) * 100);
 };
+
+export interface Evolucion {
+  /** Sesiones de la más antigua a la más reciente (hasta 10). */
+  puntos: ResultadoActividad[];
+  /** Puntos de diferencia entre sus últimas sesiones y las primeras (null con menos de 2 sesiones). */
+  cambio: number | null;
+  frase: string;
+}
+
+/** Cómo le va a un niño comparado consigo mismo: sus primeras sesiones contra las últimas. */
+export const evolucionDe = (resultados: ResultadoActividad[]): Evolucion => {
+  const puntos = resultados.filter((r) => r.total > 0).slice(0, 10).reverse();
+  if (puntos.length < 2) return { puntos, cambio: null, frase: 'Con más sesiones se podrá ver cómo avanza.' };
+  const n = Math.min(3, Math.floor(puntos.length / 2));
+  const media = (lista: ResultadoActividad[]) => Math.round(lista.reduce((t, r) => t + r.porcentaje, 0) / lista.length);
+  const cambio = media(puntos.slice(-n)) - media(puntos.slice(0, n));
+  const frase =
+    cambio >= 10
+      ? `Va mejorando: ${cambio} puntos más que en sus primeras sesiones.`
+      : cambio <= -10
+        ? `Últimamente le cuesta más que al principio (${Math.abs(cambio)} puntos menos): conviene reforzar.`
+        : 'Se mantiene estable respecto de sus primeras sesiones.';
+  return { puntos, cambio, frase };
+};

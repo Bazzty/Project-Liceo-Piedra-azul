@@ -3,7 +3,7 @@ import type { Registro } from '@/types';
 import { useAlumno, useCuentos, useProgresosDeAlumno, useRegistrosDeAlumno } from '@/api';
 import { NIVELES_CAMINO } from '@/shared/config/niveles';
 import { esDeLosUltimosDias } from '@/features/docente/components/format';
-import { palabrasDificiles, promedioReciente, resultadosDeRegistros, type ResultadoActividad } from '@/features/docente/components/resultados';
+import { evolucionDe, palabrasDificiles, promedioReciente, resultadosDeRegistros, type ResultadoActividad } from '@/features/docente/components/resultados';
 import { esParaAlumno, estadoTarea, resultadoDeTarea, type EstadoTarea } from '@/features/tareas/estadoTarea';
 import { useAsignacionesStore, type Asignacion } from '@/features/tareas/useAsignacionesStore';
 
@@ -88,6 +88,7 @@ export function useFichaAlumno(alumnoId: string) {
       actividadPorDia,
       recientes,
       resultados,
+      evolucion: evolucionDe(resultados),
       palabrasDificiles: palabrasDificiles(resultados),
       sinAyuda: promedioReciente(resultados),
       tareas,

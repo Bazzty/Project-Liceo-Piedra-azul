@@ -20,16 +20,28 @@ const hace = (dias: number, hora: number, minuto = 0): string => {
 };
 
 /**
- * Resultados de juegos de ejemplo (con aciertos y palabras difíciles) para que el panel docente tenga qué mostrar.
- * Se agregan también en navegadores que ya tenían datos; reemplazan los dos registros de ejemplo antiguos, que
- * solo traían el texto. Los juegos que haga un niño de verdad (con aciertos) no se tocan.
+ * Resultados de juegos de ejemplo (con aciertos, palabras difíciles y una historia por niño: uno mejora, otro se
+ * mantiene, otro baja) para que el panel docente tenga qué mostrar. Llevan `demo: true`. Se agregan también en
+ * navegadores que ya tenían datos: si no hay ninguno marcado, se reemplazan los de versiones anteriores del
+ * ejemplo. Los juegos que haga un niño de verdad no se tocan.
  */
 async function sembrarResultadosDeActividades() {
 	const actuales = await db.registros.toArray();
-	if (actuales.some((r) => r.tipo === 'actividad' && r.aciertos !== undefined)) return;
+	if (actuales.some((r) => r.demo && r.tipo === 'actividad')) return;
 
-	const antiguos = new Set(['Actividades de «El Auto de Ana»: 4 de 5 sin ayuda', 'Actividades de «El Auto de Ana»: 5 de 5 sin ayuda']);
-	const sobran = actuales.filter((r) => r.tipo === 'actividad' && antiguos.has(r.detalle)).map((r) => r.id).filter((id): id is string => id !== undefined);
+	// Ejemplos de la versión anterior: se reconocen por alumno, cuento, aciertos y palabras
+	const anteriores = [
+		'estudiante-mateo|cuento-auto-ana|4|5|azul',
+		'estudiante-sofia|cuento-auto-ana|5|5|',
+		'estudiante-benjamin|actividad-palabras-m-l-s-p-d|2|5|pelo,lupa',
+		'estudiante-benjamin|actividad-palabras-m-l-s-p-d|1|5|lupa,pala,pelo',
+		'estudiante-joaquin|actividad-palabras-m-l-s-p-d|4|5|sala',
+	];
+	const clave = (r: Registro) => `${r.alumnoId}|${r.cuentoId}|${r.aciertos}|${r.total}|${(r.dificiles ?? []).join(',')}`;
+	const sobran = actuales
+		.filter((r) => r.tipo === 'actividad' && (anteriores.includes(clave(r)) || /^Actividades de «El Auto de Ana»: [45] de 5 sin ayuda$/.test(r.detalle)))
+		.map((r) => r.id)
+		.filter((id): id is string => id !== undefined);
 	if (sobran.length > 0) await db.registros.bulkDelete(sobran);
 
 	const act = (alumnoId: string, cuentoId: string, titulo: string, aciertos: number, total: number, lugar: 'liceo' | 'casa', fecha: string, dificiles: string[] = []): Registro => ({
@@ -42,14 +54,31 @@ async function sembrarResultadosDeActividades() {
 		aciertos,
 		total,
 		dificiles,
+		demo: true,
 	});
-	const palabras = 'Mis Primeras Palabras (M, L, S, P, D)';
+	const auto = ['cuento-auto-ana', 'El Auto de Ana'] as const;
+	const mama = ['cuento-mi-mama', 'Mi Mamá me Ama'] as const;
+	const palabras = ['actividad-palabras-m-l-s-p-d', 'Mis Primeras Palabras (M, L, S, P, D)'] as const;
 	await db.registros.bulkAdd([
-		act('estudiante-mateo', 'cuento-auto-ana', 'El Auto de Ana', 4, 5, 'casa', hace(1, 18, 30), ['azul']),
-		act('estudiante-sofia', 'cuento-auto-ana', 'El Auto de Ana', 5, 5, 'liceo', hace(1, 10, 35)),
-		act('estudiante-benjamin', 'actividad-palabras-m-l-s-p-d', palabras, 2, 5, 'liceo', hace(2, 9, 45), ['pelo', 'lupa']),
-		act('estudiante-benjamin', 'actividad-palabras-m-l-s-p-d', palabras, 1, 5, 'liceo', hace(1, 9, 50), ['lupa', 'pala', 'pelo']),
-		act('estudiante-joaquin', 'actividad-palabras-m-l-s-p-d', palabras, 4, 5, 'liceo', hace(4, 11, 45), ['sala']),
+		// Mateo: va mejorando
+		act('estudiante-mateo', ...palabras, 2, 5, 'liceo', hace(12, 10, 20), ['masa', 'mula']),
+		act('estudiante-mateo', ...palabras, 3, 5, 'liceo', hace(9, 10, 25), ['mula']),
+		act('estudiante-mateo', ...mama, 3, 5, 'casa', hace(6, 18, 5), ['ama']),
+		act('estudiante-mateo', ...auto, 4, 5, 'casa', hace(3, 18, 30), ['azul']),
+		act('estudiante-mateo', ...mama, 4, 5, 'liceo', hace(1, 10, 40)),
+		// Sofía: se mantiene
+		act('estudiante-sofia', ...palabras, 4, 5, 'liceo', hace(10, 9, 30), ['pelo']),
+		act('estudiante-sofia', ...mama, 5, 5, 'liceo', hace(7, 9, 35)),
+		act('estudiante-sofia', ...auto, 5, 5, 'liceo', hace(4, 10, 35)),
+		act('estudiante-sofia', ...auto, 5, 5, 'liceo', hace(1, 10, 35)),
+		// Benjamín: le está costando más
+		act('estudiante-benjamin', ...palabras, 3, 5, 'liceo', hace(9, 9, 40), ['pelo']),
+		act('estudiante-benjamin', ...palabras, 3, 5, 'liceo', hace(6, 9, 45), ['lupa']),
+		act('estudiante-benjamin', ...palabras, 2, 5, 'liceo', hace(2, 9, 45), ['pelo', 'lupa']),
+		act('estudiante-benjamin', ...palabras, 1, 5, 'liceo', hace(1, 9, 50), ['lupa', 'pala', 'pelo']),
+		// Joaquín: sube un poco
+		act('estudiante-joaquin', ...palabras, 3, 5, 'liceo', hace(8, 11, 40), ['sala', 'sapo']),
+		act('estudiante-joaquin', ...palabras, 4, 5, 'liceo', hace(4, 11, 45), ['sala']),
 	]);
 }
 

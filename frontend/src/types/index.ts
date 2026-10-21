@@ -105,6 +105,7 @@ export interface Registro {
   total?: number; // Solo para tipo 'actividad': juegos de la sesión
   dificiles?: string[]; // Solo para tipo 'actividad': palabras en las que necesitó ayuda
   descanso?: boolean; // Solo para tipo 'actividad': el juego le ofreció descansar y aceptó
+  demo?: boolean; // Dato de ejemplo (se puede reemplazar al actualizar la demostración)
   detalle: string; // Ej: Leyó «El Auto de Ana» hasta la página 1
   lugar: 'liceo' | 'casa';
   fecha: string; // ISO

@@ -8,6 +8,7 @@ import { useTarjetasStore } from '@/features/acceso/useTarjetasStore';
 import { ApoyosAlumno } from '@/features/docente/components/ApoyosAlumno';
 import { BarrasPorDia } from '@/features/docente/components/BarrasPorDia';
 import { ResultadosActividades, TareasDelAlumno } from '@/features/docente/components/BloquesActividad';
+import { GraficoEvolucion } from '@/features/docente/components/GraficoEvolucion';
 import { EncabezadoPagina, Hoja } from '@/features/docente/components/Hoja';
 import { LibroDelCurso } from '@/features/docente/components/LibroDelCurso';
 import { formatearFecha } from '@/features/docente/components/format';
@@ -149,6 +150,14 @@ const FichaAlumno: React.FC<{ alumnoId: string; onVolver: () => void }> = ({ alu
                 </li>
               ))}
             </ul>
+          </Hoja>
+
+          <Hoja>
+            <h2 className="font-display text-2xl font-semibold text-primary">Su evolución</h2>
+            <p className="text-xs text-secondary">Comparado consigo mismo, no con el curso</p>
+            <div className="mt-3">
+              <GraficoEvolucion evolucion={ficha.evolucion} />
+            </div>
           </Hoja>
 
           <Hoja>
