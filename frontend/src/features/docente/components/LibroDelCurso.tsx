@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Search } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '@/app/routes';
 import { AvatarAlumno } from '@/features/docente/components/AvatarAlumno';
 import { Hoja } from '@/features/docente/components/Hoja';
-import { formatearFecha } from '@/features/docente/components/format';
+import { formatearFecha, normalizar } from '@/features/docente/components/format';
 import type { EstadoAlumno, FilaLibro } from '@/features/docente/components/useLibroCurso';
 
 const ETIQUETAS_ESTADO: Record<EstadoAlumno, { texto: string; clases: string }> = {
@@ -36,11 +37,51 @@ export const SemanaEnCuadros: React.FC<{ fila: FilaLibro }> = ({ fila }) => (
 );
 
 /** Tabla "libro del curso": una fila por estudiante con sus últimos 7 días, cuentos y estado. */
-export const LibroDelCurso: React.FC<{ filas: FilaLibro[]; titulo?: string }> = ({ filas, titulo = 'Libro del curso' }) => (
+type Filtro = 'todos' | EstadoAlumno;
+const FILTROS: { id: Filtro; etiqueta: string }[] = [
+  { id: 'todos', etiqueta: 'Todos' },
+  { id: 'atencion', etiqueta: 'Atención' },
+  { id: 'sin_actividad', etiqueta: 'Sin actividad' },
+];
+
+export const LibroDelCurso: React.FC<{ filas: FilaLibro[]; titulo?: string }> = ({ filas: todas, titulo = 'Libro del curso' }) => {
+  const [filtro, setFiltro] = useState<Filtro>('todos');
+  const [buscar, setBuscar] = useState('');
+  const filas = todas.filter(
+    (f) => (filtro === 'todos' || f.estado === filtro) && normalizar(f.alumno.nombre).includes(normalizar(buscar)),
+  );
+  return (
         <Hoja aria-label={titulo} className="overflow-x-auto">
-          <div className="flex items-baseline justify-between gap-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 className="font-display text-xl text-primary">{titulo}</h2>
-            <p className="text-xs text-secondary">Cada cuadro es un día con actividad; el marcado es hoy</p>
+            <div className="flex flex-wrap items-center gap-2">
+              <div role="group" aria-label="Filtrar por estado" className="flex gap-1">
+                {FILTROS.map((f) => (
+                  <button
+                    key={f.id}
+                    type="button"
+                    onClick={() => setFiltro(f.id)}
+                    aria-pressed={filtro === f.id}
+                    className={`min-h-9 rounded-full px-3 text-sm font-medium cursor-pointer transition-colors ${
+                      filtro === f.id ? 'bg-tinte-azul text-brand' : 'text-secondary hover:bg-app'
+                    }`}
+                  >
+                    {f.etiqueta}
+                  </button>
+                ))}
+              </div>
+              <label className="relative">
+                <span className="sr-only">Buscar estudiante</span>
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-secondary" aria-hidden />
+                <input
+                  type="search"
+                  value={buscar}
+                  onChange={(e) => setBuscar(e.target.value)}
+                  placeholder="Buscar"
+                  className="min-h-9 w-36 rounded-control border border-borderCustom bg-surface pl-9 pr-3 text-sm text-primary"
+                />
+              </label>
+            </div>
           </div>
           <table className="mt-2 w-full text-left border-collapse">
             <thead>
@@ -53,6 +94,13 @@ export const LibroDelCurso: React.FC<{ filas: FilaLibro[]; titulo?: string }> = 
               </tr>
             </thead>
             <tbody>
+              {filas.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="py-6 text-center text-sm text-secondary">
+                    Nadie coincide con ese filtro.
+                  </td>
+                </tr>
+              )}
               {filas.map((fila) => (
                 <tr key={fila.alumno.id} className="border-t border-borderCustom hover:bg-brand/5 transition-colors">
                   <td className="py-3 pr-3">
@@ -84,3 +132,4 @@ export const LibroDelCurso: React.FC<{ filas: FilaLibro[]; titulo?: string }> = 
           </table>
         </Hoja>
 );
+};

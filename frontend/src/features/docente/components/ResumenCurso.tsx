@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Info } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '@/app/routes';
 import { AvatarAlumno } from '@/features/docente/components/AvatarAlumno';
+import { TareaDeHoy } from '@/features/docente/components/TareaDeHoy';
 import { LibroDelCurso } from '@/features/docente/components/LibroDelCurso';
 import { BarrasPorDia } from '@/features/docente/components/BarrasPorDia';
 import { EncabezadoPagina, Hoja } from '@/features/docente/components/Hoja';
@@ -32,6 +34,8 @@ const Dato: React.FC<{ etiqueta: string; valor: React.ReactNode; nota?: React.Re
 export const ResumenCurso: React.FC = () => {
   const libro = useLibroCurso();
   const usuario = useAuthStore((st) => st.user);
+  const [verTodas, setVerTodas] = useState(false);
+  const [verSemana, setVerSemana] = useState(false);
   if (!libro) return <p className="text-secondary font-semibold">Cargando resumen…</p>;
 
   const hoy = new Date().toLocaleDateString('es-CL', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -58,7 +62,7 @@ export const ResumenCurso: React.FC = () => {
         }
       />
 
-      <div aria-label="Indicadores de la semana" role="group" className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div aria-label="Indicadores de la semana" role="group" className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <Dato
           tinte="bg-tinte-azul"
           etiqueta="Activos esta semana"
@@ -75,23 +79,29 @@ export const ResumenCurso: React.FC = () => {
           valor={libro.cuentosSemana}
           nota={diferencia === 0 ? 'Igual que la semana pasada' : `${diferencia > 0 ? '▲' : '▼'} ${Math.abs(diferencia)} ${diferencia > 0 ? 'más' : 'menos'} que la semana pasada`}
         />
-        <Dato tinte="bg-tinte-coral" etiqueta="Sesiones esta semana" valor={libro.sesionesSemana} />
-        <Dato tinte="bg-tinte-moca" etiqueta="Palabras escuchadas" valor={libro.palabrasEscuchadas} />
-      </div>
+        <Dato tinte="bg-tinte-moca" etiqueta="Sesiones esta semana" valor={libro.sesionesSemana} />
+              </div>
 
       <section aria-label="Para mirar hoy" className="flex flex-col gap-3">
         <div>
           <h2 className="font-display text-xl text-primary">Para mirar hoy</h2>
           <p className="text-sm text-secondary">
-            Avisan si pasan {UMBRALES.diasSinEntrar} días sin entrar, si hay {UMBRALES.diasActivosMinimos} día o menos de actividad en la semana, si menos del{' '}
-            {UMBRALES.porcentajeSinAyudaBajo} % de los juegos sale sin ayuda o si hay tareas vencidas. Criterios provisionales.
+            Quién necesita apoyo primero.{' '}
+            <span
+              tabIndex={0}
+              title={`Avisan si pasan ${UMBRALES.diasSinEntrar} días sin entrar, si hay ${UMBRALES.diasActivosMinimos} día o menos de actividad en la semana, si menos del ${UMBRALES.porcentajeSinAyudaBajo} % de los juegos sale sin ayuda o si hay tareas vencidas. Criterios provisionales.`}
+              className="inline-flex align-middle text-secondary cursor-help"
+              aria-label="Cómo se eligen"
+            >
+              <Info className="h-4 w-4" aria-hidden />
+            </span>
           </p>
         </div>
         {libro.notas.length === 0 ? (
           <p className="rounded-card bg-tinte-verde px-5 py-4 text-sm font-medium text-tinte-verde-fuerte">Todo en orden: nadie necesita apoyo especial hoy.</p>
         ) : (
           <ol className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-            {libro.notas.slice(0, 3).map((nota, i) => {
+            {libro.notas.slice(0, verTodas ? undefined : 3).map((nota, i) => {
               const alumno = libro.filas.find((f) => f.alumno.id === nota.alumnoId)?.alumno;
               return (
                 <li key={nota.alumnoId ?? i} className={`rounded-card p-4 flex flex-col gap-2 ${TINTE_NOTA[nota.estado]}`}>
@@ -130,15 +140,34 @@ export const ResumenCurso: React.FC = () => {
             })}
           </ol>
         )}
+        {libro.notas.length > 3 && (
+          <button type="button" onClick={() => setVerTodas(!verTodas)} className="self-start text-sm font-medium text-brand hover:text-brand-hover cursor-pointer">
+            {verTodas ? 'Ver menos' : `Ver todos (${libro.notas.length})`}
+          </button>
+        )}
       </section>
 
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1.75fr)_minmax(0,1fr)]">
+      <TareaDeHoy />
+
+      <div className="flex flex-col gap-4">
         <LibroDelCurso filas={libro.filas} />
 
-        <Hoja className="self-start">
-          <h2 className="font-display text-xl text-primary">Cuentos por día</h2>
-          <BarrasPorDia datos={libro.cuentosPorDia} titulo="Cuentos leídos por día" />
-        </Hoja>
+        <div className="self-start">
+          <button
+            type="button"
+            onClick={() => setVerSemana(!verSemana)}
+            aria-expanded={verSemana}
+            className="text-sm font-medium text-brand hover:text-brand-hover cursor-pointer"
+          >
+            {verSemana ? 'Ocultar actividad de la semana' : 'Ver actividad de la semana'}
+          </button>
+          {verSemana && (
+            <Hoja className="mt-3">
+              <h2 className="font-display text-xl text-primary">Cuentos por día</h2>
+              <BarrasPorDia datos={libro.cuentosPorDia} titulo="Cuentos leídos por día" />
+            </Hoja>
+          )}
+        </div>
       </div>
     </>
   );
