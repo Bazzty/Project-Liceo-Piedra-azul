@@ -239,8 +239,8 @@ html[data-theme="admin"] {
   --btn-logros-bg: #1a7a45;
   --btn-logros-border: #135c34;
 
-  --rail-bg: #efeeec;
-  --rail-active: #ffffff;
+  --rail-bg: #f6f5f4;
+  --rail-active: #e6f3fe;
   --rail-line: rgb(0 0 0 / 0.08);
   --rail-text: #4a4744;
   --rail-muted: #8a8681;
