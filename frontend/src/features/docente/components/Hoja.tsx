@@ -1,13 +1,13 @@
 import React from 'react';
 
-/** "Hoja" del libro de clases: fondo blanco, borde fino y regla gruesa de tinta arriba. */
+/** Tarjeta del panel docente: fondo blanco, borde fino, esquinas redondeadas y sombra suave. */
 export const Hoja: React.FC<React.HTMLAttributes<HTMLElement> & { padding?: boolean }> = ({
   padding = true,
   className = '',
   ...props
 }) => (
   <section
-    className={`bg-surface border border-borderCustom border-t-[3px] border-t-primary rounded-card min-w-0 ${padding ? 'px-5 py-4' : ''} ${className}`}
+    className={`bg-surface border border-borderCustom rounded-card shadow-card min-w-0 ${padding ? 'px-5 py-4' : ''} ${className}`}
     {...props}
   />
 );
@@ -21,9 +21,9 @@ export const EncabezadoPagina: React.FC<{
 }> = ({ etiqueta, titulo, descripcion, acciones }) => (
   <header className="flex flex-wrap items-end justify-between gap-4">
     <div className="min-w-0">
-      {etiqueta && <p className="text-xs font-semibold uppercase tracking-[0.1em] text-secondary">{etiqueta}</p>}
-      <h1 className="font-display text-4xl font-semibold tracking-tight text-primary leading-tight">{titulo}</h1>
-      {descripcion && <p className="mt-2 max-w-3xl text-base leading-relaxed text-primary">{descripcion}</p>}
+      {etiqueta && <p className="text-sm text-secondary">{etiqueta}</p>}
+      <h1 className="font-display text-[1.75rem] sm:text-[2rem] tracking-tight text-primary leading-tight">{titulo}</h1>
+      {descripcion && <p className="mt-2 max-w-3xl text-[0.9375rem] leading-relaxed text-secondary">{descripcion}</p>}
     </div>
     {acciones}
   </header>

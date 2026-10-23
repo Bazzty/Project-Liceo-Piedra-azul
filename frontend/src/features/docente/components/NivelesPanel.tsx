@@ -8,7 +8,7 @@ import { Button } from '@/shared/ui';
 import { actualizarNivel, crearNivel, eliminarCuento, eliminarNivel as eliminarNivelConCuentos, useCuentos, useCuentosDeNivel, useNiveles } from '@/api';
 
 const campo =
-  'w-full bg-surface border-2 border-borderCustom rounded-control px-4 py-2.5 text-sm font-bold text-primary outline-none focus:border-brand';
+  'w-full bg-surface border border-borderCustom rounded-control px-4 py-2.5 text-sm font-bold text-primary outline-none focus:border-brand';
 
 const BotonAccion: React.FC<{
   onClick: () => void;
@@ -56,7 +56,7 @@ const NivelForm: React.FC<{ nivel?: Nivel; niveles: Nivel[]; onListo: () => void
   };
 
   return (
-    <div className="bg-app border-2 border-borderCustom rounded-control p-4 flex flex-col gap-3">
+    <div className="bg-app border border-borderCustom rounded-control p-4 flex flex-col gap-3">
       <h3 className="font-display text-2xl font-semibold text-primary">{nivel ? 'Editar nivel' : 'Nuevo nivel'}</h3>
       {error && <p className="text-sm font-bold text-statusDanger">{error}</p>}
       <div className="grid grid-cols-[5rem_1fr] gap-3">
@@ -204,7 +204,7 @@ export const NivelesPanel: React.FC = () => {
               <NivelForm nivel={n} niveles={niveles} onListo={() => setFormulario(null)} />
             </li>
           ) : (
-            <li key={n.id} className="flex flex-wrap items-center gap-3 bg-app border-2 border-borderCustom rounded-control p-3">
+            <li key={n.id} className="flex flex-wrap items-center gap-3 bg-app border border-borderCustom rounded-control p-3">
               <button
                 onClick={() => setAbierto(n.id)}
                 className="flex-1 min-w-0 flex items-center gap-4 text-left cursor-pointer group"

@@ -171,10 +171,10 @@ export const CuentoForm: React.FC<CuentoFormProps> = ({ nivelId, cuento, onGuard
     onGuardado();
   };
 
-  const campo = 'w-full bg-app border-2 border-borderCustom rounded-control px-4 py-3 text-sm font-bold text-primary outline-none focus:border-brand';
+  const campo = 'w-full bg-app border border-borderCustom rounded-control px-4 py-3 text-sm font-bold text-primary outline-none focus:border-brand';
 
   return (
-    <div className="bg-app border-2 border-borderCustom rounded-control p-5 flex flex-col gap-4">
+    <div className="bg-app border border-borderCustom rounded-control p-5 flex flex-col gap-4">
       <h3 className="font-display text-2xl font-semibold text-primary">{cuento ? 'Editar cuento' : 'Subir cuento nuevo'}</h3>
 
       {error && (
@@ -229,7 +229,7 @@ export const CuentoForm: React.FC<CuentoFormProps> = ({ nivelId, cuento, onGuard
 
       {/* Vista previa página por página: palabra + pictograma (tocar para cambiar) */}
       {paginas.map((pg, p) => (
-        <div key={p} className="bg-surface border-2 border-borderCustom rounded-control p-3 flex flex-col gap-2">
+        <div key={p} className="bg-surface border border-borderCustom rounded-control p-3 flex flex-col gap-2">
           <span className="text-xs font-bold uppercase tracking-wider text-secondary">Página {pg.numeroPagina}</span>
           <div className="flex flex-wrap gap-2">
             {pg.palabras.map((w, i) => (
@@ -254,7 +254,7 @@ export const CuentoForm: React.FC<CuentoFormProps> = ({ nivelId, cuento, onGuard
           </div>
 
           {editando?.p === p && (
-            <div className="bg-app border-2 border-borderCustom rounded-control p-3 flex flex-col gap-2">
+            <div className="bg-app border border-borderCustom rounded-control p-3 flex flex-col gap-2">
               <span className="text-sm font-bold text-primary">
                 Pictograma para «{paginas[p].palabras[editando.w].texto}»
               </span>

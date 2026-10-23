@@ -15,7 +15,7 @@ export const PictoImg: React.FC<{ src?: string; alt: string; className?: string 
   if (!src || error) {
     return (
       <div
-        className={`${className} rounded-xl bg-app border-2 border-borderCustom flex items-center justify-center text-secondary font-black shrink-0`}
+        className={`${className} rounded-xl bg-app border border-borderCustom flex items-center justify-center text-secondary font-black shrink-0`}
         aria-label={alt}
       >
         {alt.charAt(0).toUpperCase()}
@@ -27,13 +27,13 @@ export const PictoImg: React.FC<{ src?: string; alt: string; className?: string 
       src={src}
       alt={alt}
       onError={() => setError(true)}
-      className={`${className} rounded-xl bg-white border-2 border-borderCustom object-contain p-0.5 shrink-0`}
+      className={`${className} rounded-xl bg-white border border-borderCustom object-contain p-0.5 shrink-0`}
     />
   );
 };
 
 const Tarjeta: React.FC<{ valor: React.ReactNode; etiqueta: string }> = ({ valor, etiqueta }) => (
-  <div className="bg-app border-2 border-borderCustom rounded-2xl p-4 flex flex-col gap-1">
+  <div className="bg-app border border-borderCustom rounded-2xl p-4 flex flex-col gap-1">
     <span className="text-2xl xl:text-3xl font-black text-primary leading-none whitespace-nowrap">{valor}</span>
     <span className="text-sm font-semibold text-secondary">{etiqueta}</span>
   </div>
@@ -48,7 +48,7 @@ export const StatsGrid: React.FC<{ resumen: Resumen }> = ({ resumen }) => (
     />
     <Tarjeta valor={resumen.palabrasEscuchadas} etiqueta="Palabras escuchadas" />
     <Tarjeta valor={resumen.sesionesSemana} etiqueta="Sesiones esta semana" />
-    <div className="bg-app border-2 border-borderCustom rounded-2xl p-4 flex flex-col gap-2">
+    <div className="bg-app border border-borderCustom rounded-2xl p-4 flex flex-col gap-2">
       <div className="flex flex-wrap gap-1.5 min-h-12 items-center">
         {resumen.masUsados.length === 0 ? (
           <span className="text-sm text-secondary font-semibold">Sin uso aún</span>
@@ -93,7 +93,7 @@ export const RegistroLista: React.FC<{ resumen: Resumen; mostrarAlumno?: boolean
       <EmptyState>Aún no hay actividad registrada.</EmptyState>
     )}
     {resumen.registro.map((r) => (
-      <div key={r.id} className="border-2 border-borderCustom rounded-2xl p-3 bg-app flex flex-col gap-1">
+      <div key={r.id} className="border border-borderCustom rounded-2xl p-3 bg-app flex flex-col gap-1">
         <div className="flex items-center justify-between gap-2 text-xs font-bold text-secondary">
           <span>{formatearFecha(r.fecha)}</span>
           <span className="inline-flex items-center gap-1">

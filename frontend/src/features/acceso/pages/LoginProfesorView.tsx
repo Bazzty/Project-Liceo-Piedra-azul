@@ -60,13 +60,13 @@ export const LoginProfesorView: React.FC = () => {
         <div className="flex items-center gap-3">
           <MarcaPiedra className="w-11 h-11" />
           <div className="leading-tight">
-            <p className="font-display text-xl font-semibold text-white">Leer para Todos</p>
+            <p className="font-display text-xl font-semibold text-primary">Leer para Todos</p>
             <p className="text-sm text-rail-muted">Liceo Piedra Azul · Puerto Montt</p>
           </div>
         </div>
 
         <div className="flex flex-col gap-7">
-          <h1 className="font-display text-4xl lg:text-[2.5rem] font-semibold leading-[1.15] tracking-tight text-white">
+          <h1 className="font-display text-4xl lg:text-[2.5rem] font-semibold leading-[1.15] tracking-tight text-primary">
             Seguimiento del avance de lectura de tus estudiantes
           </h1>
           <ul className="flex flex-col gap-4">
