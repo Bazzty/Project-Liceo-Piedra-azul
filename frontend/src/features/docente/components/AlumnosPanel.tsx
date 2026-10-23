@@ -115,7 +115,7 @@ const FichaAlumno: React.FC<{ alumnoId: string; onVolver: () => void }> = ({ alu
         />
         <Dato etiqueta="Palabras escuchadas" valor={ficha.palabrasEscuchadas} />
         <Dato etiqueta="Sesiones esta semana" valor={ficha.sesionesSemana} />
-        <Dato etiqueta="Días con actividad" valor={ficha.actividadPorDia.filter((d) => d.valor > 0).length} nota="de los últimos 7" />
+        <Dato etiqueta="Momentos de calma" valor={ficha.calmaSemana} nota="en los últimos 7 días" />
       </Hoja>
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">

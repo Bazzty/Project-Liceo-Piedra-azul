@@ -11,4 +11,6 @@ export const UMBRALES = {
   porcentajeSinAyudaBajo: 50,
   /** Cuántas de sus últimas sesiones de juegos se promedian. */
   sesionesAPromediar: 3,
+  /** Con tantos momentos de calma en la semana se avisa para conversar con el niño. */
+  calmaVecesAviso: 3,
 } as const;

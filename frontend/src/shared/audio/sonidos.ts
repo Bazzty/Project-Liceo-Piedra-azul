@@ -53,3 +53,10 @@ export const sonarRespiro = (inhala: boolean) => {
   const ctx = obtenerContexto();
   if (ctx) tono(ctx, inhala ? 392 : 294, 0, 1.4, 0.03);
 };
+
+/** Luz que nace: un tono muy suave y grave, distinto en cada toque. */
+export const sonarLuz = () => {
+  if (!useAjustesStore.getState().sonido) return;
+  const ctx = obtenerContexto();
+  if (ctx) tono(ctx, 330 + Math.random() * 140, 0, 0.5, 0.025);
+};

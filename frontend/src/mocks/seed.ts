@@ -3,7 +3,7 @@ import { sembrarCuentosKinder } from '@/mocks/cuentosKinder';
 import { sembrarNiveles } from '@/mocks/niveles';
 import { sembrarCuentosPalabras } from '@/mocks/cuentosPalabras';
 import { sembrarCuentosVocales } from '@/mocks/cuentosVocales';
-import type { Alumno, Cuento, Registro } from '@/types';
+import type { ActividadCalma, Alumno, Cuento, Registro } from '@/types';
 
 // ---------------------------------------------------------------------------
 // DATOS SIMULADOS PARA EL PANEL DOCENTE
@@ -118,6 +118,27 @@ async function sembrarApoyosDemo() {
 	for (const [id, apoyos] of Object.entries(demo)) {
 		if (alumnos.some((a) => a.id === id)) await db.alumnos.update(id, { apoyos });
 	}
+}
+
+/** Momentos de calma de ejemplo (Benjamín la busca seguido; Mateo, una vez). Llevan `demo: true`. */
+async function sembrarCalmaDemo() {
+	const actuales = await db.registros.toArray();
+	if (actuales.some((r) => r.tipo === 'calma')) return;
+	const calma = (alumnoId: string, dias: number, hora: number, actividades: ActividadCalma[], animo: 'peor' | 'igual' | 'mejor', segundos: number): Registro => ({
+		alumnoId,
+		tipo: 'calma',
+		detalle: `Usó la calma y se sintió ${animo === 'mejor' ? 'mejor' : animo === 'igual' ? 'igual' : 'peor'}`,
+		lugar: 'liceo',
+		fecha: hace(dias, hora),
+		calma: { actividades, animo, segundos },
+		demo: true,
+	});
+	await db.registros.bulkAdd([
+		calma('estudiante-benjamin', 0, 10, ['respirar'], 'mejor', 90),
+		calma('estudiante-benjamin', 1, 11, ['luciernagas', 'burbujas'], 'mejor', 140),
+		calma('estudiante-benjamin', 3, 9, ['dibujar'], 'igual', 120),
+		calma('estudiante-mateo', 2, 10, ['burbujas'], 'mejor', 60),
+	]);
 }
 
 async function seedDemoDocente() {
@@ -513,6 +534,7 @@ export async function seedDatabase() {
 		await sembrarNiveles();
 		await sembrarApoyosDemo();
 		await sembrarPalabrasNucleo();
+		await sembrarCalmaDemo();
 
 		console.log('✅ Base de datos inicializada correctamente.');
 	} catch (error) {

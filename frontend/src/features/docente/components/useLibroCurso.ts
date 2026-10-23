@@ -25,6 +25,8 @@ export interface FilaLibro {
   /** Palabras que más le cuestan. */
   palabrasDificiles: string[];
   tareasVencidas: number;
+  /** Veces que usó la zona de calma en los últimos 7 días. */
+  calmaSemana: number;
   /** Razones por las que conviene apoyarlo, de la más grave a la menos (vacío si va al día). */
   motivos: string[];
 }
@@ -48,6 +50,8 @@ export interface LibroCurso {
   cuentosSemanaAnterior: number;
   sesionesSemana: number;
   palabrasEscuchadas: number;
+  calmaSemana: number;
+  calmaHoy: number;
   cuentosPorDia: { etiqueta: string; valor: number }[];
   notas: NotaDelDia[];
 }
@@ -87,7 +91,7 @@ export function useLibroCurso(): LibroCurso | null {
 
     const filas: FilaLibro[] = alumnos.map((alumno) => {
       const fechas = [
-        ...registros.filter((r) => r.alumnoId === alumno.id).map((r) => r.fecha),
+        ...registros.filter((r) => r.alumnoId === alumno.id && r.tipo !== 'calma').map((r) => r.fecha),
         ...progresos.filter((p) => p.alumnoId === alumno.id).map((p) => p.fechaUltimoAcceso),
       ];
       const conActividad = new Set(fechas.map((f) => claveDia(new Date(f))));
@@ -111,6 +115,7 @@ export function useLibroCurso(): LibroCurso | null {
       const tareasVencidas = asignaciones.filter(
         (a) => alumno.id && esParaAlumno(a, alumno.id) && estadoTarea(a, alumno.id, registros) === 'vencida',
       ).length;
+      const calmaSemana = delAlumno.filter((r) => r.tipo === 'calma' && esDeLosUltimosDias(r.fecha, 7)).length;
       const lecturaBaja = sinAyuda !== null && sinAyuda < UMBRALES.porcentajeSinAyudaBajo;
 
       const motivos: string[] = [];
@@ -118,6 +123,7 @@ export function useLibroCurso(): LibroCurso | null {
       else if (estado === 'atencion') motivos.push(diasActivos === 0 ? 'sin sesiones esta semana' : `solo ${diasActivos} día con actividad esta semana`);
       if (lecturaBaja) motivos.push(`le cuestan los juegos (${sinAyuda} % sin ayuda)`);
       if (tareasVencidas > 0) motivos.push(`${tareasVencidas} ${tareasVencidas === 1 ? 'tarea vencida' : 'tareas vencidas'}`);
+      if (calmaSemana >= UMBRALES.calmaVecesAviso) motivos.push(`usó la calma ${calmaSemana} veces esta semana`);
       if (estado === 'al_dia' && motivos.length > 0) estado = 'atencion';
 
       return {
@@ -131,6 +137,7 @@ export function useLibroCurso(): LibroCurso | null {
         sinAyuda,
         palabrasDificiles: dificiles,
         tareasVencidas,
+        calmaSemana,
         motivos,
       };
     });
@@ -161,7 +168,9 @@ export function useLibroCurso(): LibroCurso | null {
           alumnoId: f.alumno.id,
           estado: f.estado,
           titulo: `${f.alumno.nombre} · ${f.motivos[0]}`,
-          consejo: apoyoEnJuegos && f.palabrasDificiles.length > 0
+          consejo: f.motivos[0].startsWith('usó la calma')
+            ? 'Conversa con el niño o la niña: mira cuándo busca la calma y qué la antecede.'
+            : apoyoEnJuegos && f.palabrasDificiles.length > 0
             ? `Refuerza con una tarea: ${f.palabrasDificiles.join(', ')}.`
             : CONSEJOS[f.estado] || 'Revisa su ficha y deja una tarea de refuerzo.',
           motivos: f.motivos.slice(1),
@@ -177,6 +186,8 @@ export function useLibroCurso(): LibroCurso | null {
       cuentosSemana,
       cuentosSemanaAnterior,
       sesionesSemana: registros.filter((r) => r.tipo === 'sesion' && esDeLosUltimosDias(r.fecha, 7)).length,
+      calmaSemana: registros.filter((r) => r.tipo === 'calma' && esDeLosUltimosDias(r.fecha, 7)).length,
+      calmaHoy: registros.filter((r) => r.tipo === 'calma' && claveDia(new Date(r.fecha)) === claveDia(hoy)).length,
       palabrasEscuchadas: registros.reduce((t, r) => t + (r.palabrasEscuchadas ?? 0), 0),
       cuentosPorDia,
       notas,

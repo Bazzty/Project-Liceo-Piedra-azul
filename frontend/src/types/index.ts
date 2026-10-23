@@ -96,10 +96,19 @@ export interface Progreso {
 }
 
 // 6. Bitácora de actividad (alimenta el panel docente: sesiones, palabras escuchadas, registro)
+export type ActividadCalma = 'respirar' | 'burbujas' | 'luciernagas' | 'dibujar';
+
+/** Un momento de calma: qué hizo el niño, cuánto duró y cómo dijo sentirse al salir (con caritas). */
+export interface RegistroCalma {
+  actividades: ActividadCalma[];
+  animo?: 'peor' | 'igual' | 'mejor';
+  segundos: number;
+}
+
 export interface Registro {
   id?: string;
   alumnoId: string;
-  tipo: 'sesion' | 'lectura' | 'tablero' | 'actividad';
+  tipo: 'sesion' | 'lectura' | 'tablero' | 'actividad' | 'calma';
   cuentoId?: string; // Solo para tipo 'actividad': cuento al que pertenecen los juegos
   aciertos?: number; // Solo para tipo 'actividad': juegos resueltos sin ayuda
   total?: number; // Solo para tipo 'actividad': juegos de la sesión
@@ -111,4 +120,5 @@ export interface Registro {
   fecha: string; // ISO
   palabrasEscuchadas?: number;
   pictogramaIds?: string[]; // Solo para tipo 'tablero'
+  calma?: RegistroCalma; // Solo para tipo 'calma'
 }

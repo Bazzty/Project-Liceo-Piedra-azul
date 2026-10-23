@@ -54,7 +54,7 @@ export function useFichaAlumno(alumnoId: string) {
     });
 
     const hoy = new Date();
-    const fechas = [...registros.map((r) => r.fecha), ...progresos.map((p) => p.fechaUltimoAcceso)];
+    const fechas = [...registros.filter((r) => r.tipo !== 'calma').map((r) => r.fecha), ...progresos.map((p) => p.fechaUltimoAcceso)];
     const actividadPorDia = Array.from({ length: 7 }, (_, i) => {
       const d = new Date(hoy);
       d.setDate(hoy.getDate() - (6 - i));
@@ -95,6 +95,7 @@ export function useFichaAlumno(alumnoId: string) {
       cuentosCompletados: completados.size,
       cuentosPublicados: publicados.length,
       palabrasEscuchadas: registros.reduce((t, r) => t + (r.palabrasEscuchadas ?? 0), 0),
+      calmaSemana: registros.filter((r) => r.tipo === 'calma' && esDeLosUltimosDias(r.fecha, 7)).length,
       sesionesSemana: registros.filter((r) => r.tipo === 'sesion' && esDeLosUltimosDias(r.fecha, 7)).length,
       ultimoAcceso: [...fechas].sort((a, b) => b.localeCompare(a))[0] ?? null,
     };

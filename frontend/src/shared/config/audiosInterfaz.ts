@@ -39,6 +39,9 @@ export const AUDIOS_INTERFAZ = {
   inhala: '/audio/interfaz/inhala.mp3',
   exhala: '/audio/interfaz/exhala.mp3',
   burbujas: '/audio/interfaz/burbujas.mp3',
+  luciernagas: '/audio/interfaz/luciernagas.mp3',
+  dibuja: '/audio/interfaz/dibuja.mp3',
+  como_estas: '/audio/interfaz/como_estas.mp3',
 } as const;
 
 export type ClaveAudio = keyof typeof AUDIOS_INTERFAZ;

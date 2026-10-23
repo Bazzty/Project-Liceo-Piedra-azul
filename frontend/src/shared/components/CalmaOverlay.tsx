@@ -1,11 +1,18 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Check, LayoutGrid, RotateCcw, Sparkles, Volume2, Wind } from 'lucide-react';
+import { Droplets, Frown, LayoutGrid, Meh, Paintbrush, RotateCcw, Smile, Sparkles, Volume2, Wind } from 'lucide-react';
+import { crearRegistro } from '@/api';
+import { useAuthStore } from '@/features/acceso/useAuthStore';
+import type { ActividadCalma, RegistroCalma } from '@/types';
 import { sonarBurbuja, sonarRespiro } from '@/shared/audio/sonidos';
+import { DibujarConLuz } from '@/shared/components/calma/DibujarConLuz';
+import { Luciernagas } from '@/shared/components/calma/Luciernagas';
 import { OsoCabeza } from '@/shared/components/OsoCabeza';
 import type { ClaveAudio } from '@/shared/config/audiosInterfaz';
 import { useHablar } from '@/shared/hooks/useHablar';
 import { useAjustesStore } from '@/shared/store/useAjustesStore';
 import { Button } from '@/shared/ui';
+
+type Animo = NonNullable<RegistroCalma['animo']>;
 
 /* Zona de calma: un fondo propio, quieto y de poco contraste, que no cambia con la paleta elegida.
    Sin puntajes, sin tiempo límite y con una salida siempre a la vista ("Estoy mejor"). */
@@ -15,7 +22,13 @@ const EXHALA_MS = 6000;
 const RESPIROS = 5;
 const FONDO = 'linear-gradient(180deg, #23506b 0%, #2f6e7c 55%, #3f8587 100%)';
 
-type Actividad = 'menu' | 'respirar' | 'burbujas';
+type Actividad = 'menu' | ActividadCalma;
+
+const CARITAS: { animo: Animo; icono: typeof Smile; etiqueta: string }[] = [
+  { animo: 'peor', icono: Frown, etiqueta: 'Peor' },
+  { animo: 'igual', icono: Meh, etiqueta: 'Igual' },
+  { animo: 'mejor', icono: Smile, etiqueta: 'Mejor' },
+];
 
 /** Respiración guiada: el círculo crece al inhalar (4 s) y se achica al exhalar (6 s), cinco veces. */
 const Respirar: React.FC<{ alTerminar: () => void }> = ({ alTerminar }) => {
@@ -137,7 +150,7 @@ const Opcion: React.FC<{ icono: React.ReactNode; texto: string; clave: ClaveAudi
       <button
         type="button"
         onClick={onClick}
-        className="flex flex-col items-center justify-center gap-4 w-52 h-52 sm:w-64 sm:h-64 rounded-card bg-white/15 border-4 border-white/70 text-3xl sm:text-4xl font-black cursor-pointer hover:bg-white/25 active:scale-95 transition-all"
+        className="flex flex-col items-center justify-center gap-4 w-40 h-40 sm:w-52 sm:h-52 rounded-card bg-white/15 border-4 border-white/70 text-2xl sm:text-3xl font-black cursor-pointer hover:bg-white/25 active:scale-95 transition-all"
       >
         {icono}
         {texto}
@@ -146,7 +159,7 @@ const Opcion: React.FC<{ icono: React.ReactNode; texto: string; clave: ClaveAudi
         type="button"
         onClick={() => hablar(texto, clave)}
         aria-label={`Escuchar: ${texto}`}
-        className="absolute top-3 right-3 w-12 h-12 rounded-full bg-white text-[#23506b] flex items-center justify-center cursor-pointer hover:bg-white/90"
+        className="absolute top-2 right-2 w-11 h-11 rounded-full bg-white text-[#23506b] flex items-center justify-center cursor-pointer hover:bg-white/90"
       >
         <Volume2 className="w-6 h-6" aria-hidden />
       </button>
@@ -160,9 +173,14 @@ const Opcion: React.FC<{ icono: React.ReactNode; texto: string; clave: ClaveAudi
  */
 export const CalmaOverlay: React.FC<{ abierto: boolean; onCerrar: () => void }> = ({ abierto, onCerrar }) => {
   const hablar = useHablar();
+  const activeStudentId = useAuthStore((s) => s.activeStudentId);
+  const supervision = useAuthStore((s) => s.supervision);
   const [actividad, setActividad] = useState<Actividad>('menu');
   const [fin, setFin] = useState(false);
   const [vuelta, setVuelta] = useState(0);
+  // Qué hizo y desde cuándo: al salir queda un registro para la docente
+  const usadas = useRef<ActividadCalma[]>([]);
+  const desde = useRef(0);
 
   // Cada vez que se abre vuelve al menú (ajuste durante el render)
   const [estabaAbierto, setEstabaAbierto] = useState(abierto);
@@ -174,19 +192,44 @@ export const CalmaOverlay: React.FC<{ abierto: boolean; onCerrar: () => void }> 
     }
   }
 
+  const salir = useCallback(
+    (animo?: Animo) => {
+      if (activeStudentId && !supervision) {
+        const actividades = usadas.current;
+        const sentir = animo === 'mejor' ? 'se sintió mejor' : animo === 'igual' ? 'se sintió igual' : animo === 'peor' ? 'se sintió peor' : '';
+        void crearRegistro({
+          alumnoId: activeStudentId,
+          tipo: 'calma',
+          detalle: `Usó la calma${sentir ? ` y ${sentir}` : ''}`,
+          lugar: 'casa',
+          fecha: new Date().toISOString(),
+          calma: { actividades, animo, segundos: Math.round((Date.now() - desde.current) / 1000) },
+        });
+      }
+      onCerrar();
+    },
+    [activeStudentId, supervision, onCerrar],
+  );
+
   useEffect(() => {
     if (!abierto) return;
+    usadas.current = [];
+    desde.current = Date.now();
     hablar('Descansemos un momento.', 'descansemos');
-    const alTeclear = (e: KeyboardEvent) => e.key === 'Escape' && onCerrar();
+    const alTeclear = (e: KeyboardEvent) => e.key === 'Escape' && salir();
     window.addEventListener('keydown', alTeclear);
     return () => window.removeEventListener('keydown', alTeclear);
-  }, [abierto, hablar, onCerrar]);
+  }, [abierto, hablar, salir]);
 
-  const terminarRespiros = useCallback(() => setFin(true), []);
+  const terminarRespiros = useCallback(() => {
+    setFin(true);
+    hablar('¿Cómo estás ahora?', 'como_estas');
+  }, [hablar]);
 
   if (!abierto) return null;
 
   const elegir = (a: Actividad) => {
+    if (a !== 'menu' && !usadas.current.includes(a)) usadas.current.push(a);
     setFin(false);
     setVuelta((v) => v + 1);
     setActividad(a);
@@ -206,9 +249,11 @@ export const CalmaOverlay: React.FC<{ abierto: boolean; onCerrar: () => void }> 
             <span className="block w-32 h-32 bg-surface rounded-full p-2 overflow-hidden" role="img" aria-label="Osito">
               <OsoCabeza ojosFelices boca="HAPPY" />
             </span>
-            <div className="flex flex-wrap items-center justify-center gap-6">
-              <Opcion icono={<Wind className="w-16 h-16 sm:w-20 sm:h-20" aria-hidden />} texto="Respirar" clave="respira" onClick={() => elegir('respirar')} />
-              <Opcion icono={<Sparkles className="w-16 h-16 sm:w-20 sm:h-20" aria-hidden />} texto="Burbujas" clave="burbujas" onClick={() => elegir('burbujas')} />
+            <div className="grid grid-cols-2 gap-4 sm:gap-6">
+              <Opcion icono={<Wind className="w-14 h-14 sm:w-16 sm:h-16" aria-hidden />} texto="Respirar" clave="respira" onClick={() => elegir('respirar')} />
+              <Opcion icono={<Droplets className="w-14 h-14 sm:w-16 sm:h-16" aria-hidden />} texto="Burbujas" clave="burbujas" onClick={() => elegir('burbujas')} />
+              <Opcion icono={<Sparkles className="w-14 h-14 sm:w-16 sm:h-16" aria-hidden />} texto="Luces" clave="luciernagas" onClick={() => elegir('luciernagas')} />
+              <Opcion icono={<Paintbrush className="w-14 h-14 sm:w-16 sm:h-16" aria-hidden />} texto="Dibujar" clave="dibuja" onClick={() => elegir('dibujar')} />
             </div>
           </>
         )}
@@ -228,18 +273,38 @@ export const CalmaOverlay: React.FC<{ abierto: boolean; onCerrar: () => void }> 
         )}
 
         {actividad === 'burbujas' && <Burbujas key={vuelta} />}
+        {actividad === 'luciernagas' && <Luciernagas key={vuelta} />}
+        {actividad === 'dibujar' && <DibujarConLuz key={vuelta} />}
       </div>
 
+      {/* Salida: tres caritas. Tocar cualquiera cierra y le cuenta a la docente cómo se sintió */}
       <div className="flex flex-wrap items-center justify-center gap-4">
         {actividad !== 'menu' && (
           <Button variant="secondary" size="xl" onClick={() => setActividad('menu')} aria-label="Otra cosa">
             <LayoutGrid className="w-8 h-8" aria-hidden />
           </Button>
         )}
-        <Button variant="accent" size="xl" onClick={onCerrar}>
-          <Check className="w-8 h-8" aria-hidden />
-          Estoy mejor
-        </Button>
+        <div role="group" aria-label="¿Cómo estás ahora?" className="flex items-center gap-3 rounded-full bg-white/15 p-2">
+          <button
+            type="button"
+            onClick={() => hablar('¿Cómo estás ahora?', 'como_estas')}
+            aria-label="Escuchar: ¿Cómo estás ahora?"
+            className="w-14 h-14 rounded-full bg-white text-[#23506b] flex items-center justify-center cursor-pointer hover:bg-white/90"
+          >
+            <Volume2 className="w-7 h-7" aria-hidden />
+          </button>
+          {CARITAS.map(({ animo, icono: Icono, etiqueta }) => (
+            <button
+              key={animo}
+              type="button"
+              onClick={() => salir(animo)}
+              aria-label={`${etiqueta}. Salir`}
+              className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white/20 border-4 border-white/80 flex items-center justify-center cursor-pointer hover:bg-white/35 active:scale-90 transition-all"
+            >
+              <Icono className="w-10 h-10 sm:w-12 sm:h-12" aria-hidden />
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );

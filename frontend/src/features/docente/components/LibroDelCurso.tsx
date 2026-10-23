@@ -111,7 +111,10 @@ export const LibroDelCurso: React.FC<{ filas: FilaLibro[]; titulo?: string }> = 
                       <AvatarAlumno nombre={fila.alumno.nombre} url={fila.alumno.avatarUrl} />
                       <span>
                         <span className="block text-base font-semibold">{fila.alumno.nombre}</span>
-                        <span className="block text-xs text-secondary">Nivel {fila.nivel}</span>
+                        <span className="block text-xs text-secondary">
+                          Nivel {fila.nivel}
+                          {fila.calmaSemana > 0 && <span className="ml-2 rounded-full bg-tinte-verde px-2 py-0.5 font-medium text-tinte-verde-fuerte">Calma ×{fila.calmaSemana}</span>}
+                        </span>
                         {fila.motivos.length > 0 && <span className="block text-xs font-medium text-statusWarn">{fila.motivos.join(' · ')}</span>}
                       </span>
                     </Link>

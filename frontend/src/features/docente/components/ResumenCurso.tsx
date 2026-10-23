@@ -62,7 +62,7 @@ export const ResumenCurso: React.FC = () => {
         }
       />
 
-      <div aria-label="Indicadores de la semana" role="group" className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div aria-label="Indicadores de la semana" role="group" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <Dato
           tinte="bg-tinte-azul"
           etiqueta="Activos esta semana"
@@ -80,6 +80,12 @@ export const ResumenCurso: React.FC = () => {
           nota={diferencia === 0 ? 'Igual que la semana pasada' : `${diferencia > 0 ? '▲' : '▼'} ${Math.abs(diferencia)} ${diferencia > 0 ? 'más' : 'menos'} que la semana pasada`}
         />
         <Dato tinte="bg-tinte-moca" etiqueta="Sesiones esta semana" valor={libro.sesionesSemana} />
+        <Dato
+          tinte="bg-tinte-verde"
+          etiqueta="Momentos de calma"
+          valor={libro.calmaSemana}
+          nota={`esta semana · ${libro.calmaHoy} hoy`}
+        />
               </div>
 
       <section aria-label="Para mirar hoy" className="flex flex-col gap-3">

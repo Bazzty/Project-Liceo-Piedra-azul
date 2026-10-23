@@ -88,3 +88,15 @@
     }
   }
 }
+
+/* Zona de calma: luciérnagas que nacen, flotan y se apagan */
+@keyframes luciernaga {
+  0% { opacity: 0; transform: translate(0, 0) scale(0.4); }
+  15% { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--dx, 0px), -150px) scale(1.2); }
+}
+@keyframes luciernagaQuieta {
+  0% { opacity: 0; }
+  20% { opacity: 1; }
+  100% { opacity: 0; }
+}

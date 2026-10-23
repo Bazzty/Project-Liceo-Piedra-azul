@@ -38,6 +38,9 @@ Guardar cada una como `frontend/public/audio/interfaz/<clave>.mp3`.
 | `inhala` | Inhala. |
 | `exhala` | Exhala. |
 | `burbujas` | Toca las burbujas. |
+| `luciernagas` | Toca el cielo y nacen luces. |
+| `dibuja` | Dibuja con tu dedo. |
+| `como_estas` | ¿Cómo estás ahora? |
 | `pronto` | Este nivel llega pronto. |
 | `respira` | Respira conmigo. Inhala... y exhala. |
 | `sigues_ahi` | ¿Sigues ahí? |

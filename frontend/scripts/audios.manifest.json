@@ -84,6 +84,18 @@
     "texto": "Toca las burbujas."
   },
   {
+    "archivo": "interfaz/luciernagas.mp3",
+    "texto": "Toca el cielo y nacen luces."
+  },
+  {
+    "archivo": "interfaz/dibuja.mp3",
+    "texto": "Dibuja con tu dedo."
+  },
+  {
+    "archivo": "interfaz/como_estas.mp3",
+    "texto": "¿Cómo estás ahora?"
+  },
+  {
     "archivo": "interfaz/pronto.mp3",
     "texto": "Este nivel llega pronto."
   },
