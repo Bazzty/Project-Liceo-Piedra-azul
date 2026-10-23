@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '@/app/routes';
+import { AvatarAlumno } from '@/features/docente/components/AvatarAlumno';
 import { Hoja } from '@/features/docente/components/Hoja';
 import { formatearFecha } from '@/features/docente/components/format';
 import type { EstadoAlumno, FilaLibro } from '@/features/docente/components/useLibroCurso';
@@ -38,12 +39,12 @@ export const SemanaEnCuadros: React.FC<{ fila: FilaLibro }> = ({ fila }) => (
 export const LibroDelCurso: React.FC<{ filas: FilaLibro[]; titulo?: string }> = ({ filas, titulo = 'Libro del curso' }) => (
         <Hoja aria-label={titulo} className="overflow-x-auto">
           <div className="flex items-baseline justify-between gap-3">
-            <h2 className="font-display text-2xl font-semibold text-primary">{titulo}</h2>
+            <h2 className="font-display text-xl text-primary">{titulo}</h2>
             <p className="text-xs text-secondary">Cada cuadro es un día con actividad; el marcado es hoy</p>
           </div>
           <table className="mt-2 w-full text-left border-collapse">
             <thead>
-              <tr className="text-[0.7rem] font-semibold uppercase tracking-[0.08em] text-secondary">
+              <tr className="text-xs font-medium text-secondary">
                 <th className="py-2 pr-3 font-semibold">Estudiante</th>
                 <th className="py-2 pr-3 font-semibold">Últimos 7 días</th>
                 <th className="py-2 pr-3 font-semibold">Cuentos</th>
@@ -57,11 +58,14 @@ export const LibroDelCurso: React.FC<{ filas: FilaLibro[]; titulo?: string }> = 
                   <td className="py-3 pr-3">
                     <Link
                       to={`${ROUTES.profesorEstudiantes}?alumno=${fila.alumno.id}`}
-                      className="block text-primary hover:text-brand"
+                      className="flex items-center gap-3 text-primary hover:text-brand"
                     >
-                      <span className="font-display text-xl font-semibold">{fila.alumno.nombre}</span>
-                      <span className="block text-xs text-secondary">Nivel {fila.nivel}</span>
-                      {fila.motivos.length > 0 && <span className="block text-xs font-semibold text-statusWarn">{fila.motivos.join(' · ')}</span>}
+                      <AvatarAlumno nombre={fila.alumno.nombre} url={fila.alumno.avatarUrl} />
+                      <span>
+                        <span className="block text-base font-semibold">{fila.alumno.nombre}</span>
+                        <span className="block text-xs text-secondary">Nivel {fila.nivel}</span>
+                        {fila.motivos.length > 0 && <span className="block text-xs font-medium text-statusWarn">{fila.motivos.join(' · ')}</span>}
+                      </span>
                     </Link>
                   </td>
                   <td className="py-3 pr-3">
