@@ -20,6 +20,7 @@ export default {
       fontFamily: {
         sans: ["var(--font-body)"],
         display: ["var(--font-display)"],
+        editorial: ["var(--font-editorial)", "Georgia", "serif"],
       },
       colors: {
         /* Riel de navegación del panel docente */
@@ -30,6 +31,15 @@ export default {
           text: "var(--rail-text)",
           muted: "var(--rail-muted)",
           accent: "var(--rail-accent)",
+        },
+
+        /* Tintes de color del panel docente */
+        tinte: {
+          azul: { DEFAULT: "var(--tint-azul)", fuerte: "var(--tint-azul-fuerte)" },
+          ambar: { DEFAULT: "var(--tint-ambar)", fuerte: "var(--tint-ambar-fuerte)" },
+          coral: { DEFAULT: "var(--tint-coral)", fuerte: "var(--tint-coral-fuerte)" },
+          moca: { DEFAULT: "var(--tint-moca)", fuerte: "var(--tint-moca-fuerte)" },
+          verde: { DEFAULT: "var(--tint-verde)", fuerte: "var(--tint-verde-fuerte)" },
         },
 
         /* Superficies y texto */

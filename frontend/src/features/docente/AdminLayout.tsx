@@ -8,14 +8,14 @@ import { useThemeStore } from '@/shared/store/useThemeStore';
 
 export type AdminSection = 'dashboard' | 'alumnos' | 'actividades' | 'curriculo' | 'cuentos' | 'tarjetas' | 'aula';
 
-const NAV_ITEMS: { id: AdminSection; icono: LucideIcon; etiqueta: string; ruta: string }[] = [
-  { id: 'dashboard', icono: LayoutGrid, etiqueta: 'Resumen', ruta: ROUTES.profesorPanel },
-  { id: 'alumnos', icono: Users, etiqueta: 'Estudiantes', ruta: ROUTES.profesorEstudiantes },
-  { id: 'actividades', icono: ListChecks, etiqueta: 'Actividades', ruta: ROUTES.profesorActividades },
-  { id: 'curriculo', icono: GraduationCap, etiqueta: 'Cobertura curricular', ruta: ROUTES.profesorCurriculo },
-  { id: 'cuentos', icono: BookOpen, etiqueta: 'Cuentos', ruta: ROUTES.profesorCuentos },
-  { id: 'tarjetas', icono: CreditCard, etiqueta: 'Tarjetas de acceso', ruta: ROUTES.profesorTarjetas },
-  { id: 'aula', icono: Gauge, etiqueta: 'Control de aula', ruta: ROUTES.profesorAula },
+const NAV_ITEMS: { id: AdminSection; icono: LucideIcon; color: string; etiqueta: string; ruta: string }[] = [
+  { id: 'dashboard', color: 'text-tinte-azul-fuerte', icono: LayoutGrid, etiqueta: 'Resumen', ruta: ROUTES.profesorPanel },
+  { id: 'alumnos', color: 'text-tinte-coral-fuerte', icono: Users, etiqueta: 'Estudiantes', ruta: ROUTES.profesorEstudiantes },
+  { id: 'actividades', color: 'text-tinte-ambar-fuerte', icono: ListChecks, etiqueta: 'Actividades', ruta: ROUTES.profesorActividades },
+  { id: 'curriculo', color: 'text-tinte-verde-fuerte', icono: GraduationCap, etiqueta: 'Cobertura curricular', ruta: ROUTES.profesorCurriculo },
+  { id: 'cuentos', color: 'text-tinte-moca-fuerte', icono: BookOpen, etiqueta: 'Cuentos', ruta: ROUTES.profesorCuentos },
+  { id: 'tarjetas', color: 'text-tinte-azul-fuerte', icono: CreditCard, etiqueta: 'Tarjetas de acceso', ruta: ROUTES.profesorTarjetas },
+  { id: 'aula', color: 'text-tinte-coral-fuerte', icono: Gauge, etiqueta: 'Control de aula', ruta: ROUTES.profesorAula },
 ];
 
 interface AdminLayoutProps {
@@ -23,7 +23,7 @@ interface AdminLayoutProps {
   activeSection: AdminSection;
 }
 
-/** Marco del panel docente: barra lateral clara con íconos y contenido en tarjetas. */
+/** Marco del panel docente: barra lateral de papel con íconos de colores y contenido en tarjetas. */
 export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activeSection }) => {
   const [menuAbierto, setMenuAbierto] = useState(false);
   const { user, logout, terminarSupervision } = useAuthStore();
@@ -58,7 +58,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activeSectio
         <button
           type="button"
           onClick={() => setMenuAbierto(!menuAbierto)}
-          className="min-h-12 min-w-12 flex items-center justify-center rounded-full border border-rail-line text-primary cursor-pointer"
+          className="min-h-12 min-w-12 flex items-center justify-center rounded-control border border-rail-line text-primary cursor-pointer"
           aria-label={menuAbierto ? 'Cerrar menú' : 'Abrir menú'}
         >
           {menuAbierto ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -92,10 +92,10 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activeSectio
                   }}
                   aria-current={activo ? 'page' : undefined}
                   className={`w-full min-h-12 flex items-center gap-3 px-3 py-2.5 rounded-lg text-left cursor-pointer transition-colors ${
-                    activo ? 'bg-rail-active text-primary' : 'text-rail-text hover:bg-rail-active/60'
+                    activo ? 'bg-rail-active text-primary font-medium border border-rail-line' : 'border border-transparent text-rail-text hover:bg-black/5'
                   }`}
                 >
-                  <item.icono className={`w-[1.125rem] h-[1.125rem] shrink-0 ${activo ? 'text-rail-accent' : 'text-rail-muted'}`} aria-hidden />
+                  <item.icono className={`w-[1.125rem] h-[1.125rem] shrink-0 ${item.color}`} aria-hidden />
                   <span className="text-[0.9375rem]">{item.etiqueta}</span>
                 </button>
               );
@@ -112,7 +112,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activeSectio
           <button
             type="button"
             onClick={cerrarSesion}
-            className="min-h-12 rounded-full bg-rail-active text-sm font-medium text-primary cursor-pointer hover:bg-rail-line"
+            className="min-h-12 rounded-control border border-rail-line bg-rail-active text-sm font-medium text-primary cursor-pointer hover:bg-black/5"
           >
             Cerrar sesión
           </button>

@@ -192,58 +192,66 @@ html[data-theme="monocromatica"] {
 
 /* Espacio del docente: "libro de clases". Sobrio, de datos; serif editorial para títulos y cifras */
 html[data-theme="admin"] {
-  /* Sistema visual tipo Mercury: blanco, bordes finos, índigo y botones en píldora */
-  --font-body: 'Public Sans Variable', 'Segoe UI', system-ui, sans-serif;
-  --font-display: 'Public Sans Variable', 'Segoe UI', system-ui, sans-serif;
+  /* Sistema visual tipo Notion: papel cálido, tarjetas blancas de borde fino, un solo azul de acción
+     y tintes de colores para distinguir cosas (como notas adhesivas). */
+  --font-body: 'Inter Variable', 'Segoe UI', system-ui, sans-serif;
+  --font-display: 'Inter Variable', 'Segoe UI', system-ui, sans-serif;
+  --font-editorial: 'Newsreader Variable', Georgia, serif;
 
-  --bg-app: #ffffff;
+  --bg-app: #f6f5f4;
   --bg-card: #ffffff;
-  --text-primary: #1e1e2a;
-  --text-secondary: #535461;
-  --border-color: #e6e7ee;
-  --border-strong: #c9cbd8;
+  --text-primary: #1a1918;
+  --text-secondary: #615d59;
+  --border-color: rgb(0 0 0 / 0.1);
+  --border-strong: rgb(0 0 0 / 0.22);
 
-  --brand-primary: #5266eb;
-  --brand-hover: #3f53d6;
+  --brand-primary: #0075de;
+  --brand-hover: #005bab;
   --on-brand: #ffffff;
 
-  --accent: #5266eb;
-  --accent-hover: #3f53d6;
+  --accent: #0075de;
+  --accent-hover: #005bab;
   --on-accent: #ffffff;
 
-  --status-ok: #1a7f4b;
-  --status-ok-bg: #e6f4ec;
-  --status-warn: #9a5b00;
-  --status-warn-bg: #fcf0dc;
-  --status-danger: #c0322f;
-  --status-danger-bg: #fbe6e5;
-  --status-info: #5266eb;
-  --status-info-bg: #eceffd;
+  --status-ok: #1a7a45;
+  --status-ok-bg: #e3f3ea;
+  --status-warn: #8f5a00;
+  --status-warn-bg: #fff1cf;
+  --status-danger: #c4311d;
+  --status-danger-bg: #fde6e2;
+  --status-info: #0066c0;
+  --status-info-bg: #e6f3fe;
 
-  --btn-aprender-bg: #5266eb;
-  --btn-aprender-border: #3f53d6;
-  --btn-hablar-bg: #5266eb;
-  --btn-hablar-border: #3f53d6;
-  --btn-colores-bg: #535461;
-  --btn-colores-border: #3c3d4a;
-  --btn-logros-bg: #1a7f4b;
-  --btn-logros-border: #146239;
+  /* Tintes para docentes: fondo suave + tono fuerte de cada color */
+  --tint-azul: #e6f3fe;       --tint-azul-fuerte: #0075de;
+  --tint-ambar: #fff1cf;      --tint-ambar-fuerte: #b87800;
+  --tint-coral: #fde6e2;      --tint-coral-fuerte: #e03a24;
+  --tint-moca: #f3e9e1;       --tint-moca-fuerte: #8f6246;
+  --tint-verde: #e3f3ea;      --tint-verde-fuerte: #1a7a45;
+  --tint-noche: #02093a;      --tint-noche-fuerte: #ffffff;
 
-  --rail-bg: #fbfcfd;
-  --rail-active: rgb(112 115 147 / 0.1);
-  --rail-line: rgb(112 115 147 / 0.12);
-  --rail-text: #535461;
-  --rail-muted: #8a8c9e;
-  --rail-accent: #5266eb;
+  --btn-aprender-bg: #0075de;
+  --btn-aprender-border: #005bab;
+  --btn-hablar-bg: #0075de;
+  --btn-hablar-border: #005bab;
+  --btn-colores-bg: #615d59;
+  --btn-colores-border: #46433f;
+  --btn-logros-bg: #1a7a45;
+  --btn-logros-border: #135c34;
+
+  --rail-bg: #efeeec;
+  --rail-active: #ffffff;
+  --rail-line: rgb(0 0 0 / 0.08);
+  --rail-text: #4a4744;
+  --rail-muted: #8a8681;
+  --rail-accent: #0075de;
 
   --radius-control: 0.5rem;
-  --radius-card: 1rem;
-  --shadow-card: 0 1px 2px rgb(30 30 42 / 0.04), 0 1px 6px rgb(30 30 42 / 0.04);
+  --radius-card: 0.75rem;
+  --shadow-card: none;
 }
 
-/* Panel docente: botones en píldora y tipografía más liviana */
-html[data-theme="admin"] button.rounded-control { border-radius: 9999px; }
-html[data-theme="admin"] .font-display { font-weight: 400; letter-spacing: -0.01em; }
-html[data-theme="admin"] .font-black { font-weight: 600; }
-html[data-theme="admin"] .font-bold { font-weight: 500; }
-html[data-theme="admin"] .font-semibold { font-weight: 500; }
+/* Panel docente: títulos compactos y bordes finos en lugar de sombras */
+html[data-theme="admin"] .font-display { font-weight: 700; letter-spacing: -0.02em; }
+html[data-theme="admin"] .font-black { font-weight: 700; }
+html[data-theme="admin"] .font-editorial { font-family: var(--font-editorial); font-weight: 400; }

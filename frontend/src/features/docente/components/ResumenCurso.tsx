@@ -13,11 +13,11 @@ const COLOR_NUMERO: Record<EstadoAlumno, string> = {
   al_dia: 'text-statusOk',
 };
 
-const Dato: React.FC<{ etiqueta: string; valor: React.ReactNode; nota?: React.ReactNode }> = ({ etiqueta, valor, nota }) => (
-  <div className="px-5 py-4">
-    <p className="text-[0.7rem] font-semibold uppercase tracking-[0.09em] text-secondary">{etiqueta}</p>
-    <p className="mt-1 font-display text-5xl font-semibold leading-none text-primary">{valor}</p>
-    {nota && <p className="mt-1.5 text-xs font-semibold text-secondary">{nota}</p>}
+const Dato: React.FC<{ etiqueta: string; valor: React.ReactNode; nota?: React.ReactNode; tinte: string }> = ({ etiqueta, valor, nota, tinte }) => (
+  <div className={`rounded-card px-5 py-4 ${tinte}`}>
+    <p className="text-sm font-medium text-primary/70">{etiqueta}</p>
+    <p className="mt-2 font-display text-5xl leading-none text-primary">{valor}</p>
+    {nota && <p className="mt-2 text-xs font-medium text-primary/70">{nota}</p>}
   </div>
 );
 
@@ -50,8 +50,9 @@ export const ResumenCurso: React.FC = () => {
         }
       />
 
-      <Hoja padding={false} aria-label="Indicadores de la semana" className="grid grid-cols-2 lg:grid-cols-4 lg:divide-x divide-borderCustom">
+      <div aria-label="Indicadores de la semana" role="group" className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <Dato
+          tinte="bg-tinte-azul"
           etiqueta="Activos esta semana"
           valor={
             <>
@@ -61,13 +62,14 @@ export const ResumenCurso: React.FC = () => {
           }
         />
         <Dato
+          tinte="bg-tinte-ambar"
           etiqueta="Cuentos leídos"
           valor={libro.cuentosSemana}
           nota={diferencia === 0 ? 'Igual que la semana pasada' : `${diferencia > 0 ? '▲' : '▼'} ${Math.abs(diferencia)} ${diferencia > 0 ? 'más' : 'menos'} que la semana pasada`}
         />
-        <Dato etiqueta="Sesiones esta semana" valor={libro.sesionesSemana} />
-        <Dato etiqueta="Palabras escuchadas" valor={libro.palabrasEscuchadas} />
-      </Hoja>
+        <Dato tinte="bg-tinte-coral" etiqueta="Sesiones esta semana" valor={libro.sesionesSemana} />
+        <Dato tinte="bg-tinte-moca" etiqueta="Palabras escuchadas" valor={libro.palabrasEscuchadas} />
+      </div>
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1.75fr)_minmax(0,1fr)]">
         <LibroDelCurso filas={libro.filas} />
