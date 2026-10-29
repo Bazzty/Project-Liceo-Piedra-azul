@@ -4,7 +4,7 @@
 [![PWA](https://img.shields.io/badge/PWA-Offline--First-green.svg)]()
 [![WCAG 2.1 AA](https://img.shields.io/badge/Accesibilidad-WCAG%202.1%20AA-orange.svg)]()
 
-> **Ramas:** `main` (estable, vacía por ahora) · `develop` (estructura del proyecto, integración) · `prototipo` (prototipo de muestra, solo referencia). Ver `CONTRIBUTING.md`.
+> **Ramas:** `main` (estable, vacía por ahora) · `develop` (estructura del proyecto, integración) · `prototipo` (prototipo de muestra, solo referencia). Ver [CONTRIBUTING.md](CONTRIBUTING.md).
 
 **Proyecto de Vinculación con el Medio**  
 * **Institución:** Universidad San Sebastián (Sede De la Patagonia, Puerto Montt)
@@ -101,7 +101,12 @@ Project-Liceo-Piedra-azul/
    git checkout develop
    ```
 
-2. **Instalar dependencias e iniciar en modo desarrollo:**
+2. **Instalar los hooks de commit (en la raíz, valida `feat(PLPA-n): ...`):**
+   ```bash
+   npm install
+   ```
+
+3. **Instalar dependencias e iniciar en modo desarrollo:**
    ```bash
    cd frontend
    npm install
@@ -109,7 +114,7 @@ Project-Liceo-Piedra-azul/
    ```
    *Acceder a [http://localhost:5173](http://localhost:5173).*
 
-3. **Probar la PWA y compilación:**
+4. **Probar la PWA y compilación:**
    ```bash
    npm run build
    npm run preview
