@@ -1,0 +1,186 @@
+[
+  {
+    "archivo": "interfaz/toca_numeros.mp3",
+    "texto": "Toca los números de tu tarjeta. Después toca la palomita."
+  },
+  {
+    "archivo": "interfaz/intentemos.mp3",
+    "texto": "Intentemos otra vez."
+  },
+  {
+    "archivo": "interfaz/descansemos.mp3",
+    "texto": "Descansemos un momento."
+  },
+  {
+    "archivo": "interfaz/leer.mp3",
+    "texto": "Leer."
+  },
+  {
+    "archivo": "interfaz/hablar.mp3",
+    "texto": "Hablar."
+  },
+  {
+    "archivo": "interfaz/estrellas.mp3",
+    "texto": "Mis estrellas."
+  },
+  {
+    "archivo": "interfaz/elige_nivel.mp3",
+    "texto": "Elige un nivel para empezar a leer."
+  },
+  {
+    "archivo": "interfaz/elige_cuento.mp3",
+    "texto": "Elige el cuento que más te guste."
+  },
+  {
+    "archivo": "interfaz/nivel_a.mp3",
+    "texto": "Nivel A. Vocales."
+  },
+  {
+    "archivo": "interfaz/nivel_b.mp3",
+    "texto": "Nivel B. Sílabas."
+  },
+  {
+    "archivo": "interfaz/nivel_c.mp3",
+    "texto": "Nivel C. Palabras."
+  },
+  {
+    "archivo": "interfaz/nivel_d.mp3",
+    "texto": "Nivel D. Cuentos."
+  },
+  {
+    "archivo": "interfaz/nivel_e.mp3",
+    "texto": "Nivel E. Historias."
+  },
+  {
+    "archivo": "interfaz/cual_es.mp3",
+    "texto": "¿Cuál es?"
+  },
+  {
+    "archivo": "interfaz/que_empieza.mp3",
+    "texto": "¿Con qué empieza?"
+  },
+  {
+    "archivo": "interfaz/busca_parejas.mp3",
+    "texto": "Busca las parejas."
+  },
+  {
+    "archivo": "interfaz/que_falta.mp3",
+    "texto": "¿Qué falta?"
+  },
+  {
+    "archivo": "interfaz/pon_en_orden.mp3",
+    "texto": "Pon en orden."
+  },
+  {
+    "archivo": "interfaz/inhala.mp3",
+    "texto": "Inhala."
+  },
+  {
+    "archivo": "interfaz/exhala.mp3",
+    "texto": "Exhala."
+  },
+  {
+    "archivo": "interfaz/burbujas.mp3",
+    "texto": "Toca las burbujas."
+  },
+  {
+    "archivo": "interfaz/luciernagas.mp3",
+    "texto": "Toca el cielo y nacen luces."
+  },
+  {
+    "archivo": "interfaz/dibuja.mp3",
+    "texto": "Dibuja con tu dedo."
+  },
+  {
+    "archivo": "interfaz/como_estas.mp3",
+    "texto": "¿Cómo estás ahora?"
+  },
+  {
+    "archivo": "interfaz/pronto.mp3",
+    "texto": "Este nivel llega pronto."
+  },
+  {
+    "archivo": "interfaz/respira.mp3",
+    "texto": "Respira conmigo. Inhala... y exhala."
+  },
+  {
+    "archivo": "interfaz/sigues_ahi.mp3",
+    "texto": "¿Sigues ahí?"
+  },
+  {
+    "archivo": "pictogramas/ama.mp3",
+    "texto": "Ama."
+  },
+  {
+    "archivo": "pictogramas/azul.mp3",
+    "texto": "Azul."
+  },
+  {
+    "archivo": "pictogramas/nino.mp3",
+    "texto": "Niño."
+  },
+  {
+    "archivo": "cuentos/actividad_instruccion.mp3",
+    "texto": "Escucha la palabra y toca cada sílaba."
+  },
+  {
+    "archivo": "cuentos/cuento-sapo-pepe-p1.mp3",
+    "texto": "Pepe es un sapo."
+  },
+  {
+    "archivo": "cuentos/cuento-sapo-pepe-p2.mp3",
+    "texto": "Pepe salta en la sala."
+  },
+  {
+    "archivo": "cuentos/cuento-sapo-pepe-p3.mp3",
+    "texto": "Pepe ve una lupa."
+  },
+  {
+    "archivo": "cuentos/cuento-sapo-pepe-p4.mp3",
+    "texto": "Pepe toma sopa."
+  },
+  {
+    "archivo": "cuentos/cuento-sapo-pepe-p5.mp3",
+    "texto": "¡Pepe es feliz!"
+  },
+  {
+    "archivo": "cuentos/cuento-mimi-lana-p1.mp3",
+    "texto": "Mimi es una gata."
+  },
+  {
+    "archivo": "cuentos/cuento-mimi-lana-p2.mp3",
+    "texto": "Mimi ve lana lila."
+  },
+  {
+    "archivo": "cuentos/cuento-mimi-lana-p3.mp3",
+    "texto": "Mimi juega con la lana."
+  },
+  {
+    "archivo": "cuentos/cuento-mimi-lana-p4.mp3",
+    "texto": "Mimi salta en la mesa."
+  },
+  {
+    "archivo": "cuentos/cuento-mimi-lana-p5.mp3",
+    "texto": "Mimi duerme feliz."
+  },
+  {
+    "archivo": "cuentos/cuento-mi-dia-p1.mp3",
+    "texto": "Yo como pan."
+  },
+  {
+    "archivo": "cuentos/cuento-mi-dia-p2.mp3",
+    "texto": "Yo voy al colegio."
+  },
+  {
+    "archivo": "cuentos/cuento-mi-dia-p3.mp3",
+    "texto": "Yo juego con mi amigo."
+  },
+  {
+    "archivo": "cuentos/cuento-mi-dia-p4.mp3",
+    "texto": "Mamá me abraza."
+  },
+  {
+    "archivo": "cuentos/cuento-mi-dia-p5.mp3",
+    "texto": "Yo duermo en mi cama."
+  }
+]

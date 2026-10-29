@@ -1,0 +1,102 @@
+@import '@fontsource-variable/nunito';
+@import '@fontsource-variable/inter';
+@import '@fontsource-variable/newsreader';
+@import '@fontsource-variable/public-sans';
+@import './styles/theme.css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body,
+  #root {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100vh;
+  }
+
+  /* La interfaz crece con la pantalla (todo está en rem): se ve llena en el computador del laboratorio */
+  @media (min-width: 1536px) {
+    html {
+      font-size: 18px;
+    }
+  }
+  @media (min-width: 1900px) {
+    html {
+      font-size: 21px;
+    }
+  }
+
+  body {
+    background-color: var(--bg-app);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    font-size: 1.0625rem;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Foco visible y consistente en toda la app */
+  :focus-visible {
+    outline: 3px solid var(--brand-primary);
+    outline-offset: 3px;
+    /* Halo de contraste para que el foco se vea sobre cualquier fondo */
+    box-shadow: 0 0 0 6px var(--bg-card);
+  }
+
+  /* Ajuste del propio niño/docente: pantalla quieta */
+  html[data-motion='off'] *,
+  html[data-motion='off'] *::before,
+  html[data-motion='off'] *::after {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  /* Impresión (tarjetas de acceso): hoja carta y colores tal como se ven en pantalla */
+  @page {
+    size: letter;
+    margin: 12mm;
+  }
+  /* Control de un solo botón: lo que está marcado se ve de lejos */
+  [data-barrido-activo='1'] {
+    outline: 8px solid var(--accent, #ffc83d) !important;
+    outline-offset: 6px !important;
+    box-shadow: 0 0 0 14px rgba(0, 0, 0, 0.55) !important;
+    position: relative;
+    z-index: 5;
+  }
+
+  @media print {
+    * {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    body {
+      background: #ffffff;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation: none !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* Zona de calma: luciérnagas que nacen, flotan y se apagan */
+@keyframes luciernaga {
+  0% { opacity: 0; transform: translate(0, 0) scale(0.4); }
+  15% { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--dx, 0px), -150px) scale(1.2); }
+}
+@keyframes luciernagaQuieta {
+  0% { opacity: 0; }
+  20% { opacity: 1; }
+  100% { opacity: 0; }
+}

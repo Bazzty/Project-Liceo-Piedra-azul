@@ -1,0 +1,143 @@
+/* ==========================================================
+   Osito guía — animaciones
+   Capas (de afuera hacia adentro):
+     .oso-body  -> reacciones (salto, cabeceo…) vía Web Animations API
+     .oso-talk  -> "rebotito" mientras habla
+     .oso-head  -> respiración constante
+   ========================================================== */
+
+.oso-head {
+	transform-origin: 50% 85%;
+	animation: oso-breathe 4.2s ease-in-out infinite;
+	will-change: transform;
+}
+
+.oso-body {
+	transform-origin: 50% 90%;
+	will-change: transform;
+}
+
+[data-hablando='1'] .oso-talk {
+	transform-origin: 50% 90%;
+	animation: oso-talk 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes oso-breathe {
+	0%, 100% { transform: translateY(0) scale(1, 1); }
+	50%      { transform: translateY(-1.6%) scale(1.012, 1.02); }
+}
+
+@keyframes oso-talk {
+	from { transform: translateY(0) rotate(-1.5deg) scale(1); }
+	to   { transform: translateY(-2.5%) rotate(1.5deg) scale(1.03, 0.99); }
+}
+
+/* ---------- Ojos ---------- */
+.oso-pupila {
+	transition: transform 0.14s ease-out;
+}
+
+.oso-lid {
+	transition: transform 0.09s ease-in;
+}
+.oso-lid-top    { transform: translateY(-230px); }
+.oso-lid-bottom { transform: translateY(230px); }
+
+.oso-eyes[data-blink='1'] .oso-lid {
+	transform: translateY(0);
+	transition-duration: 0.07s;
+}
+
+.oso-happy {
+	opacity: 0;
+	transition: opacity 0.12s ease-out;
+}
+.oso-eyes[data-happy='1'] .oso-happy { opacity: 1; }
+
+/* ---------- Burbuja de diálogo ---------- */
+.oso-burbuja {
+	animation: oso-burbuja-in 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+	transform-origin: 0% 50%;
+}
+.oso-burbuja-large {
+	transform-origin: 50% 0%;
+}
+
+@keyframes oso-burbuja-in {
+	from { opacity: 0; transform: scale(0.85) translateY(6px); }
+	to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Palabra que se está leyendo en voz alta */
+.oso-palabra {
+	display: inline-block;
+	border-radius: 0.5rem;
+	padding: 0 0.14em;
+	margin: 0 -0.14em;
+	transition: background-color 0.12s, color 0.12s, transform 0.12s;
+}
+.oso-palabra[data-activa='1'] {
+	background-color: color-mix(in srgb, var(--brand-primary) 22%, transparent);
+	color: var(--brand-primary);
+	transform: scale(1.12) translateY(-1px);
+}
+
+/* ---------- Botón "toca para escuchar" ---------- */
+[data-llamar='1'] .oso-cta {
+	animation: oso-cta-pulse 1.1s ease-in-out infinite;
+}
+@keyframes oso-cta-pulse {
+	0%, 100% { transform: scale(1); }
+	50%      { transform: scale(1.07); }
+}
+
+/* Ondas de sonido alrededor del osito mientras habla */
+.oso-onda {
+	position: absolute;
+	inset: -4px;
+	border-radius: 9999px;
+	border: 3px solid var(--brand-primary);
+	opacity: 0;
+	pointer-events: none;
+}
+[data-hablando='1'] .oso-onda {
+	animation: oso-onda 1.4s ease-out infinite;
+}
+[data-hablando='1'] .oso-onda:nth-child(2) { animation-delay: 0.7s; }
+@keyframes oso-onda {
+	0%   { opacity: 0.55; transform: scale(1); }
+	100% { opacity: 0;    transform: scale(1.2); }
+}
+
+/* ---------- Partículas (estrellitas / corazones) ---------- */
+.oso-particula {
+	position: absolute;
+	left: 50%;
+	top: 45%;
+	width: 22%;
+	height: 22%;
+	margin: -11% 0 0 -11%;
+	pointer-events: none;
+	opacity: 0;
+	animation: oso-particula 1.3s cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+	animation-delay: var(--delay, 0s);
+}
+.oso-particula svg { width: 100%; height: 100%; display: block; }
+
+@keyframes oso-particula {
+	0%   { opacity: 0; transform: translate(0, 0) scale(0.2) rotate(0deg); }
+	15%  { opacity: 1; }
+	100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(1) rotate(var(--rot)); }
+}
+
+/* ---------- Accesibilidad: menos movimiento ---------- */
+@media (prefers-reduced-motion: reduce) {
+	.oso-head,
+	[data-hablando='1'] .oso-talk,
+	[data-llamar='1'] .oso-cta,
+	[data-hablando='1'] .oso-onda {
+		animation: none;
+	}
+	.oso-burbuja { animation: none; }
+	.oso-particula { display: none; }
+}
