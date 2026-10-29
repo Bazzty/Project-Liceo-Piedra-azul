@@ -12,7 +12,7 @@
 | Tipografías Nunito e Inter | SIL Open Font License | Uso libre, incluida la redistribución con la app |
 | Íconos (lucide) | ISC | Uso libre |
 | Audios generados con IA (fonemas, palabras, narración, voz del personaje) | ElevenLabs, voz "Playful, High-pitched Friend" (voz de un tercero en la biblioteca) | Guardar los términos del plan y de **esa voz**; comprobar que permiten uso en un producto educativo (y si fuera comercial). Ver `docs/audios-interfaz.md` |
-| Voz "profesora-clonada" | Es la voz de una persona real | Requiere **consentimiento escrito** de la docente para clonar y usar su voz. Sin ese documento, no usarla |
+| Voz clonada de la docente | Retirada del proyecto (PLPA-97) | No se usa. Si se retomara, requiere **consentimiento escrito** de la docente |
 | Osito guía | Trabajo de otro integrante del equipo | Confirmar por escrito que es **creación propia** (o que existe cesión de derechos) y no deriva de un personaje ajeno |
 
 ## 2. Personajes y avatares

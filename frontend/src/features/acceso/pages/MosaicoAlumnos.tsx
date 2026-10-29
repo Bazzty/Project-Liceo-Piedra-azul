@@ -7,6 +7,7 @@ import { obtenerAlumno, useAlumnos } from '@/api';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@/app/routes';
 import { THEMES_CONFIG } from '@/shared/config/themes';
+import { VOCES_CONFIG, VOZ_POR_DEFECTO } from '@/shared/config/voces';
 import { useThemeStore, type ThemeId } from '@/shared/store/useThemeStore';
 import { usePlayerStore } from '@/shared/store/usePlayerStore';
 
@@ -22,7 +23,9 @@ export const MosaicoAlumnos: React.FC = () => {
     if (alumno && THEMES_CONFIG.some((t) => t.id === alumno.temaId)) {
       useThemeStore.getState().setTheme(alumno.temaId as ThemeId);
     }
-    if (alumno?.vozId) usePlayerStore.getState().setSelectedVoice(alumno.vozId);
+    // Un vozId antiguo (p. ej. la voz clonada, ya retirada) cae a la voz por defecto
+    const voz = VOCES_CONFIG.find((v) => v.id === alumno?.vozId)?.id ?? VOZ_POR_DEFECTO;
+    usePlayerStore.getState().setSelectedVoice(voz);
     navigate(ROUTES.menu);
   };
 
