@@ -1,5 +1,7 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
+
+const FOCUSABLES = 'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 export interface ModalProps {
   isOpen: boolean;
@@ -26,18 +28,47 @@ export const Modal: React.FC<ModalProps> = ({
   size = 'md',
   dismissible = true,
 }) => {
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  // Al abrir, el foco entra al diálogo; al cerrar, vuelve a donde estaba
   useEffect(() => {
-    if (!isOpen || !dismissible) return;
-    const onKeyDown = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [isOpen, dismissible, onClose]);
+    if (!isOpen) return;
+    const anterior = document.activeElement as HTMLElement | null;
+    const dialogo = dialogRef.current;
+    (dialogo?.querySelector<HTMLElement>(FOCUSABLES) ?? dialogo)?.focus();
+    return () => anterior?.focus?.();
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
+  // El teclado se atiende en el propio diálogo: Escape cierra solo el de arriba y Tab no sale de él
+  const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'Escape' && dismissible) {
+      e.stopPropagation();
+      onClose();
+      return;
+    }
+    if (e.key !== 'Tab') return;
+    const dialogo = dialogRef.current;
+    const items = dialogo ? [...dialogo.querySelectorAll<HTMLElement>(FOCUSABLES)] : [];
+    if (items.length === 0) return e.preventDefault();
+    const primero = items[0];
+    const ultimo = items[items.length - 1];
+    if (e.shiftKey && (document.activeElement === primero || document.activeElement === dialogo)) {
+      e.preventDefault();
+      ultimo.focus();
+    } else if (!e.shiftKey && document.activeElement === ultimo) {
+      e.preventDefault();
+      primero.focus();
+    }
+  };
+
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-overlay backdrop-blur-sm p-4 animate-fadeIn"
+      ref={dialogRef}
+      tabIndex={-1}
+      onKeyDown={onKeyDown}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-overlay backdrop-blur-sm p-4 animate-fadeIn outline-none"
       role="dialog"
       aria-modal="true"
       aria-label={title}

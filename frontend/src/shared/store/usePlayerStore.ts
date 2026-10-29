@@ -36,19 +36,28 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
     newAudio.onplay = () => {
       set({ isPlaying: true, currentAudioUrl: audioUrl });
     };
+    // Una instancia reemplazada no debe tocar el estado de la que suena ahora
+    const esVigente = () => get().activeAudioInstance === newAudio;
     newAudio.onended = () => {
+      if (esVigente()) set({ isPlaying: false, currentAudioUrl: null, activeAudioInstance: null });
+    };
+    let fallo = false;
+    const fallar = () => {
+      if (fallo || !esVigente()) return;
+      fallo = true;
       set({ isPlaying: false, currentAudioUrl: null, activeAudioInstance: null });
+      opciones?.alFallar?.();
     };
     newAudio.onerror = () => {
       if (!opciones?.alFallar) console.error(`❌ Error al cargar o reproducir el archivo de audio: ${audioUrl}`);
-      set({ isPlaying: false, currentAudioUrl: null, activeAudioInstance: null });
-      opciones?.alFallar?.();
+      fallar();
     };
     // 4. Guardar la instancia y reproducir
     set({ activeAudioInstance: newAudio });
     newAudio.play().catch((err) => {
-      if (opciones?.alFallar) return; // onerror ya avisa cuando el archivo no existe
-      console.error('❌ Error al iniciar la reproducción automática:', err);
+      if (err?.name === 'AbortError') return; // se detuvo o reemplazó antes de empezar
+      if (!opciones?.alFallar) console.error('❌ Error al iniciar la reproducción automática:', err);
+      fallar(); // p. ej. autoplay bloqueado: usar el respaldo
     });
   },
   stopAudio: () => {

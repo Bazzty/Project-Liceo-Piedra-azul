@@ -75,6 +75,8 @@ export const BarridoUnBoton: React.FC<{ raiz: React.RefObject<HTMLElement | null
   useEffect(() => {
     const alTeclear = (e: KeyboardEvent) => {
       if (e.key === ' ' || e.key === 'Enter') {
+        const destino = e.target as HTMLElement | null;
+        if (!marcado.current || destino?.closest('input, textarea, select, [contenteditable="true"]')) return;
         e.preventDefault();
         elegir();
       }
