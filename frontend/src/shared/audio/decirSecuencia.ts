@@ -1,4 +1,5 @@
 import { useAjustesStore } from '@/shared/store/useAjustesStore';
+import { usePlayerStore } from '@/shared/store/usePlayerStore';
 
 export interface ElementoDeVoz {
   texto: string;
@@ -8,23 +9,26 @@ export interface ElementoDeVoz {
 
 const ESPERA_MAXIMA_MS = 5000;
 
-const reproducirArchivo = (url: string, tasa: number) =>
+/** Reproduce por el store del reproductor (una sola voz a la vez, misma velocidad). `false` si hay que usar el respaldo. */
+const reproducirArchivo = (url: string, cancelada?: () => boolean) =>
   new Promise<boolean>((resolve) => {
-    const audio = new Audio(url);
-    audio.playbackRate = tasa;
-    const fin = setTimeout(() => resolve(false), ESPERA_MAXIMA_MS);
-    audio.onended = () => {
-      clearTimeout(fin);
-      resolve(true);
-    };
-    audio.onerror = () => {
-      clearTimeout(fin);
-      resolve(false);
-    };
-    audio.play().catch(() => {
-      clearTimeout(fin);
-      resolve(false);
-    });
+    const store = usePlayerStore.getState();
+    store.playAudio(url, { alFallar: () => terminar(false) });
+    const audio = usePlayerStore.getState().activeAudioInstance;
+    const vigilante = setInterval(() => {
+      if (cancelada?.()) {
+        usePlayerStore.getState().stopAudio();
+        terminar(true);
+      }
+    }, 100);
+    function terminar(sono: boolean) {
+      clearInterval(vigilante);
+      resolve(sono);
+    }
+    if (!audio) return terminar(false);
+    // `pause` cubre que otro audio o stopAudio lo corten: no se vuelve a leer encima
+    audio.addEventListener('ended', () => terminar(true), { once: true });
+    audio.addEventListener('pause', () => terminar(true), { once: true });
   });
 
 const leerEnVoz = (texto: string, lenta: boolean) =>
@@ -57,8 +61,8 @@ export async function decirSecuencia(
     opciones.alDecir?.(i);
     if (sonido) {
       const { texto, audioUrl } = elementos[i];
-      const sono = audioUrl ? await reproducirArchivo(audioUrl, vozLenta ? 0.8 : 1) : false;
-      if (!sono) await leerEnVoz(texto, vozLenta);
+      const sono = audioUrl ? await reproducirArchivo(audioUrl, opciones.cancelada) : false;
+      if (!sono && !opciones.cancelada?.()) await leerEnVoz(texto, vozLenta);
     } else {
       await new Promise((r) => setTimeout(r, 700));
     }

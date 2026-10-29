@@ -1,4 +1,7 @@
-/** Tarjetas de acceso ficticias: cada niño tiene un código corto impreso en su tarjeta. */
+/**
+ * Tarjetas de acceso ficticias: cada niño tiene un código corto impreso en su tarjeta.
+ * SOLO DEMO: estos códigos en texto plano no pueden pasar al backend; allí se guardan como hash (ver CLAUDE.md).
+ */
 export interface TarjetaDemo {
   codigo: string;
   alumnoId: string;
