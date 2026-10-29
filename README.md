@@ -23,18 +23,16 @@
 
 ### Frontend (`/frontend`)
 
-* **Core:** React 18 + TypeScript + Vite
+* **Core:** React 19 + TypeScript + Vite
 * **Estilos & Accesibilidad:** Tailwind CSS (Bajo estímulo visual / Ley TEA 21.545) + Lucide Icons
 * **Modo Offline & PWA:** `vite-plugin-pwa` + Workbox
 * **Base de Datos Local:** Dexie.js (IndexedDB) para cuentos y progreso offline
 * **Gestión de Estado:** Zustand (Estado UI) + TanStack Query (API)
 
-### 🎙️ Estrategia de IA de Voces
+### 🎙️ Voz (texto a voz)
 
-1. **ElevenLabs (Pre-generación $0 CLP):** Generación de audios `.mp3` con entonación cálida en español chileno nativo y clonación de voz de la educadora del liceo mediante rotación de cuentas gratuitas (alojados en `/public/audio/`).
-2. **Respaldo Técnico:**
-   * **MediaRecorder API:** Módulo para que la educadora grabe audios directamente con el micrófono de su PC.
-   * **Microsoft Edge Neural Voices (`edge-tts`):** Generación complementaria con voz chilena `es-CL-CatalinaNeural`.
+1. **Piper (local, $0):** el backend genera un `.mp3` por página o ítem con una voz única en español, mediante un job en cola en el worker. La docente no graba audios.
+2. **Respaldo:** `speechSynthesis` del navegador si falta el audio.
 
 ### 🖼️ Catálogo de Pictogramas e Imágenes Reales
 
@@ -53,7 +51,7 @@ Project-Liceo-Piedra-azul/
     │   ├── favicon.ico
     │   ├── manifest.webmanifest   # Configuración PWA (Nombre, colores, íconos)
     │   ├── icons/                 # Íconos PWA (192x192, 512x512)
-    │   ├── audio/                 # Audios pre-generados (.mp3 - ElevenLabs / Voces)
+    │   ├── audio/                 # Audios pre-generados (.mp3 - Piper)
     │   │   ├── vocales/           # Audios de vocales y consonantes iniciales
     │   │   ├── palabras/          # Audios de palabras funcionales y pictogramas
     │   │   └── sistema/           # Audios de bienvenida, instrucciones y refuerzo positivo
@@ -120,3 +118,15 @@ Project-Liceo-Piedra-azul/
    npm run preview
    ```
 
+---
+
+# 🔀 Flujo de Trabajo
+
+1. Crea tu rama desde `develop`: `feature/PLPA-n-descripcion` o `fix/PLPA-n-descripcion`.
+2. Haz commits con la clave Jira: `feat(PLPA-n): descripción`. Un hook los valida; sin clave el commit falla.
+3. Sube tu rama con `git push` y abre un Pull Request hacia `develop`.
+4. El responsable del repositorio revisa y hace el merge con **Squash**: queda un commit por ticket.
+
+`main` y `develop` están protegidas: no se hace push directo ni se mergea sin PR. Solo el responsable del repositorio puede mergear. Detalle de ramas y commits en [CONTRIBUTING.md](CONTRIBUTING.md).
+
+> **Si ya clonaste el repositorio:** tras `git pull origin develop`, corre `npm install` en la raíz para activar el hook de commits.
