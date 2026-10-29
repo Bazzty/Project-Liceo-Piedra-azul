@@ -10,7 +10,7 @@ Contexto: app web de fomento lector con pictogramas SAAC para el Liceo Piedra Az
 ## Ramas
 - `main` (estable) y `develop` (integración): sin commits directos, solo PR con 1 aprobación.
 - Trabajo en `feature/PLPA-n-descripcion` o `fix/PLPA-n-descripcion`, desde `develop`.
-- `prototipo`: congelada, solo referencia. No se mergea.
+- `prototipo`: archivada (su contenido ya está en `develop`). No se trabaja ahí.
 
 ## Commits
 - Conventional Commits con clave Jira obligatoria: `feat(PLPA-12): descripción`.

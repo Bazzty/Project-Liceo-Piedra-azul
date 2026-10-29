@@ -1,0 +1,19 @@
+/* Oración grande bajo los pictogramas del lector: la palabra que suena se resalta. */
+.oracion-lectura {
+	font-size: clamp(1.6rem, 5vw, 2.6rem);
+	font-weight: 900;
+	line-height: 1.35;
+	text-align: center;
+	color: var(--text-primary);
+}
+.oracion-lectura .palabra-oracion {
+	display: inline-block;
+	padding: 0 0.2em;
+	border-radius: 0.6rem;
+	transition: background-color 0.15s, color 0.15s, transform 0.15s;
+}
+.oracion-lectura .palabra-oracion[data-activa='1'] {
+	background: color-mix(in srgb, var(--accent) 70%, transparent);
+	color: var(--text-primary);
+	transform: scale(1.1) translateY(-2px);
+}
