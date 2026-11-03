@@ -68,7 +68,8 @@ return [
 
     'laravel' => [
         // Whether to automatically create a docs route for you to view your generated docs. You can still set up routing manually.
-        'add_routes' => true,
+        // La documentación solo se publica fuera de producción: ahí no debe ser pública.
+        'add_routes' => env('APP_ENV') !== 'production',
 
         // URL path to use for the docs endpoint (if `add_routes` is true).
         // By default, `/docs` opens the HTML page, `/docs.postman` opens the Postman collection, and `/docs.openapi` the OpenAPI spec.
