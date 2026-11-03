@@ -24,8 +24,8 @@ nombre=$(echo "$config" | jq -r .name)
 id=$(gh api "repos/$repo/rulesets" -q ".[] | select(.name == \"$nombre\") | .id")
 if [ -n "$id" ]; then
   echo "$config" | gh api --method PUT "repos/$repo/rulesets/$id" --input - >/dev/null
-  echo "Ruleset «$nombre» actualizado ($id)."
+  echo "Ruleset «${nombre}» actualizado ($id)."
 else
   echo "$config" | gh api --method POST "repos/$repo/rulesets" --input - >/dev/null
-  echo "Ruleset «$nombre» creado."
+  echo "Ruleset «${nombre}» creado."
 fi
