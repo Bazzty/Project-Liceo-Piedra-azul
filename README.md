@@ -32,7 +32,7 @@
 ### 🎙️ Voz (texto a voz)
 
 1. **ElevenLabs (API, voz principal):** el backend genera un `.mp3` por página o ítem con una voz única en español, mediante un job en cola en el worker. La clave de la API vive solo en el servidor. La docente no graba audios.
-2. **Piper (local, $0, respaldo):** si la API falla o se alcanza el tope mensual de caracteres, el worker genera el audio con Piper; cuando vuelve la cuota, se regenera con ElevenLabs. El driver se elige con `TTS_DRIVER`.
+2. **Piper (local, $0, respaldo):** si la API falla o se alcanza el tope mensual de caracteres, el worker genera el audio con Piper; cuando vuelve la cuota, se regenera con ElevenLabs. El driver se elige con `TTS_DRIVER`. Viene instalado en la imagen de Docker (Piper 1.8.0, voz `es_MX-claude-high`, MP3 con `lame`); para probarlo: `docker compose exec worker sh -c 'echo Hola | $PIPER_BINARIO -m $PIPER_VOZ -f /tmp/hola.wav'`.
 3. **Último recurso:** `speechSynthesis` del navegador si falta el audio.
 
 ### 🖼️ Catálogo de Pictogramas e Imágenes Reales
