@@ -11,6 +11,8 @@ import { UMBRALES } from '@/features/docente/components/umbrales';
 import { useAuthStore } from '@/features/acceso/useAuthStore';
 import { useLibroCurso, type EstadoAlumno } from '@/features/docente/components/useLibroCurso';
 
+const CRITERIOS_AVISO = `Avisan si pasan ${UMBRALES.diasSinEntrar} días sin entrar, si hay ${UMBRALES.diasActivosMinimos} día o menos de actividad en la semana, si menos del ${UMBRALES.porcentajeSinAyudaBajo} % de los juegos sale sin ayuda o si hay tareas vencidas. Criterios provisionales.`;
+
 const TINTE_NOTA: Record<EstadoAlumno, string> = {
   sin_actividad: 'bg-tinte-coral',
   atencion: 'bg-tinte-ambar',
@@ -93,14 +95,14 @@ export const ResumenCurso: React.FC = () => {
           <h2 className="font-display text-xl text-primary">Para mirar hoy</h2>
           <p className="text-sm text-secondary">
             Quién necesita apoyo primero.{' '}
-            <span
-              tabIndex={0}
-              title={`Avisan si pasan ${UMBRALES.diasSinEntrar} días sin entrar, si hay ${UMBRALES.diasActivosMinimos} día o menos de actividad en la semana, si menos del ${UMBRALES.porcentajeSinAyudaBajo} % de los juegos sale sin ayuda o si hay tareas vencidas. Criterios provisionales.`}
+            <button
+              type="button"
+              title={CRITERIOS_AVISO}
               className="inline-flex align-middle text-secondary cursor-help"
-              aria-label="Cómo se eligen"
+              aria-label={`Cómo se eligen: ${CRITERIOS_AVISO}`}
             >
               <Info className="h-4 w-4" aria-hidden />
-            </span>
+            </button>
           </p>
         </div>
         {libro.notas.length === 0 ? (
