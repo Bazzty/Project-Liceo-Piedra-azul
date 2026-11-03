@@ -20,7 +20,7 @@ return new class extends Migration
         });
 
         // El correo se guarda en minúsculas: así el índice único no deja pasar «Ana@x.cl» y «ana@x.cl» a la vez.
-        DB::statement("ALTER TABLE usuarios ADD CONSTRAINT usuarios_email_minusculas CHECK (email = lower(email))");
+        DB::statement('ALTER TABLE usuarios ADD CONSTRAINT usuarios_email_minusculas CHECK (email = lower(email))');
         DB::statement("ALTER TABLE usuarios ADD CONSTRAINT usuarios_nombre_no_vacio CHECK (btrim(nombre) <> '')");
     }
 

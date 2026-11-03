@@ -32,6 +32,17 @@ class AccesoTest extends EsquemaTestCase
         $this->assertDatabaseMissing('sessions', ['id' => 'sesion-prueba']);
     }
 
+    public function test_un_usuario_con_clave_ulid_puede_tener_tokens_de_acceso(): void
+    {
+        $usuario = User::factory()->create();
+        $token = $usuario->createToken('prueba');
+
+        $this->assertDatabaseHas('personal_access_tokens', ['tokenable_id' => $usuario->id, 'tokenable_type' => User::class]);
+        // Primero sin token: withToken() deja el encabezado puesto para las peticiones siguientes del mismo test.
+        $this->getJson('/api/v1/user')->assertUnauthorized();
+        $this->withToken($token->plainTextToken)->getJson('/api/v1/user')->assertOk()->assertJsonPath('id', $usuario->id);
+    }
+
     public function test_el_rol_es_uno_de_los_permitidos(): void
     {
         $this->assertRechaza('usuarios_rol_check', fn () => $this->usuario('apoderado'));
