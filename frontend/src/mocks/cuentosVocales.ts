@@ -2,7 +2,7 @@ import { db } from '@/db/db';
 import type { Cuento, CuentoPagina, CuentoPalabra } from '@/types';
 
 /* ============================================================
-   Nivel A (id «nivel-vocales») · Las vocales: una colección por vocal. Primero se ve y se oye la letra
+   Nivel B (id «nivel-vocales») · Las vocales: una colección por vocal. Primero se ve y se oye la letra
    (/public/audio/fonemas) y luego tres palabras que empiezan con ella, con su dibujo.
    Las palabras sin audio grabado se leen con la voz del dispositivo hasta que se grabe
    (ver scripts/audios.manifest.json).

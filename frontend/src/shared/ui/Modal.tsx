@@ -30,12 +30,12 @@ export const Modal: React.FC<ModalProps> = ({
 }) => {
   const dialogRef = useRef<HTMLDivElement>(null);
 
-  // Al abrir, el foco entra al diálogo; al cerrar, vuelve a donde estaba
+  // Al abrir, el foco entra al diálogo (a la acción marcada con data-autofoco, si la hay); al cerrar, vuelve a donde estaba
   useEffect(() => {
     if (!isOpen) return;
     const anterior = document.activeElement as HTMLElement | null;
     const dialogo = dialogRef.current;
-    (dialogo?.querySelector<HTMLElement>(FOCUSABLES) ?? dialogo)?.focus();
+    (dialogo?.querySelector<HTMLElement>('[data-autofoco]') ?? dialogo?.querySelector<HTMLElement>(FOCUSABLES) ?? dialogo)?.focus();
     return () => anterior?.focus?.();
   }, [isOpen]);
 

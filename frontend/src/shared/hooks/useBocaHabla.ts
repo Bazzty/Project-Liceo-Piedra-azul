@@ -29,7 +29,9 @@ export const useBocaHabla = () => {
       let i = 0;
       intervalo.current = setInterval(() => {
         const termino =
-          performance.now() - inicio > maxMs || (audio && (audio.ended || usePlayerStore.getState().activeAudioInstance !== audio));
+          performance.now() - inicio > maxMs ||
+          // Si la grabación falta, sigue la voz del navegador: la boca se mueve mientras ella hable
+          (audio && (audio.ended || usePlayerStore.getState().activeAudioInstance !== audio) && !window.speechSynthesis?.speaking);
         if (termino) {
           parar();
           return;

@@ -36,7 +36,7 @@ export const EJES_CURRICULARES: EjeCurricular[] = [
     oa: 'OA 3',
     verificado: true,
     texto: 'Descubrir en contextos lúdicos, atributos fonológicos de palabras conocidas, tales como conteo de palabras, segmentación y conteo de sílabas, identificación de sonidos finales e iniciales.',
-    niveles: ['nivel-vocales', 'nivel-a'],
+    niveles: ['nivel-a', 'nivel-vocales'],
     juegos: ['sonido', 'memoria'],
   },
   {
