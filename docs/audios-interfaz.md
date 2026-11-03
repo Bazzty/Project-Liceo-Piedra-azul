@@ -2,6 +2,14 @@
 
 La app busca primero una **grabación** (la voz suave del proyecto) y solo usa la voz del navegador si el archivo aún no existe. Cada frase tiene una clave (`frontend/src/shared/config/audiosInterfaz.ts`) y un archivo en `frontend/public/audio/interfaz/`.
 
+## Estado actual: una sola voz, la del osito
+
+Los audios de `frontend/scripts/audios.manifest.json` (interfaz, cuentos, pictogramas, palabras y fonemas) se generan con la **voz del osito** (ElevenLabs, voz masculina joven y alegre). Para regenerarlos: `npm run audios -- --forzar` desde `frontend/`, con la clave en el entorno (ver abajo).
+
+- **Fuera del manifiesto, a propósito:** `fonemas/m.mp3` (el sonido /m/ suelto; un TTS diría «eme»).
+- **Siguen con la voz del navegador** los textos que cambian según el niño o el contenido: el número que toca el niño, los nombres de los stickers, los títulos de los cuentos, los nombres que lee el barrido y las palabras de cuentos nuevos sin audio. Para cubrirlos hace falta una API de voz que los niños puedan usar (hoy exige sesión de docente) o pregenerar sus textos fijos.
+- **Cambiar la voz** obliga a regenerar todo: los audios ya grabados no se actualizan solos.
+
 ## Ya grabados (no hay que hacer nada)
 
 | Clave | Archivo | Dónde suena |

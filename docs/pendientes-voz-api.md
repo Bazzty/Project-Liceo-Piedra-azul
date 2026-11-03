@@ -35,6 +35,15 @@ el botón «Generar audio» del formulario de cuentos y el lector del niño que 
 | 12 | **El audio no se guarda para uso offline** | La PWA no precachea `/audio-generado/*`. Sin conexión, un cuento nuevo se lee sin su voz. Falta incluirlo en la estrategia de Workbox. |
 | 13 | **Sin e2e de punta a punta** | El recorrido login → generar → guardar → reproducir solo se probó con un script manual que no quedó en el repo. El CI de `ci-web` no levanta el backend. Falta un workflow que arranque Docker y corra Playwright contra los dos. |
 
+## Voz del osito
+
+| # | Pendiente | Detalle |
+|---|---|---|
+| 14 | **Textos dinámicos con la voz del navegador** | El número que toca el niño, los stickers, los títulos de cuentos y el barrido no tienen archivo y suenan con otra voz. Se resuelve pregenerando los textos fijos (números, stickers) o con un endpoint de voz que no pida sesión de docente. |
+| 15 | **Velocidad de lectura** | La voz nueva lee más rápido que las grabaciones viejas (en los cuentos, 1,4 s de media frente a 3,0 s). Para niños que están aprendiendo a leer conviene `VOZ_VELOCIDAD=0.9` y regenerar con `npm run audios -- --forzar`. |
+| 16 | **`fonemas/m.mp3` sigue con la voz vieja** | Es el sonido /m/ suelto. Un TTS diría «eme», así que se dejó como estaba. Hay que regrabarlo a mano o buscar otro modo de generarlo. |
+| 17 | **Los fonemas con TTS no se escucharon** | Se comprobó que los 30 archivos son válidos y de duración razonable, pero nadie los ha oído. Una vocal o sílaba suelta puede sonar rara; hay que revisarlos con la docente. |
+
 ## Detalles menores
 
 - **El rol del login local y el del servidor son independientes.** El panel docente acepta cualquier correo y clave (es una simulación) y el servidor decide si el token sirve. Si alguien entra como «revisor» en el panel con credenciales de una docente, el servidor le dará un token de docente. Desaparece cuando el login deje de ser simulado.

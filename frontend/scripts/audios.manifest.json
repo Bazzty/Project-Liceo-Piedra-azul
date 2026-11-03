@@ -202,5 +202,361 @@
   {
     "archivo": "cuentos/cuento-mi-dia-p5.mp3",
     "texto": "Yo duermo en mi cama."
+  },
+  {
+    "archivo": "cuentos/cuento-auto-ana-p1.mp3",
+    "texto": "Ana ve un auto azul."
+  },
+  {
+    "archivo": "cuentos/cuento-escuela-p1.mp3",
+    "texto": "Yo voy a mi escuela feliz."
+  },
+  {
+    "archivo": "cuentos/cuento-mi-mama-p1.mp3",
+    "texto": "Mi mamá me ama."
+  },
+  {
+    "archivo": "pictogramas/agua.mp3",
+    "texto": "Agua."
+  },
+  {
+    "archivo": "pictogramas/amigo.mp3",
+    "texto": "Amigo."
+  },
+  {
+    "archivo": "pictogramas/asustado.mp3",
+    "texto": "Asustado."
+  },
+  {
+    "archivo": "pictogramas/auto.mp3",
+    "texto": "Auto."
+  },
+  {
+    "archivo": "pictogramas/ayuda.mp3",
+    "texto": "Ayuda."
+  },
+  {
+    "archivo": "pictogramas/bano.mp3",
+    "texto": "Baño."
+  },
+  {
+    "archivo": "pictogramas/bien.mp3",
+    "texto": "Bien."
+  },
+  {
+    "archivo": "pictogramas/calor.mp3",
+    "texto": "Calor."
+  },
+  {
+    "archivo": "pictogramas/cansado.mp3",
+    "texto": "Cansado."
+  },
+  {
+    "archivo": "pictogramas/colegio.mp3",
+    "texto": "Colegio."
+  },
+  {
+    "archivo": "pictogramas/comer.mp3",
+    "texto": "Comer."
+  },
+  {
+    "archivo": "pictogramas/dolor.mp3",
+    "texto": "Dolor."
+  },
+  {
+    "archivo": "pictogramas/dormir.mp3",
+    "texto": "Dormir."
+  },
+  {
+    "archivo": "pictogramas/enojado.mp3",
+    "texto": "Enojado."
+  },
+  {
+    "archivo": "pictogramas/escuchar.mp3",
+    "texto": "Escuchar."
+  },
+  {
+    "archivo": "pictogramas/feliz.mp3",
+    "texto": "Feliz."
+  },
+  {
+    "archivo": "pictogramas/frio.mp3",
+    "texto": "Frío."
+  },
+  {
+    "archivo": "pictogramas/ir.mp3",
+    "texto": "Ir."
+  },
+  {
+    "archivo": "pictogramas/jugar.mp3",
+    "texto": "Jugar."
+  },
+  {
+    "archivo": "pictogramas/lapiz.mp3",
+    "texto": "Lápiz."
+  },
+  {
+    "archivo": "pictogramas/libro.mp3",
+    "texto": "Libro."
+  },
+  {
+    "archivo": "pictogramas/mama.mp3",
+    "texto": "Mamá."
+  },
+  {
+    "archivo": "pictogramas/mesa.mp3",
+    "texto": "Mesa."
+  },
+  {
+    "archivo": "pictogramas/mochila.mp3",
+    "texto": "Mochila."
+  },
+  {
+    "archivo": "pictogramas/nina.mp3",
+    "texto": "Niña."
+  },
+  {
+    "archivo": "pictogramas/papa.mp3",
+    "texto": "Papá."
+  },
+  {
+    "archivo": "pictogramas/parar.mp3",
+    "texto": "Parar."
+  },
+  {
+    "archivo": "pictogramas/profesor.mp3",
+    "texto": "Profesor."
+  },
+  {
+    "archivo": "pictogramas/profesora.mp3",
+    "texto": "Profesora."
+  },
+  {
+    "archivo": "pictogramas/quiero.mp3",
+    "texto": "Quiero."
+  },
+  {
+    "archivo": "pictogramas/silla.mp3",
+    "texto": "Silla."
+  },
+  {
+    "archivo": "pictogramas/triste.mp3",
+    "texto": "Triste."
+  },
+  {
+    "archivo": "pictogramas/ver.mp3",
+    "texto": "Ver."
+  },
+  {
+    "archivo": "pictogramas/yo.mp3",
+    "texto": "Yo."
+  },
+  {
+    "archivo": "palabras/da_dado.mp3",
+    "texto": "Dado."
+  },
+  {
+    "archivo": "palabras/da_dama.mp3",
+    "texto": "Dama."
+  },
+  {
+    "archivo": "palabras/de_dedo.mp3",
+    "texto": "Dedo."
+  },
+  {
+    "archivo": "palabras/la_lana.mp3",
+    "texto": "Lana."
+  },
+  {
+    "archivo": "palabras/li_lila.mp3",
+    "texto": "Lila."
+  },
+  {
+    "archivo": "palabras/li_lima.mp3",
+    "texto": "Lima."
+  },
+  {
+    "archivo": "palabras/lu_lupa.mp3",
+    "texto": "Lupa."
+  },
+  {
+    "archivo": "palabras/ma_masa.mp3",
+    "texto": "Masa."
+  },
+  {
+    "archivo": "palabras/me_mesa.mp3",
+    "texto": "Mesa."
+  },
+  {
+    "archivo": "palabras/mi_mimi.mp3",
+    "texto": "Mimi."
+  },
+  {
+    "archivo": "palabras/mu_mula.mp3",
+    "texto": "Mula."
+  },
+  {
+    "archivo": "palabras/pa_pala.mp3",
+    "texto": "Pala."
+  },
+  {
+    "archivo": "palabras/pe_pelo.mp3",
+    "texto": "Pelo."
+  },
+  {
+    "archivo": "palabras/pi_piso.mp3",
+    "texto": "Piso."
+  },
+  {
+    "archivo": "palabras/pu_puma.mp3",
+    "texto": "Puma."
+  },
+  {
+    "archivo": "palabras/sa_sala.mp3",
+    "texto": "Sala."
+  },
+  {
+    "archivo": "palabras/sa_sapo.mp3",
+    "texto": "Sapo."
+  },
+  {
+    "archivo": "palabras/so_sopa.mp3",
+    "texto": "Sopa."
+  },
+  {
+    "archivo": "fonemas/a.mp3",
+    "texto": "A."
+  },
+  {
+    "archivo": "fonemas/da.mp3",
+    "texto": "Da."
+  },
+  {
+    "archivo": "fonemas/de.mp3",
+    "texto": "De."
+  },
+  {
+    "archivo": "fonemas/di.mp3",
+    "texto": "Di."
+  },
+  {
+    "archivo": "fonemas/do.mp3",
+    "texto": "Do."
+  },
+  {
+    "archivo": "fonemas/du.mp3",
+    "texto": "Du."
+  },
+  {
+    "archivo": "fonemas/e.mp3",
+    "texto": "E."
+  },
+  {
+    "archivo": "fonemas/i.mp3",
+    "texto": "I."
+  },
+  {
+    "archivo": "fonemas/la.mp3",
+    "texto": "La."
+  },
+  {
+    "archivo": "fonemas/le.mp3",
+    "texto": "Le."
+  },
+  {
+    "archivo": "fonemas/li.mp3",
+    "texto": "Li."
+  },
+  {
+    "archivo": "fonemas/lo.mp3",
+    "texto": "Lo."
+  },
+  {
+    "archivo": "fonemas/lu.mp3",
+    "texto": "Lu."
+  },
+  {
+    "archivo": "fonemas/ma.mp3",
+    "texto": "Ma."
+  },
+  {
+    "archivo": "fonemas/me.mp3",
+    "texto": "Me."
+  },
+  {
+    "archivo": "fonemas/mi.mp3",
+    "texto": "Mi."
+  },
+  {
+    "archivo": "fonemas/mo.mp3",
+    "texto": "Mo."
+  },
+  {
+    "archivo": "fonemas/mu.mp3",
+    "texto": "Mu."
+  },
+  {
+    "archivo": "fonemas/o.mp3",
+    "texto": "O."
+  },
+  {
+    "archivo": "fonemas/pa.mp3",
+    "texto": "Pa."
+  },
+  {
+    "archivo": "fonemas/pe.mp3",
+    "texto": "Pe."
+  },
+  {
+    "archivo": "fonemas/pi.mp3",
+    "texto": "Pi."
+  },
+  {
+    "archivo": "fonemas/po.mp3",
+    "texto": "Po."
+  },
+  {
+    "archivo": "fonemas/pu.mp3",
+    "texto": "Pu."
+  },
+  {
+    "archivo": "fonemas/sa.mp3",
+    "texto": "Sa."
+  },
+  {
+    "archivo": "fonemas/se.mp3",
+    "texto": "Se."
+  },
+  {
+    "archivo": "fonemas/si.mp3",
+    "texto": "Si."
+  },
+  {
+    "archivo": "fonemas/so.mp3",
+    "texto": "So."
+  },
+  {
+    "archivo": "fonemas/su.mp3",
+    "texto": "Su."
+  },
+  {
+    "archivo": "fonemas/u.mp3",
+    "texto": "U."
+  },
+  {
+    "archivo": "personaje/bienvenida.mp3",
+    "texto": "¡Hola! Soy el osito. ¿Qué quieres hacer?"
+  },
+  {
+    "archivo": "personaje/felicitaciones.mp3",
+    "texto": "¡Lo lograste! ¡Muy bien!"
+  },
+  {
+    "archivo": "personaje/despedida.mp3",
+    "texto": "¡Chao! ¡Hasta pronto!"
+  },
+  {
+    "archivo": "personaje/esperando_profesora.mp3",
+    "texto": "Estoy esperando a que la profesora active la sesión. ¡Ya casi comenzamos!"
   }
 ]
