@@ -33,9 +33,18 @@ class ServicioDeAudio
             }
 
             try {
-                $this->disco->put($archivo, $motor->sintetizar($texto));
+                $mp3 = $motor->sintetizar($texto);
+                // Un archivo vacío o que no se pudo escribir se cachearía como bueno y el lector quedaría mudo.
+                if ($mp3 === '') {
+                    throw VozNoDisponible::fallo($motor->nombre(), 'respuesta vacía');
+                }
+                if (! $this->disco->put($archivo, $mp3)) {
+                    throw VozNoDisponible::fallo($motor->nombre(), 'no se pudo guardar el archivo');
+                }
             } catch (VozNoDisponible $fallo) {
-                report($fallo);
+                if (! $fallo instanceof MotorSinConfigurar) {
+                    report($fallo);
+                }
                 $ultimoFallo = $fallo;
 
                 continue;

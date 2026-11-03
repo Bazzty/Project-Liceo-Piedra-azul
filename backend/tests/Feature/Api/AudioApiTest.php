@@ -5,6 +5,7 @@ use App\Voz\ServicioDeAudio;
 use App\Voz\TtsProvider;
 use App\Voz\VozNoDisponible;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\Sanctum;
 
@@ -65,6 +66,34 @@ it('limita los intentos de inicio de sesión', function () {
     }
 
     $this->postJson('/api/v1/auth/login', ['email' => 'a@b.cl', 'password' => 'x'])->assertTooManyRequests();
+});
+
+it('el límite de intentos es por correo: uno bloqueado no bloquea a los demás', function () {
+    foreach (range(1, 5) as $_) {
+        $this->postJson('/api/v1/auth/login', ['email' => 'a@b.cl', 'password' => 'x'])->assertUnauthorized();
+    }
+
+    $this->postJson('/api/v1/auth/login', ['email' => 'a@b.cl', 'password' => 'x'])->assertTooManyRequests();
+    $this->postJson('/api/v1/auth/login', ['email' => 'otra@b.cl', 'password' => 'x'])->assertUnauthorized();
+});
+
+it('revisa la clave aunque el correo no exista, para que el tiempo no lo delate', function () {
+    Hash::shouldReceive('make')->once()->andReturn('hash-falso');
+    Hash::shouldReceive('check')->once()->with('x', 'hash-falso')->andReturnFalse();
+
+    $this->postJson('/api/v1/auth/login', ['email' => 'nadie@liceo.cl', 'password' => 'x'])->assertUnauthorized();
+});
+
+it('al iniciar sesión borra los tokens vencidos de esa docente y deja los vigentes', function () {
+    $docente = User::factory()->create(['password' => 'clave-segura-1']);
+    $vencido = $docente->createToken('panel-docente', expiresAt: now()->subHour());
+    $vigente = $docente->createToken('panel-docente', expiresAt: now()->addHour());
+
+    $this->postJson('/api/v1/auth/login', ['email' => $docente->email, 'password' => 'clave-segura-1'])->assertOk();
+
+    expect($docente->tokens()->whereKey($vencido->accessToken->getKey())->exists())->toBeFalse()
+        ->and($docente->tokens()->whereKey($vigente->accessToken->getKey())->exists())->toBeTrue()
+        ->and($docente->tokens()->count())->toBe(2);
 });
 
 it('genera un audio con el token de la docente', function () {

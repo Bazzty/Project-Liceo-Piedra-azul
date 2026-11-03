@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
-    Route::post('/auth/login', [AutenticacionController::class, 'login'])->middleware('throttle:5,1');
+    Route::post('/auth/login', [AutenticacionController::class, 'login'])->middleware('throttle:login');
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('/user', function (Request $request) {

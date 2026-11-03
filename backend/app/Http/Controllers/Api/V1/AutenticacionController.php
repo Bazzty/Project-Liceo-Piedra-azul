@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class AutenticacionController extends Controller
 {
@@ -16,10 +17,17 @@ class AutenticacionController extends Controller
 
         $usuario = User::where('email', mb_strtolower(trim($datos['email'])))->first();
 
+        // Se revisa la clave aunque el correo no exista: así tampoco el tiempo de respuesta delata qué correos tienen cuenta.
+        $hash = $usuario instanceof User ? $usuario->password : Hash::make(Str::random(16));
+        $claveCorrecta = Hash::check($datos['password'], $hash);
+
         // Mismo mensaje para correo desconocido, clave errónea o cuenta inactiva: no se revela cuál fue.
-        if (! $usuario || ! $usuario->activo || ! Hash::check($datos['password'], $usuario->password)) {
+        if (! $usuario || ! $usuario->activo || ! $claveCorrecta) {
             return response()->json(['message' => 'Correo o contraseña incorrectos.'], 401);
         }
+
+        // Cada ingreso crea un token de 12 h: los vencidos de esta docente se borran aquí en vez de acumularse.
+        $usuario->tokens()->where('expires_at', '<', now())->delete();
 
         return response()->json([
             'token' => $usuario->createToken('panel-docente', expiresAt: now()->addHours(12))->plainTextToken,

@@ -3,16 +3,18 @@
 use App\Voz\ServicioDeAudio;
 use App\Voz\TtsProvider;
 use App\Voz\VozNoDisponible;
+use Illuminate\Contracts\Filesystem\Filesystem;
+use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Support\Facades\Storage;
 
 /** Motor falso: cuenta las llamadas y puede fallar a pedido. */
-function motorFalso(string $nombre, bool $falla = false, string $voz = 'v1'): TtsProvider
+function motorFalso(string $nombre, bool $falla = false, string $voz = 'v1', bool $sinConfigurar = false, string $mp3 = ''): TtsProvider
 {
-    return new class($nombre, $falla, $voz) implements TtsProvider
+    return new class($nombre, $falla, $voz, $sinConfigurar, $mp3) implements TtsProvider
     {
         public int $llamadas = 0;
 
-        public function __construct(private string $nombre, public bool $falla, private string $voz) {}
+        public function __construct(private string $nombre, public bool $falla, private string $voz, private bool $sinConfigurar, private string $mp3) {}
 
         public function nombre(): string
         {
@@ -27,11 +29,14 @@ function motorFalso(string $nombre, bool $falla = false, string $voz = 'v1'): Tt
         public function sintetizar(string $texto): string
         {
             $this->llamadas++;
+            if ($this->sinConfigurar) {
+                throw VozNoDisponible::sinConfigurar($this->nombre);
+            }
             if ($this->falla) {
                 throw VozNoDisponible::fallo($this->nombre, 'simulado');
             }
 
-            return "mp3[{$this->nombre}]{$texto}";
+            return $this->mp3 !== '' || $this->falla === null ? $this->mp3 : "mp3[{$this->nombre}]{$texto}";
         }
     };
 }
@@ -107,3 +112,54 @@ it('falla con VozNoDisponible si ningún motor responde', function () {
 
     $servicio->generar('Hola');
 })->throws(VozNoDisponible::class);
+
+it('un MP3 vacío no se guarda como bueno: se pasa al respaldo', function () {
+    $vacio = motorFalso('elevenlabs', mp3: "\0");
+    $servicio = new ServicioDeAudio(new class implements TtsProvider
+    {
+        public function nombre(): string
+        {
+            return 'elevenlabs';
+        }
+
+        public function huella(): string
+        {
+            return 'elevenlabs:vacio';
+        }
+
+        public function sintetizar(string $texto): string
+        {
+            return '';
+        }
+    }, motorFalso('piper'), $this->disco);
+
+    $audio = $servicio->generar('Hola');
+
+    expect($audio->voz)->toBe('piper')->and($audio->respaldo)->toBeTrue();
+    expect($this->disco->allFiles())->toHaveCount(1);
+});
+
+it('si el archivo no se puede escribir no devuelve una URL que daría 404', function () {
+    $disco = Mockery::mock(Filesystem::class);
+    $disco->shouldReceive('exists')->andReturnFalse();
+    $disco->shouldReceive('put')->andReturnFalse();
+
+    (new ServicioDeAudio(motorFalso('elevenlabs'), null, $disco))->generar('Hola');
+})->throws(VozNoDisponible::class, 'no se pudo guardar el archivo');
+
+it('un motor sin configurar usa el respaldo sin reportar un error', function () {
+    Exceptions::fake();
+
+    $audio = (new ServicioDeAudio(motorFalso('elevenlabs', sinConfigurar: true), motorFalso('piper'), $this->disco))->generar('Hola');
+
+    expect($audio->voz)->toBe('piper');
+    Exceptions::assertNothingReported();
+});
+
+it('un fallo real del motor sí se reporta', function () {
+    Exceptions::fake();
+
+    (new ServicioDeAudio(motorFalso('elevenlabs', falla: true), motorFalso('piper'), $this->disco))->generar('Hola');
+
+    Exceptions::assertReported(VozNoDisponible::class);
+});
