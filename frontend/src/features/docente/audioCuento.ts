@@ -10,11 +10,13 @@ export interface AudiosDeCuento {
 
 /**
  * Genera el audio de cada página, una a la vez (no se manda todo junto para cuidar la cuota de la API).
- * Si una falla se corta con su error; las ya generadas quedan en el servidor, así que reintentar no gasta de nuevo.
+ * Cada audio se entrega con `alTenerAudio` apenas existe: si una página falla, las anteriores no se pierden.
+ * Reintentar tampoco gasta de nuevo, porque el servidor reutiliza los ya generados.
  */
 export async function generarAudiosDeCuento(
   paginas: CuentoPagina[],
   alAvanzar?: (hechas: number, total: number) => void,
+  alTenerAudio?: (texto: string, url: string) => void,
 ): Promise<AudiosDeCuento> {
   const textos = [...new Set(paginas.map((p) => p.textoCompleto))];
   const urls: Record<string, string> = {};
@@ -24,6 +26,7 @@ export async function generarAudiosDeCuento(
   for (const [i, texto] of textos.entries()) {
     const audio = await generarAudio(texto);
     urls[texto] = audio.url;
+    alTenerAudio?.(texto, audio.url);
     respaldo ||= audio.respaldo;
     alAvanzar?.(i + 1, textos.length);
   }

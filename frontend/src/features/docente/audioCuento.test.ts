@@ -23,6 +23,19 @@ describe('generarAudiosDeCuento', () => {
     expect(avance).toEqual([[0, 2], [1, 2], [2, 2]]);
   });
 
+  it('entrega cada audio apenas existe, así que si una página falla las anteriores se conservan', async () => {
+    const recibidos: Array<[string, string]> = [];
+    generarAudio.mockReset();
+    generarAudio.mockResolvedValueOnce({ url: '/uno.mp3', voz: 'piper', enCache: false, respaldo: false });
+    generarAudio.mockRejectedValueOnce(new Error('sin voz'));
+
+    await expect(
+      generarAudiosDeCuento([pagina(1, 'Uno'), pagina(2, 'Dos')], undefined, (texto, url) => recibidos.push([texto, url])),
+    ).rejects.toThrow('sin voz');
+
+    expect(recibidos).toEqual([['Uno', '/uno.mp3']]);
+  });
+
   it('no repite el pedido para frases iguales', async () => {
     await generarAudiosDeCuento([pagina(1, 'Hola'), pagina(2, 'Hola')]);
 

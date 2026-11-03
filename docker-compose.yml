@@ -83,6 +83,8 @@ services:
     working_dir: /app
     environment:
       VITE_USE_POLLING: ${VITE_USE_POLLING:-false}
+      # La API de Laravel y los audios que genera se piden a nginx, por su nombre de servicio.
+      VITE_API_PROXY: http://nginx
     # node_modules vive en un volumen aparte: los binarios de tu sistema no sirven dentro del contenedor.
     command:
       - sh

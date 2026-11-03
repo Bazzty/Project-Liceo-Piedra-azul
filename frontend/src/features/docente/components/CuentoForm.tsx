@@ -40,8 +40,9 @@ const construirPaginas = (texto: string, previas: CuentoPagina[]): CuentoPagina[
           const previa = memoria.get(normalizar(t));
           return { texto: t, pictogramaUrl: previa?.pictogramaUrl, audioUrl: previa?.audioUrl };
         });
-      // Si la línea no cambió, se conserva la página original (texto completo y audio de la página)
-      if (original && linea === textoDePagina(original)) {
+      // Si la línea no cambió, se conserva la página original (texto completo y audio de la página).
+      // Se compara también con textoCompleto: textoDePagina no trae la puntuación que la docente escribió.
+      if (original && (linea === original.textoCompleto || linea === textoDePagina(original))) {
         return { ...original, numeroPagina: i + 1, palabras };
       }
       return { numeroPagina: i + 1, textoCompleto: linea, palabras };
@@ -152,16 +153,26 @@ export const CuentoForm: React.FC<CuentoFormProps> = ({ nivelId, cuento, onGuard
     setError('');
     setMensaje('');
     setGenerando({ hechas: 0, total: new Set(paginas.map((p) => p.textoCompleto)).size });
+    let hechas = 0;
     try {
-      const { urls, respaldo } = await generarAudiosDeCuento(paginas, (hechas, total) => setGenerando({ hechas, total }));
-      setPaginas((prev) => conAudios(prev, urls));
+      const { respaldo } = await generarAudiosDeCuento(
+        paginas,
+        (n, total) => {
+          hechas = n;
+          setGenerando({ hechas: n, total });
+        },
+        // Cada audio se pone en su página apenas llega: si una falla, las anteriores se conservan.
+        (texto, url) => setPaginas((prev) => conAudios(prev, { [texto]: url })),
+      );
       setMensaje(
         respaldo
           ? 'Audio listo con la voz de respaldo (la API de voz no respondió). Guarda el cuento para conservarlo.'
           : 'Audio listo con la voz del proyecto. Guarda el cuento para conservarlo.',
       );
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'No se pudo generar el audio.');
+      const motivo = e instanceof Error ? e.message : 'No se pudo generar el audio.';
+      const parcial = hechas === 1 ? ' Quedó 1 página con audio;' : ` Quedaron ${hechas} páginas con audio;`;
+      setError(hechas > 0 ? `${motivo}${parcial} vuelve a intentar para terminar.` : motivo);
     } finally {
       setGenerando(null);
     }
@@ -243,10 +254,13 @@ export const CuentoForm: React.FC<CuentoFormProps> = ({ nivelId, cuento, onGuard
         <Button variant="secondary" onClick={probarVoz} disabled={paginas.length === 0}>
           <Volume2 className="w-4 h-4" /> Probar voz
         </Button>
-        <Button variant="accent" onClick={crearAudio} disabled={paginas.length === 0} loading={generando !== null}>
-          <AudioLines className="w-4 h-4" aria-hidden />
-          {generando ? `Generando audio ${Math.min(generando.hechas + 1, generando.total)} de ${generando.total}…` : 'Generar audio'}
-        </Button>
+        {/* El revisor solo valida cuentos: el servidor le negaría el audio (403) */}
+        {!esRevisor && (
+          <Button variant="accent" onClick={crearAudio} disabled={paginas.length === 0} loading={generando !== null}>
+            <AudioLines className="w-4 h-4" aria-hidden />
+            {generando ? `Generando audio ${Math.min(generando.hechas + 1, generando.total)} de ${generando.total}…` : 'Generar audio'}
+          </Button>
+        )}
       </div>
       <p className="text-xs font-semibold text-secondary">
         Cada palabra recibe un pictograma sugerido. Puedes cambiarlo antes de enviarlo a revisión. «Probar voz» usa la voz del

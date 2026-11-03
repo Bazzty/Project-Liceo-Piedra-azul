@@ -9,9 +9,8 @@ import { useThemeStore } from '@/shared/store/useThemeStore';
 
 type Rol = 'docente' | 'revisor';
 
-// Solo en desarrollo (frontend/.env.local): la cuenta de demostración que existe en el servidor local.
-const DEMO_CORREO: string | undefined = import.meta.env.VITE_DEMO_CORREO;
-const DEMO_CLAVE: string | undefined = import.meta.env.VITE_DEMO_CLAVE;
+// Solo en desarrollo (frontend/.env.development.local, que `npm run build` no carga): la cuenta de demostración del servidor local.
+const cuentaDemo = () => ({ correo: import.meta.env.VITE_DEMO_CORREO as string | undefined, clave: import.meta.env.VITE_DEMO_CLAVE as string | undefined });
 
 const CAMPO =
   'min-h-12 w-full rounded-control border border-borderStrong bg-surface px-4 text-base text-primary focus-visible:border-brand';
@@ -169,7 +168,8 @@ export const LoginProfesorView: React.FC = () => {
             <button
               type="button"
               onClick={() => {
-                if (DEMO_CORREO && DEMO_CLAVE) void iniciarSesionEnServidor(DEMO_CORREO, DEMO_CLAVE);
+                const { correo: correoDemo, clave: claveDemo } = cuentaDemo();
+                if (correoDemo && claveDemo) void iniciarSesionEnServidor(correoDemo, claveDemo);
                 entrar('profesora@piedraazul.cl');
               }}
               className="min-h-12 inline-flex items-center justify-center gap-2 rounded-control border border-borderStrong bg-surface text-sm font-semibold text-primary cursor-pointer hover:border-brand"

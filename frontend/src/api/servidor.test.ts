@@ -69,6 +69,27 @@ describe('servidor', () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
+  it.each([
+    [403, 'Tu cuenta no puede generar audio: es solo para docentes.'],
+    [429, 'Se pidieron muchos audios seguidos. Espera un minuto y vuelve a intentar.'],
+    [500, 'El servidor tuvo un problema. Intenta de nuevo.'],
+    [404, 'No se pudo generar el audio.'],
+  ])('traduce el error %i en vez de mostrar el texto en inglés de Laravel', async (estado, mensaje) => {
+    vi.stubGlobal('fetch', responder({ token: 't' }));
+    await iniciarSesionEnServidor('a@b.cl', 'x');
+    vi.stubGlobal('fetch', responder({ message: 'Too Many Attempts. / This action is unauthorized.' }, estado));
+
+    await expect(generarAudio('Hola')).rejects.toMatchObject({ message: mensaje, estado });
+  });
+
+  it('una respuesta que no es de la API (p. ej. el index.html de un servidor sin proxy) no se toma por un audio', async () => {
+    vi.stubGlobal('fetch', responder({ token: 't' }));
+    await iniciarSesionEnServidor('a@b.cl', 'x');
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('<!doctype html><html></html>', { status: 200 })));
+
+    await expect(generarAudio('Hola')).rejects.toThrow('El servidor no respondió como se esperaba');
+  });
+
   it('muestra el mensaje del servidor cuando rechaza el texto o no hay voz', async () => {
     vi.stubGlobal('fetch', responder({ token: 't' }));
     await iniciarSesionEnServidor('a@b.cl', 'x');

@@ -33,6 +33,14 @@ const guardarToken = (token: string | null) => {
   }
 };
 
+/** Mensajes para la docente. Laravel responde en inglés a un 403 o un 429, así que no se muestran tal cual. */
+const MENSAJE_POR_ESTADO: Record<number, string> = {
+  403: 'Tu cuenta no puede generar audio: es solo para docentes.',
+  429: 'Se pidieron muchos audios seguidos. Espera un minuto y vuelve a intentar.',
+};
+/** Estados en los que el mensaje del servidor ya viene en español y dice algo útil (texto largo, sin voz). */
+const CON_MENSAJE_PROPIO = new Set([422, 503]);
+
 export const olvidarSesionDelServidor = () => guardarToken(null);
 
 let inicioEnCurso: Promise<boolean> | null = null;
@@ -101,7 +109,13 @@ export async function generarAudio(texto: string): Promise<AudioGenerado> {
   }
   if (!respuesta.ok) {
     const { message } = ((await respuesta.json().catch(() => null)) ?? {}) as { message?: string };
-    throw new ErrorDeServidor(message ?? 'No se pudo generar el audio.', respuesta.status);
+    const propio = CON_MENSAJE_PROPIO.has(respuesta.status) ? message : undefined;
+    const generico = respuesta.status >= 500 ? 'El servidor tuvo un problema. Intenta de nuevo.' : 'No se pudo generar el audio.';
+    throw new ErrorDeServidor(MENSAJE_POR_ESTADO[respuesta.status] ?? propio ?? generico, respuesta.status);
   }
-  return (await respuesta.json()) as AudioGenerado;
+
+  // Sin proxy (p. ej. un servidor estático), /api devuelve el index.html con 200: no es una respuesta de la API.
+  const audio = (await respuesta.json().catch(() => null)) as AudioGenerado | null;
+  if (!audio?.url) throw new ErrorDeServidor('El servidor no respondió como se esperaba. Revisa que esté encendido.', 502);
+  return audio;
 }
