@@ -1,3 +1,26 @@
+# Entorno de desarrollo: make setup la primera vez, make up después.
+x-php: &php
+  image: leer-para-todos-php
+  # La imagen la construye solo el servicio app; el worker la reutiliza.
+  pull_policy: never
+  working_dir: /var/www/html
+  volumes:
+    - ./backend:/var/www/html
+  environment:
+    # La base de datos se configura una sola vez, en el .env de la raíz.
+    DB_CONNECTION: pgsql
+    DB_HOST: db
+    DB_PORT: 5432
+    DB_DATABASE: ${DB_DATABASE:?Falta DB_DATABASE en .env}
+    DB_USERNAME: ${DB_USERNAME:?Falta DB_USERNAME en .env}
+    DB_PASSWORD: ${DB_PASSWORD:?Falta DB_PASSWORD en .env}
+    # www-data no tiene carpeta propia escribible: tinker y composer guardan su configuración en /tmp.
+    HOME: /tmp
+    COMPOSER_HOME: /tmp/composer
+  depends_on:
+    db:
+      condition: service_healthy
+
 services:
   db:
     image: postgres:16-alpine
@@ -16,5 +39,57 @@ services:
       timeout: 3s
       retries: 10
 
+  app:
+    <<: *php
+    build:
+      context: ./docker/php
+      args:
+        HOST_UID: ${HOST_UID:-1000}
+        HOST_GID: ${HOST_GID:-1000}
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    depends_on:
+      - app
+    ports:
+      - "127.0.0.1:${WEB_PORT:-8000}:80"
+    volumes:
+      - ./backend/public:/var/www/html/public:ro
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+
+  # Cola de trabajos (audio de los cuentos). Espera a que make setup instale las dependencias.
+  worker:
+    <<: *php
+    restart: unless-stopped
+    user: www-data
+    command:
+      - sh
+      - -c
+      - |
+        until [ -f vendor/autoload.php ] && grep -q '^APP_KEY=base64' .env; do sleep 3; done
+        exec php artisan queue:listen --tries=3 --timeout=300
+
+  vite:
+    image: node:24-alpine
+    restart: unless-stopped
+    working_dir: /app
+    environment:
+      VITE_USE_POLLING: ${VITE_USE_POLLING:-false}
+    # node_modules vive en un volumen aparte: los binarios de tu sistema no sirven dentro del contenedor.
+    command:
+      - sh
+      - -c
+      - |
+        [ node_modules/.package-lock.json -nt package-lock.json ] || npm ci --no-audit --no-fund
+        exec npm run dev -- --host 0.0.0.0
+    ports:
+      - "127.0.0.1:${VITE_PORT:-5173}:5173"
+    volumes:
+      - ./frontend:/app
+      - vite_node_modules:/app/node_modules
+
 volumes:
   db_data:
+  vite_node_modules:

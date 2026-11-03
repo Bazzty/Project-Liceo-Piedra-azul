@@ -104,13 +104,20 @@ Project-Liceo-Piedra-azul/
    npm install
    ```
 
-3. **Instalar dependencias e iniciar en modo desarrollo:**
+3. **Levantar el entorno con Docker (solo necesitas Docker; en Windows, WSL2 con el proyecto dentro de WSL):**
    ```bash
-   cd frontend
-   npm install
-   npm run dev
+   make setup   # la primera vez: construye la imagen, instala dependencias, genera la clave y crea las tablas
+   make up      # los días siguientes
    ```
-   *Acceder a [http://localhost:5173](http://localhost:5173).*
+   | Servicio | Dirección |
+   |---|---|
+   | Web (Vite, React) | [http://localhost:5173](http://localhost:5173) |
+   | API (Nginx + PHP-FPM) | [http://localhost:8000](http://localhost:8000) |
+   | PostgreSQL | `localhost:5432` |
+
+   Además corre un `worker` para la cola de trabajos. Otros comandos: `make shell` (terminal de PHP), `make logs s=worker`, `make psql`, `make down`. Si ya usas el puerto 8000 o 5173, cámbialo en `.env` (`WEB_PORT`, `VITE_PORT`).
+
+   *Solo el frontend, sin Docker:* `cd frontend && npm install && npm run dev`.
 
 4. **Probar la PWA y compilación:**
    ```bash
