@@ -31,8 +31,9 @@
 
 ### 🎙️ Voz (texto a voz)
 
-1. **Piper (local, $0):** el backend genera un `.mp3` por página o ítem con una voz única en español, mediante un job en cola en el worker. La docente no graba audios.
-2. **Respaldo:** `speechSynthesis` del navegador si falta el audio.
+1. **ElevenLabs (API, voz principal):** el backend genera un `.mp3` por página o ítem con una voz única en español, mediante un job en cola en el worker. La clave de la API vive solo en el servidor. La docente no graba audios.
+2. **Piper (local, $0, respaldo):** si la API falla o se alcanza el tope mensual de caracteres, el worker genera el audio con Piper; cuando vuelve la cuota, se regenera con ElevenLabs. El driver se elige con `TTS_DRIVER`.
+3. **Último recurso:** `speechSynthesis` del navegador si falta el audio.
 
 ### 🖼️ Catálogo de Pictogramas e Imágenes Reales
 
@@ -51,7 +52,7 @@ Project-Liceo-Piedra-azul/
     │   ├── favicon.ico
     │   ├── manifest.webmanifest   # Configuración PWA (Nombre, colores, íconos)
     │   ├── icons/                 # Íconos PWA (192x192, 512x512)
-    │   ├── audio/                 # Audios pre-generados (.mp3 - Piper)
+    │   ├── audio/                 # Audios pre-generados (.mp3 - ElevenLabs / Piper)
     │   │   ├── vocales/           # Audios de vocales y consonantes iniciales
     │   │   ├── palabras/          # Audios de palabras funcionales y pictogramas
     │   │   └── sistema/           # Audios de bienvenida, instrucciones y refuerzo positivo
@@ -104,13 +105,20 @@ Project-Liceo-Piedra-azul/
    npm install
    ```
 
-3. **Instalar dependencias e iniciar en modo desarrollo:**
+3. **Levantar el entorno con Docker (solo necesitas Docker; en Windows, WSL2 con el proyecto dentro de WSL):**
    ```bash
-   cd frontend
-   npm install
-   npm run dev
+   make setup   # la primera vez: construye la imagen, instala dependencias, genera la clave y crea las tablas
+   make up      # los días siguientes
    ```
-   *Acceder a [http://localhost:5173](http://localhost:5173).*
+   | Servicio | Dirección |
+   |---|---|
+   | Web (Vite, React) | [http://localhost:5173](http://localhost:5173) |
+   | API (Nginx + PHP-FPM) | [http://localhost:8000](http://localhost:8000) |
+   | PostgreSQL | `localhost:5432` |
+
+   Además corre un `worker` para la cola de trabajos. Otros comandos: `make shell` (terminal de PHP), `make logs s=worker`, `make psql`, `make down`. Si ya usas el puerto 8000 o 5173, cámbialo en `.env` (`WEB_PORT`, `VITE_PORT`).
+
+   *Solo el frontend, sin Docker:* `cd frontend && npm install && npm run dev`.
 
 4. **Probar la PWA y compilación:**
    ```bash

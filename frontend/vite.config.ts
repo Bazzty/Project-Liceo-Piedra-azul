@@ -6,6 +6,8 @@ import { defineConfig } from 'vitest/config'
 export default defineConfig({
   plugins: [react()],
   test: { environment: 'jsdom' },
+  // En Docker sobre Windows los cambios de archivos no llegan al contenedor: se revisan por intervalos.
+  server: { watch: { usePolling: process.env.VITE_USE_POLLING === 'true' } },
   resolve: {
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },
