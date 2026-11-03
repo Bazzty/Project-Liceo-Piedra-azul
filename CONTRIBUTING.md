@@ -29,6 +29,18 @@ Tipos, la suite completa y el build los corre el CI en cada PR. Saltarse los hoo
 - Revisores sugeridos por área en `.github/CODEOWNERS`.
 - Usa la plantilla de PR e incluye el ticket (`PLPA-n`).
 
+## Definition of Done
+Una historia pasa a **Listo** en Jira solo cuando:
+
+1. **Tiene sus tests** y pasan: Pest para el backend (`backend/tests/`), Vitest junto al código del frontend (`*.test.ts(x)`) y Playwright (`frontend/e2e/`) si cambia un flujo completo. Una historia de configuración prueba que la configuración funciona (por ejemplo, que el hook bloquea un commit malo).
+2. **El CI está en verde** (`ci-web`, `ci-api`, CodeQL) y el PR tiene 1 aprobación.
+3. **Es accesible** (WCAG 2.1 AA): sin errores de jsx-a11y ni de axe, se usa con teclado y toda imagen o pictograma lleva texto alternativo.
+4. **Cuida los datos**: sin secretos ni datos reales de estudiantes; datos de menores mínimos.
+5. **Está documentada** si cambia cómo se instala, se usa o se decide algo (README, `docs/`).
+6. Está **mergeada en `develop`**.
+
+Sin tests no se cierra, aunque funcione: se deja en revisión con un comentario de qué falta.
+
 ## Issues
 Plantillas en `.github/ISSUE_TEMPLATE/` (historia, error).
 

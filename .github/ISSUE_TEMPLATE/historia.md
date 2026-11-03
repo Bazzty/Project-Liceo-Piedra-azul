@@ -11,4 +11,8 @@ PLPA-
 ## Descripción
 
 ## Criterios de aceptación
-- [ ] 
+- [ ]
+
+## Tests que la cierran
+<!-- Ninguna historia se cierra sin sus tests (Definition of Done en CONTRIBUTING.md). -->
+- [ ]
