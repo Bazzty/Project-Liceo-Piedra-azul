@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Play, Star, Volume2 } from 'lucide-react';
-import { MainLayout } from '@/shared/layouts/MainLayout';
+import { MainLayout } from '@/app/layouts/MainLayout';
 import { THEMES_CONFIG } from '@/shared/config/themes';
 import { useThemeStore, type ThemeId } from '@/shared/store/useThemeStore';
 import { Badge, Button, Card, OptionButton, ProgressBar, SectionTitle } from '@/shared/ui';

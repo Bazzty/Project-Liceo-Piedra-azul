@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BookOpen, CreditCard, Gauge, GraduationCap, LayoutGrid, ListChecks, Menu, Users, X, type LucideIcon } from 'lucide-react';
 import { ROUTES } from '@/app/routes';
-import { useAuthStore } from '@/features/acceso/useAuthStore';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 import { MarcaPiedra } from '@/features/docente/components/MarcaPiedra';
 import { useThemeStore } from '@/shared/store/useThemeStore';
 

@@ -3,7 +3,7 @@ import { ArrowLeft, Leaf, Settings } from 'lucide-react';
 import { useAlumno } from '@/api';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@/app/routes';
-import { useAuthStore } from '@/features/acceso/useAuthStore';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 import { AjustesEstudiante } from '@/shared/components/AjustesEstudiante';
 import { AvisoInactividad } from '@/shared/components/AvisoInactividad';
 import { BarridoUnBoton } from '@/shared/components/BarridoUnBoton';

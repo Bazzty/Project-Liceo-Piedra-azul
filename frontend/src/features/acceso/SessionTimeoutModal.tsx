@@ -1,7 +1,7 @@
 import React from 'react';
 import { Clock, ArrowRight, Info } from 'lucide-react';
 import { Button } from '@/shared/ui';
-import { useAuthStore } from '@/features/acceso/useAuthStore';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 
 export interface SessionTimeoutModalProps {
 	onClose?: () => void;

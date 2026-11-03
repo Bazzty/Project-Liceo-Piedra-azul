@@ -6,7 +6,7 @@ import { normalizar } from '@/features/docente/components/format';
 import { PictoImg } from '@/features/docente/components/widgets';
 import { Button } from '@/shared/ui';
 import { actualizarCuento, crearCuento, listarPictogramas, useNiveles } from '@/api';
-import { useAuthStore } from '@/features/acceso/useAuthStore';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 
 // Palabras funcionales que NO reciben pictograma sugerido (igual que en los cuentos del seed).
 // El docente igualmente puede agregarles uno a mano.

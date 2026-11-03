@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
 import { Button } from '@/shared/ui';
 import { ArrowLeft, Clock } from 'lucide-react';
-import { MainLayout } from '@/shared/layouts/MainLayout';
+import { MainLayout } from '@/app/layouts/MainLayout';
 import { CharacterGuide } from '@/shared/components/CharacterGuide';
-import { useAuthStore } from '@/features/acceso/useAuthStore';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 import { getPersonajeAudio } from '@/shared/config/audioConfig';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@/app/routes';

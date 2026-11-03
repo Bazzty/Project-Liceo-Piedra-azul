@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { actualizarCuento, eliminarCuento, useCuentos, useNiveles } from '@/api';
-import { useAuthStore } from '@/features/acceso/useAuthStore';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 import { CuentoForm } from '@/features/docente/components/CuentoForm';
 import { EstadoCuento } from '@/features/docente/components/EstadoCuento';
 import { EncabezadoPagina, Hoja } from '@/features/docente/components/Hoja';

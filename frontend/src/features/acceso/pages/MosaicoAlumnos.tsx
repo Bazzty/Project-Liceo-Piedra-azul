@@ -1,8 +1,8 @@
 import React from 'react';
 import { Sparkles } from 'lucide-react';
 import type { Alumno } from '@/types';
-import { MainLayout } from '@/shared/layouts/MainLayout';
-import { useAuthStore } from '@/features/acceso/useAuthStore';
+import { MainLayout } from '@/app/layouts/MainLayout';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 import { obtenerAlumno, useAlumnos } from '@/api';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@/app/routes';

@@ -8,7 +8,7 @@ import { LibroDelCurso } from '@/features/docente/components/LibroDelCurso';
 import { BarrasPorDia } from '@/features/docente/components/BarrasPorDia';
 import { EncabezadoPagina, Hoja } from '@/features/docente/components/Hoja';
 import { UMBRALES } from '@/features/docente/components/umbrales';
-import { useAuthStore } from '@/features/acceso/useAuthStore';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 import { useLibroCurso, type EstadoAlumno } from '@/features/docente/components/useLibroCurso';
 
 const CRITERIOS_AVISO = `Avisan si pasan ${UMBRALES.diasSinEntrar} días sin entrar, si hay ${UMBRALES.diasActivosMinimos} día o menos de actividad en la semana, si menos del ${UMBRALES.porcentajeSinAyudaBajo} % de los juegos sale sin ayuda o si hay tareas vencidas. Criterios provisionales.`;

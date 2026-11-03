@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@/app/routes';
-import { useAuthStore } from '@/features/acceso/useAuthStore';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 import { OsoCabeza } from '@/shared/components/OsoCabeza';
 import { useHablar } from '@/shared/hooks/useHablar';
 import { Button, Modal } from '@/shared/ui';

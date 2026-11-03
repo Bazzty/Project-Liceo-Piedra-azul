@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Lock, Star, Volume2 } from 'lucide-react';
 import { useCuentosDeNivel, useProgresosDeAlumno } from '@/api';
 import { ROUTES } from '@/app/routes';
-import { useAuthStore } from '@/features/acceso/useAuthStore';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 import { sonarToque } from '@/shared/audio/sonidos';
 import { LayoutEstudiante } from '@/shared/components/LayoutEstudiante';
 import { OsoBurbuja } from '@/shared/components/OsoBurbuja';

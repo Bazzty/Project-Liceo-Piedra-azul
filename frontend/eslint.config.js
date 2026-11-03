@@ -26,4 +26,17 @@ export default defineConfig([
       'jsx-a11y/label-has-associated-control': ['error', { depth: 3 }],
     },
   },
+  {
+    // Capas: app/ arma las features; features/ usan shared/; shared/ no conoce a nadie de arriba.
+    // La excepción es @/app/routes: el mapa de rutas es una constante que todos pueden usar.
+    files: ['src/shared/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': ['error', {
+        patterns: [{
+          group: ['@/features/*', '@/app/App', '@/app/guards', '@/app/layouts/*'],
+          message: 'shared/ no puede depender de features/ ni de app/: mueve lo común a shared/.',
+        }],
+      }],
+    },
+  },
 ])

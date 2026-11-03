@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { BookOpen, ClipboardList, Play, Star, Volume2 } from 'lucide-react';
 import { useCuentosDeNivel, useNivel, useProgresosDeAlumno } from '@/api';
 import { ROUTES } from '@/app/routes';
-import { useAuthStore } from '@/features/acceso/useAuthStore';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 import { useTareasPendientes } from '@/features/tareas/useTareasPendientes';
 import { resolverYGuardarPictograma } from '@/features/tablero/arasaac';
 import { sonarToque } from '@/shared/audio/sonidos';

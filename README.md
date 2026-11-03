@@ -59,27 +59,18 @@ Project-Liceo-Piedra-azul/
     │   └── pictogramas/           # Catálogo gráfico de comunicación aumentativa
     │       ├── arasaac/           # Pictogramas vectoriales y PNG de ARASAAC
     │       └── fotos_reales/      # Fotografías reales del entorno (Liceo Piedra Azul, docentes)
-    ├── src/                       # Código fuente de la aplicación React
-    │   ├── assets/                # Imágenes estáticas, logotipos e ilustraciones
-    │   ├── components/            # Componentes reutilizables de la interfaz
-    │   │   ├── common/            # Botones, tarjetas y modales accesibles (Radix UI)
-    │   │   ├── lectura/           # Lector Dual (Texto + Pictogramas + TTS)
-    │   │   ├── tablero/           # Tablero de comunicación aumentativa (SAAC)
-    │   │   └── ui/                # Controles de paletas de bajo estímulo visual (Ley TEA)
-    │   ├── db/                    # Base de datos local IndexedDB (Dexie.js para modo offline)
-    │   ├── hooks/                 # Custom Hooks (Audio, sintetizador TTS, estado de red)
-    │   ├── pages/                 # Vistas principales de la aplicación
-    │   │   ├── MosaicoAlumnos.tsx # Selección de perfil por avatar/foto (Modo Aula)
-    │   │   ├── CatalogoCuentos.tsx# Repositorio de lecturas adaptadas
-    │   │   ├── LecturaView.tsx    # Pantalla interactiva de lectura asistida
-    │   │   └── AdminDocente.tsx   # Panel de gestión, carga de recursos y fotos reales
-    │   ├── services/              # Cliente API y consultas (TanStack Query)
-    │   ├── store/                 # Estado global con Zustand (Perfil, Paleta cromática, Progreso)
-    │   ├── styles/                # Configuración de estilos y directivas de Tailwind CSS
-    │   ├── App.tsx                # Enrutamiento y contenedor principal
-    │   ├── main.tsx               # Punto de entrada de React
-    │   ├── index.css              # Estilos globales y Tailwind CSS
-    │   └── sw.ts                  # Service Worker personalizado para caché PWA
+    ├── src/                       # Código fuente (capas: app → features → shared)
+    │   ├── app/                   # Rutas (routes.ts), guardias de acceso y layouts que arman las features
+    │   ├── features/              # Una carpeta por área: acceso, aprender, docente, tablero, tareas, estrellas…
+    │   │   └── <feature>/         # pages/ y components/ propios de esa área
+    │   ├── shared/                # Lo común: ui/ (botón, modal…), components/, hooks/, store/ (Zustand), audio/
+    │   ├── api/                   # Cliente de datos por recurso (hoy sobre mocks; luego /api/v1)
+    │   ├── db/                    # Caché local IndexedDB (Dexie)
+    │   ├── mocks/                 # Datos ficticios del prototipo
+    │   ├── styles/                # Temas de bajo estímulo y estilos de lectura
+    │   ├── test/                  # Setup de Vitest y Testing Library
+    │   └── main.tsx               # Punto de entrada de React
+    ├── e2e/                       # Pruebas de punta a punta con Playwright (+ revisión WCAG con axe)
     ├── index.html                 # Plantilla HTML base
     ├── package.json               # Dependencias y scripts de Node.js
     ├── postcss.config.js          # Configuración de PostCSS

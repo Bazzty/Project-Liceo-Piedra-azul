@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { MessageSquare, Settings, User as UserIcon, Sparkles } from 'lucide-react';
 import { Modal } from '@/shared/ui';
 import { TableroSAAC } from '@/features/tablero/components/TableroSAAC';
-import { useAuthStore } from '@/features/acceso/useAuthStore';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 import { useThemeStore, type ThemeId } from '@/shared/store/useThemeStore';
 import { THEMES_CONFIG } from '@/shared/config/themes';
 import { useAlumno } from '@/api';

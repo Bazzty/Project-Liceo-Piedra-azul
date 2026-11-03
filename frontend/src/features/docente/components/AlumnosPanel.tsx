@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, ClipboardList, Eye, Palette, Printer, Volume2 } from 'lucide-react';
 import { actualizarAlumno } from '@/api';
 import { ROUTES } from '@/app/routes';
-import { useAuthStore } from '@/features/acceso/useAuthStore';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 import { useTarjetasStore } from '@/features/acceso/useTarjetasStore';
 import { ApoyosAlumno } from '@/features/docente/components/ApoyosAlumno';
 import { BarrasPorDia } from '@/features/docente/components/BarrasPorDia';
