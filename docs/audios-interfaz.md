@@ -71,6 +71,6 @@ El script sirve para el equipo de desarrollo. Para que la **docente** agregue un
 3. Antes de llamar a ElevenLabs revisa un **caché** (huella del texto + voz + ajustes): si ya existe, reutiliza el archivo y no gasta créditos.
 4. El audio se guarda en almacenamiento de archivos y se asigna a la página (`audioPaginaUrl`). Mientras esté pendiente, la app usa la voz del navegador.
 5. El **revisor** escucha los audios antes de validar el cuento (la voz de IA puede pronunciar mal).
-6. Controles: límite de caracteres por mes, registro de cuánto se gasta y reintentos si falla.
+6. Controles: límite de caracteres por mes (según el plan de ElevenLabs), registro de cuánto se gasta y reintentos si falla. Si la API falla o se alcanza el tope, el trabajo usa **Piper** (local) y esas páginas se regeneran con ElevenLabs cuando vuelve la cuota.
 
 Cuidado con los datos: los textos de los cuentos se envían a ElevenLabs, así que no deben incluir nombres ni datos de niños.

@@ -6,7 +6,7 @@ Estado: propuesta para revisión (PLPA-57). Motor: PostgreSQL 16. Claves primari
 
 - Apoderados sin cuenta en el MVP: el avance lo ve la docente.
 - Cuentos y actividades (nivel A: sílabas y palabras) en tablas separadas; comparten validación, progreso y eventos mediante relaciones polimórficas (`recurso_type`, `recurso_id`).
-- Voz única (Piper): un MP3 por página o ítem, guardado en `audio_path`. No hay voz por estudiante.
+- Voz única (ElevenLabs, con Piper de respaldo): un MP3 por página o ítem, guardado en `audio_path`. No hay voz por estudiante.
 - Datos de menores mínimos (Ley 21.719): sin RUT, sin fecha de nacimiento, sin foto obligatoria. El código de acceso se guarda solo como hash.
 
 ## Diagrama
