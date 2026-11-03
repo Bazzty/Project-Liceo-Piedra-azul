@@ -13,6 +13,16 @@ Tipos: `feat`, `fix`, `docs`, `refactor`, `test`, `chore`.
 ## Clave Jira obligatoria
 Un hook (`commit-msg`, commitlint) rechaza commits sin clave: `feat: algo` falla, `feat(PLPA-12): algo` pasa. Se instala con `npm install` en la raíz.
 
+## Revisión antes de cada commit (pre-commit)
+Con `npm install` en la raíz, husky instala dos hooks:
+
+- `pre-commit` (lint-staged, solo sobre lo que está en stage):
+  - frontend: ESLint (incluye accesibilidad con jsx-a11y) y los tests de Vitest relacionados con los archivos cambiados;
+  - backend: Pint dentro del contenedor `app`. Si Docker no está corriendo avisa y lo deja para el CI.
+- `commit-msg`: commitlint exige la clave Jira.
+
+Tipos, la suite completa y el build los corre el CI en cada PR. Saltarse los hooks (`--no-verify`) solo en emergencias: el CI va a fallar igual.
+
 ## Pull requests
 - Base: `develop`. `main` solo recibe merges desde `develop` al cerrar versión.
 - Requieren 1 aprobación, rama actualizada y conversaciones resueltas.
