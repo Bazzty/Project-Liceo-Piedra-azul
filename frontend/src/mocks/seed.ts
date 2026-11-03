@@ -151,7 +151,7 @@ async function seedDemoDocente() {
 	await db.alumnos.bulkPut([
 		{ id: 'estudiante-sofia', nombre: 'Sofía', apellido: 'Rojas', temaId: 'calida', personajeId: 'oso', vozId: 'catalina-cl', fechaCreacion: ahora },
 		{ id: 'estudiante-benjamin', nombre: 'Benjamín', apellido: 'Soto', temaId: 'suave', personajeId: 'oso', vozId: 'catalina-cl', fechaCreacion: ahora },
-		{ id: 'estudiante-valentina', nombre: 'Valentina', apellido: 'Muñoz', temaId: 'alto-contraste', personajeId: 'oso', vozId: 'profesora-clonada', fechaCreacion: ahora },
+		{ id: 'estudiante-valentina', nombre: 'Valentina', apellido: 'Muñoz', temaId: 'alto-contraste', personajeId: 'oso', vozId: 'catalina-cl', fechaCreacion: ahora },
 		{ id: 'estudiante-joaquin', nombre: 'Joaquín', apellido: 'Díaz', temaId: 'suave', personajeId: 'oso', vozId: 'catalina-cl', fechaCreacion: ahora },
 		{ id: 'estudiante-emilia', nombre: 'Emilia', apellido: 'Vera', temaId: 'calida', personajeId: 'oso', vozId: 'catalina-cl', fechaCreacion: ahora },
 	]);

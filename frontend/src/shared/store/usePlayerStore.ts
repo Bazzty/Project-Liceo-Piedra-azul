@@ -1,17 +1,18 @@
 import { create } from 'zustand';
+import type { VozId } from '@/types';
 import { useAjustesStore } from '@/shared/store/useAjustesStore';
 
 export interface PlayerState {
   currentAudioUrl: string | null;
   isPlaying: boolean;
   playbackRate: number;
-  selectedVoice: 'catalina-cl' | 'profesora-clonada';
+  selectedVoice: VozId;
   activeAudioInstance: HTMLAudioElement | null;
   /** `alFallar` se llama si el archivo no existe o no se puede reproducir (p. ej. para usar otra voz). */
   playAudio: (audioUrl: string, opciones?: { alFallar?: () => void }) => void;
   stopAudio: () => void;
   setPlaybackRate: (rate: number) => void;
-  setSelectedVoice: (voice: 'catalina-cl' | 'profesora-clonada') => void;
+  setSelectedVoice: (voice: VozId) => void;
 }
 
 export const usePlayerStore = create<PlayerState>()((set, get) => ({
@@ -75,7 +76,7 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
     }
     set({ playbackRate: rate });
   },
-  setSelectedVoice: (voice: 'catalina-cl' | 'profesora-clonada') => {
+  setSelectedVoice: (voice: VozId) => {
     set({ selectedVoice: voice });
   },
 }));

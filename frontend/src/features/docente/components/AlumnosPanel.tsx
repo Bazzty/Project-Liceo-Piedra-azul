@@ -41,7 +41,7 @@ const FichaAlumno: React.FC<{ alumnoId: string; onVolver: () => void }> = ({ alu
 
   if (!ficha) return <p className="text-secondary font-semibold">Cargando ficha…</p>;
   const { alumno } = ficha;
-  const vozActual = alumno.vozId ?? VOZ_POR_DEFECTO;
+  const vozActual = VOCES_CONFIG.find((v) => v.id === alumno.vozId)?.id ?? VOZ_POR_DEFECTO;
 
   const entrarComoNino = () => {
     iniciarSupervision(alumnoId);

@@ -1,5 +1,5 @@
 // Voces disponibles (mismas opciones que usePlayerStore)
-export type VozId = 'catalina-cl' | 'profesora-clonada';
+export type VozId = 'catalina-cl';
 
 /** Ajustes de apoyo que la docente del PIE deja configurados para un niño. */
 export type ApoyoId = 'vozLenta' | 'sinMovimiento' | 'barrido' | 'pocasOpciones';
