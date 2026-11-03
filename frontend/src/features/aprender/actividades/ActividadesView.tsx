@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { BookOpen, Home, Leaf, Lightbulb, Play, RotateCcw, Star, Volume2 } from 'lucide-react';
 import { crearRegistro, useCuento, useCuentos, useRegistrosDeAlumno } from '@/api';
 import { ROUTES } from '@/app/routes';
-import { useAuthStore } from '@/features/acceso/useAuthStore';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 import { palabrasDificiles, resultadosDeRegistros } from '@/features/docente/components/resultados';
 import { Sticker } from '@/features/estrellas/Sticker';
 import { useColeccion } from '@/features/estrellas/useColeccion';

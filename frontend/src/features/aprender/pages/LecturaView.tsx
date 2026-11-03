@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, BookOpen, Check, Gamepad2, Home, Volume2 } from 'lucide-react';
 import { crearRegistro, registrarProgreso, useCuento } from '@/api';
 import { ROUTES } from '@/app/routes';
-import { useAuthStore } from '@/features/acceso/useAuthStore';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 import { PictogramaCard } from '@/features/aprender/components/PictogramaCard';
 import { Sticker } from '@/features/estrellas/Sticker';
 import { useColeccion } from '@/features/estrellas/useColeccion';

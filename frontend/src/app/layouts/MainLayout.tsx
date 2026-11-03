@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Header } from '@/shared/components/Header';
+import { Header } from '@/app/layouts/Header';
 import { useThemeStore } from '@/shared/store/useThemeStore';
 import { useSessionTimeout } from '@/features/acceso/useSessionTimeout';
 import { SessionTimeoutModal } from '@/features/acceso/SessionTimeoutModal';

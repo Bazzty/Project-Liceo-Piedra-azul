@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowLeft, Delete, HandHelping, MousePointerClick, Volume2 } from 'lucide-react';
 import type { Pictograma } from '@/types';
 import { crearRegistro, usePictogramas } from '@/api';
-import { useAuthStore } from '@/features/acceso/useAuthStore';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 import { franjaDe, ordenarTablero } from '@/features/tablero/categoriasTablero';
 import { resolverYGuardarPictograma } from '@/features/tablero/arasaac';
 import { decirSecuencia, type ElementoDeVoz } from '@/shared/audio/decirSecuencia';

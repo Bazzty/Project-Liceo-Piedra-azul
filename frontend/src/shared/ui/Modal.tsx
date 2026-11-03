@@ -64,6 +64,8 @@ export const Modal: React.FC<ModalProps> = ({
   };
 
   return (
+    // El onKeyDown mantiene el foco de Tab dentro del diálogo (patrón WAI-ARIA de diálogo modal).
+    // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
     <div
       ref={dialogRef}
       tabIndex={-1}

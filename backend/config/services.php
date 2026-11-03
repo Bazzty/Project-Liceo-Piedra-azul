@@ -28,6 +28,12 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    // Voz local de respaldo. El binario y el modelo vienen en la imagen de Docker (docker/php/Dockerfile).
+    'piper' => [
+        'binario' => env('PIPER_BINARIO', '/opt/piper/bin/piper'),
+        'voz' => env('PIPER_VOZ', '/opt/piper/voces/es_MX-claude-high.onnx'),
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),

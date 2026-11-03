@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Monitor, Play, Square } from 'lucide-react';
 import { useAlumnos } from '@/api';
 import { ROUTES } from '@/app/routes';
-import { useAuthStore } from '@/features/acceso/useAuthStore';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 import { AdminLayout } from '@/features/docente/AdminLayout';
 import { AgendaClase } from '@/features/docente/components/AgendaClase';
 import { EncabezadoPagina, Hoja } from '@/features/docente/components/Hoja';

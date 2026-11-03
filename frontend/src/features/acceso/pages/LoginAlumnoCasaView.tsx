@@ -7,7 +7,7 @@ import { AccionesDiscretas } from '@/features/acceso/components/AccionesDiscreta
 import { CasillasCodigo } from '@/features/acceso/components/CasillasCodigo';
 import { TarjetaIlustrada } from '@/features/acceso/components/TarjetaIlustrada';
 import { TecladoCodigo } from '@/features/acceso/components/TecladoCodigo';
-import { useAuthStore } from '@/features/acceso/useAuthStore';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 import { useTarjetasStore } from '@/features/acceso/useTarjetasStore';
 import { LARGO_CODIGO } from '@/mocks/tarjetas';
 import { Creditos } from '@/shared/components/Creditos';

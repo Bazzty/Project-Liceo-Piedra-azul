@@ -111,7 +111,7 @@ export const PictogramaCard: React.FC<PictogramaCardProps> = ({
 
 			{/* Botones de Sílabas Separadas (Nivel A) */}
 			{palabra.silabas && palabra.silabas.length > 0 && (
-				<div className="flex gap-2 mt-1" onClick={(e) => e.stopPropagation()}>
+				<div className="flex gap-2 mt-1">
 					{palabra.silabas.map((silaba, idx) => (
 						<button
 							key={idx}

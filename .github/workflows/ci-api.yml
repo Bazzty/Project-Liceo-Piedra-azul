@@ -1,0 +1,62 @@
+name: ci-api
+
+on:
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches: [develop, main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-api-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: backend
+
+jobs:
+  api:
+    name: Pint, Larastan y Pest (PostgreSQL 16)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      # Misma versión que docker-compose.yml. La clave es solo de este contenedor efímero.
+      db:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: leer
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: leer_para_todos_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U leer"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_USERNAME: leer
+      DB_PASSWORD: ci
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: pdo_pgsql, pgsql, intl, zip, gd, pcntl
+          coverage: none
+      - name: Caché de Composer
+        uses: actions/cache@v4
+        with:
+          path: ~/.composer/cache/files
+          key: composer-${{ hashFiles('backend/composer.lock') }}
+          restore-keys: composer-
+      - run: composer install --no-interaction --no-progress --prefer-dist
+      - run: cp .env.example .env && php artisan key:generate
+      - run: vendor/bin/pint --test
+      - run: vendor/bin/phpstan analyse --no-progress --memory-limit=1G
+      # Piper no está en este runner: su test se salta (corre en Docker con make test).
+      - run: vendor/bin/pest

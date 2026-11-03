@@ -1,8 +1,8 @@
 import React from 'react';
 import { Sparkles } from 'lucide-react';
 import type { Alumno } from '@/types';
-import { MainLayout } from '@/shared/layouts/MainLayout';
-import { useAuthStore } from '@/features/acceso/useAuthStore';
+import { MainLayout } from '@/app/layouts/MainLayout';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 import { obtenerAlumno, useAlumnos } from '@/api';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@/app/routes';
@@ -52,7 +52,8 @@ export const MosaicoAlumnos: React.FC = () => {
         {/* Mosaico de Estudiantes */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 w-full">
           {alumnos?.map((a: Alumno) => (
-            <div
+            <button
+              type="button"
               key={a.id}
               onClick={() => a.id && handleStudentClick(a.id)}
               className="bg-surface rounded-3xl border-4 border-borderCustom p-5 shadow-xl hover:border-brand hover:scale-105 active:scale-95 transition-all flex flex-col items-center gap-3 cursor-pointer group"
@@ -70,7 +71,7 @@ export const MosaicoAlumnos: React.FC = () => {
               <span className="text-lg font-black text-primary group-hover:text-brand transition-colors tracking-wide">
                 {a.nombre}
               </span>
-            </div>
+            </button>
           ))}
         </div>
 

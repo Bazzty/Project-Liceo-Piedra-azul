@@ -6,7 +6,7 @@ import { sonarToque } from '@/shared/audio/sonidos';
 import type { ClaveAudio } from '@/shared/config/audiosInterfaz';
 import type { PasoAgenda } from '@/shared/store/useAjustesStore';
 import { ROUTES } from '@/app/routes';
-import { useAuthStore } from '@/features/acceso/useAuthStore';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 import { useTareasPendientes } from '@/features/tareas/useTareasPendientes';
 import { AlbumEstrellas } from '@/features/estrellas/AlbumEstrellas';
 import { TableroSAAC } from '@/features/tablero/components/TableroSAAC';

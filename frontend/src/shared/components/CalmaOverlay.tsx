@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Droplets, Frown, LayoutGrid, Meh, Paintbrush, RotateCcw, Smile, Sparkles, Volume2, Wind } from 'lucide-react';
 import { crearRegistro } from '@/api';
-import { useAuthStore } from '@/features/acceso/useAuthStore';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 import type { ActividadCalma, RegistroCalma } from '@/types';
 import { sonarBurbuja, sonarRespiro } from '@/shared/audio/sonidos';
 import { DibujarConLuz } from '@/shared/components/calma/DibujarConLuz';

@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useAuthStore } from '@/features/acceso/useAuthStore';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 
 export const useSessionTimeout = () => {
   const { checkSessionTimeout, checkClassroomStatus } = useAuthStore();

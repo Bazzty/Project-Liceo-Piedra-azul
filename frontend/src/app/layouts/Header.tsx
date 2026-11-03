@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { MessageSquare, Settings, User as UserIcon, Sparkles } from 'lucide-react';
 import { Modal } from '@/shared/ui';
 import { TableroSAAC } from '@/features/tablero/components/TableroSAAC';
-import { useAuthStore } from '@/features/acceso/useAuthStore';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 import { useThemeStore, type ThemeId } from '@/shared/store/useThemeStore';
 import { THEMES_CONFIG } from '@/shared/config/themes';
 import { useAlumno } from '@/api';
@@ -42,10 +42,10 @@ export const Header: React.FC = () => {
           {/* Botón Destacado "HABLAR" */}
           <button
             onClick={() => setIsHablarOpen(true)}
-            aria-label="Abrir tablero de comunicación aumentativa SAAC"
+            aria-label="Hablar: abrir tablero de comunicación aumentativa SAAC"
             className="flex items-center gap-2 px-4 py-2.5 min-h-12 bg-statusOk hover:opacity-90 text-onStatus font-black rounded-2xl shadow-md transition-all active:scale-95 cursor-pointer text-sm"
           >
-            <MessageSquare className="w-4 h-4" />
+            <MessageSquare className="w-4 h-4" aria-hidden />
             <span>HABLAR</span>
           </button>
 
@@ -67,15 +67,16 @@ export const Header: React.FC = () => {
           
           {/* Paleta de Colores */}
           <div className="flex flex-col gap-3">
-            <label className="text-sm font-extrabold text-primary flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-brand" />
+            <h4 id="titulo-paleta" className="text-sm font-extrabold text-primary flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-brand" aria-hidden />
               <span>Paleta de Colores (Ley TEA)</span>
-            </label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            </h4>
+            <div role="group" aria-labelledby="titulo-paleta" className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {THEMES_CONFIG.map((theme) => (
                 <button
                   key={theme.id}
                   onClick={() => setTheme(theme.id as ThemeId)}
+                  aria-pressed={currentTheme === theme.id}
                   className={`flex items-center gap-3 p-3.5 rounded-2xl border-4 transition-all font-black text-sm cursor-pointer shadow text-left ${
                     currentTheme === theme.id
                       ? 'border-brand bg-brand/10 ring-2 ring-brand scale-[1.02] text-primary'
