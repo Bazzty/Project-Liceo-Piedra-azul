@@ -12,6 +12,26 @@ updates:
     schedule:
       interval: weekly
     target-branch: develop
-  # Agregar al instalar tecnologías (fase 3):
-  #   npm       -> /frontend
-  #   composer  -> /backend
+  - package-ecosystem: npm
+    directory: "/frontend"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    target-branch: develop
+    groups:
+      # Los paquetes de cada herramienta se actualizan juntos (un PR, no cinco).
+      testing:
+        patterns: ["vitest", "@vitest/*", "@testing-library/*", "@playwright/test", "@axe-core/*", "jsdom"]
+      eslint:
+        patterns: ["eslint", "@eslint/*", "eslint-plugin-*", "typescript-eslint", "globals"]
+  - package-ecosystem: composer
+    directory: "/backend"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    target-branch: develop
+  - package-ecosystem: docker
+    directory: "/docker/php"
+    schedule:
+      interval: monthly
+    target-branch: develop
