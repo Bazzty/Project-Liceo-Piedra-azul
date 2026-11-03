@@ -25,11 +25,16 @@ Guardar cada una como `frontend/public/audio/interfaz/<clave>.mp3`.
 | `estrellas` | Mis estrellas. |
 | `elige_nivel` | Elige un nivel para empezar a leer. |
 | `elige_cuento` | Elige el cuento que más te guste. |
-| `nivel_a` | Nivel A. Vocales. |
-| `nivel_b` | Nivel B. Sílabas. |
+| `nivel_a` | Nivel A. Sílabas. |
+| `nivel_b` | Nivel B. Vocales. |
 | `nivel_c` | Nivel C. Palabras. |
 | `nivel_d` | Nivel D. Cuentos. |
 | `nivel_e` | Nivel E. Historias. |
+| `instrucciones_silabas` | Vamos a jugar con sílabas. Escucha cada palabra y mira su dibujo. Toca el parlante para oírla otra vez. |
+| `instrucciones_vocales` | Vamos a conocer las vocales. Mira la letra, escucha su sonido y descubre palabras que empiezan con ella. |
+| `instrucciones_palabras` | Vamos a aprender palabras de todos los días. Mira el dibujo y escucha la palabra. |
+| `instrucciones_cuentos` | Vamos a leer cuentos. Toca Escuchar para oír cada página y la flecha para seguir. |
+| `instrucciones_historias` | Vamos a leer historias más largas. Escucha con atención y toca la flecha para pasar la página. |
 | `cual_es` | ¿Cuál es? |
 | `que_empieza` | ¿Con qué empieza? |
 | `busca_parejas` | Busca las parejas. |

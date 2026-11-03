@@ -14,6 +14,12 @@ const hablarConVozDelNavegador = (texto: string) => {
   window.speechSynthesis.speak(voz);
 };
 
+/** Corta lo que se esté diciendo, grabación o voz del navegador. */
+export const callar = () => {
+  if (typeof window !== 'undefined' && 'speechSynthesis' in window) window.speechSynthesis.cancel();
+  usePlayerStore.getState().stopAudio();
+};
+
 /**
  * Dice algo en voz alta. Si se indica `clave`, usa la grabación de la voz del proyecto (la suave).
  * Solo si esa grabación no existe, lee el texto con la voz del navegador como respaldo.

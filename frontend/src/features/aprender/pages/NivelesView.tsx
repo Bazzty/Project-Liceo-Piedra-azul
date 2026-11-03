@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Check, Lock, Star, Volume2 } from 'lucide-react';
 import { useCuentosDeNivel, useProgresosDeAlumno } from '@/api';
@@ -9,6 +9,7 @@ import { LayoutEstudiante } from '@/shared/components/LayoutEstudiante';
 import { OsoBurbuja } from '@/shared/components/OsoBurbuja';
 import { NIVELES_CAMINO, type NivelCamino } from '@/shared/config/niveles';
 import { useHablar } from '@/shared/hooks/useHablar';
+import { useAjustesStore } from '@/shared/store/useAjustesStore';
 import { Button, Modal } from '@/shared/ui';
 
 const BASE = import.meta.env.BASE_URL || '/';
@@ -92,34 +93,26 @@ interface InstruccionesNivelProps {
 }
 
 /** Antes de entrar a un nivel, el osito dice qué se hace ahí; el niño entra al tocar «Entendido». */
-const InstruccionesNivel: React.FC<InstruccionesNivelProps> = ({ parada, onEntendido, onCerrar }) => {
-  const hablar = useHablar();
-
-  // Al abrirse, el osito dice las instrucciones en voz alta (también se repiten al tocarlo)
-  useEffect(() => {
-    if (parada) hablar(parada.instrucciones);
-  }, [parada, hablar]);
-
-  return (
-    <Modal isOpen={parada !== null} onClose={onCerrar} title={parada ? `Nivel ${parada.letra}: ${parada.nombre}` : ''} size="md">
-      {parada && (
-        <div className="flex flex-col items-center gap-6 text-center">
-          <OsoBurbuja mensaje={parada.instrucciones} size="md" />
-          <Button size="xl" onClick={onEntendido}>
-            <Check className="w-8 h-8" strokeWidth={3} aria-hidden />
-            Entendido
-          </Button>
-        </div>
-      )}
-    </Modal>
-  );
-};
+const InstruccionesNivel: React.FC<InstruccionesNivelProps> = ({ parada, onEntendido, onCerrar }) => (
+  <Modal isOpen={parada !== null} onClose={onCerrar} title={parada ? `Nivel ${parada.letra}: ${parada.nombre}` : ''} size="md">
+    {parada && (
+      <div data-barrido-esperar className="flex flex-col items-center gap-6 text-center">
+        <OsoBurbuja mensaje={parada.instrucciones} clave={parada.claveInstrucciones} size="md" hablarAlAparecer />
+        <Button size="xl" onClick={onEntendido} data-autofoco>
+          <Check className="w-8 h-8" strokeWidth={3} aria-hidden />
+          Entendido
+        </Button>
+      </div>
+    )}
+  </Modal>
+);
 
 /** Niveles de lectura como un camino con paradas: letra grande, pictograma y estrellas, sin texto que leer. */
 export const NivelesView: React.FC = () => {
   const navigate = useNavigate();
   const activeStudentId = useAuthStore((s) => s.activeStudentId);
   const [elegida, setElegida] = useState<Parada | null>(null);
+  const sonido = useAjustesStore((s) => s.sonido);
   const progresos = useProgresosDeAlumno(activeStudentId);
   const cuentosPorNivel = [
     useCuentosDeNivel(PARADAS[0].id),
@@ -164,7 +157,8 @@ export const NivelesView: React.FC = () => {
                 orden={i}
                 total={publicados(i).length}
                 completados={completadosDe(i)}
-                onElegir={() => setElegida(p)}
+                // Sin voz, las instrucciones serían solo texto para quien aún no lee: se entra directo
+                onElegir={() => (sonido ? setElegida(p) : navigate(ROUTES.catalogo(p.id)))}
               />
             ))}
           </ol>

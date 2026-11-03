@@ -1,4 +1,5 @@
 import Dexie, { type Table } from 'dexie';
+import { silabasAntesQueVocales } from '@/db/migraciones';
 import type { Alumno, Cuento, Nivel, Pictograma, Progreso, Registro } from '@/types';
 
 // Clases e Inicialización de Dexie.js
@@ -26,6 +27,9 @@ export class LeerParaTodosDB extends Dexie {
     this.version(2).stores({
       registros: '++id, alumnoId, tipo, fecha',
     });
+
+    // v3: sílabas antes que vocales, también en los navegadores que ya tenían datos
+    this.version(3).stores({}).upgrade((tx) => silabasAntesQueVocales(tx.table('niveles')));
   }
 }
 

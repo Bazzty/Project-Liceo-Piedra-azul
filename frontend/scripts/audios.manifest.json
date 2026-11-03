@@ -100,6 +100,26 @@
     "texto": "Este nivel llega pronto."
   },
   {
+    "archivo": "interfaz/instrucciones_silabas.mp3",
+    "texto": "Vamos a jugar con sílabas. Escucha cada palabra y mira su dibujo. Toca el parlante para oírla otra vez."
+  },
+  {
+    "archivo": "interfaz/instrucciones_vocales.mp3",
+    "texto": "Vamos a conocer las vocales. Mira la letra, escucha su sonido y descubre palabras que empiezan con ella."
+  },
+  {
+    "archivo": "interfaz/instrucciones_palabras.mp3",
+    "texto": "Vamos a aprender palabras de todos los días. Mira el dibujo y escucha la palabra."
+  },
+  {
+    "archivo": "interfaz/instrucciones_cuentos.mp3",
+    "texto": "Vamos a leer cuentos. Toca Escuchar para oír cada página y la flecha para seguir."
+  },
+  {
+    "archivo": "interfaz/instrucciones_historias.mp3",
+    "texto": "Vamos a leer historias más largas. Escucha con atención y toca la flecha para pasar la página."
+  },
+  {
     "archivo": "interfaz/respira.mp3",
     "texto": "Respira conmigo. Inhala... y exhala."
   },

@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef } from 'react';
 import { MousePointerClick } from 'lucide-react';
 import { useHablar } from '@/shared/hooks/useHablar';
+import { usePlayerStore } from '@/shared/store/usePlayerStore';
 import { useAjustesStore, type VelocidadBarrido } from '@/shared/store/useAjustesStore';
 
 const MS_POR_VELOCIDAD: Record<VelocidadBarrido, number> = { lento: 2800, normal: 1800, rapido: 1100 };
@@ -18,8 +19,14 @@ const elementosElegibles = (raiz: HTMLElement): HTMLElement[] => {
   });
   // Primero lo principal de la pantalla; la barra de arriba (volver, calma, ajustes) al final
   const principal = visibles.filter((el) => el.closest('main') || contenedor !== raiz);
-  return [...principal, ...visibles.filter((el) => !principal.includes(el))];
+  const ordenados = [...principal, ...visibles.filter((el) => !principal.includes(el))];
+  // La acción marcada con data-autofoco va antes que todo (p. ej. «Entendido» antes que la X)
+  return [...ordenados.filter((el) => el.hasAttribute('data-autofoco')), ...ordenados.filter((el) => !el.hasAttribute('data-autofoco'))];
 };
+
+/** Con [data-barrido-esperar] en pantalla no se avanza mientras suene una voz: decir la opción la cortaría. */
+const hayQueEsperarLaVoz = () =>
+  document.querySelector('[data-barrido-esperar]') !== null && (Boolean(window.speechSynthesis?.speaking) || usePlayerStore.getState().isPlaying);
 
 const nombreDe = (el: HTMLElement) => (el.getAttribute('aria-label') ?? el.textContent ?? '').replace(/\s+/g, ' ').trim();
 
@@ -41,7 +48,7 @@ export const BarridoUnBoton: React.FC<{ raiz: React.RefObject<HTMLElement | null
   }, []);
 
   const avanzar = useCallback(() => {
-    if (!raiz.current || Date.now() < pausaHasta.current) return;
+    if (!raiz.current || Date.now() < pausaHasta.current || hayQueEsperarLaVoz()) return;
     const lista = elementosElegibles(raiz.current);
     desmarcar();
     if (lista.length === 0) return;

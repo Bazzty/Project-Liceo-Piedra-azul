@@ -229,35 +229,35 @@ export const LecturaView: React.FC = () => {
           ))}
         </ol>
 
-        {/* Pictogramas y palabras, con las flechas grandes a cada lado para que se vean bien */}
-        <div className="flex-1 w-full flex items-center justify-center gap-3 sm:gap-6">
+        {/* Pictogramas y palabras. Las flechas grandes van a cada lado; en pantallas angostas pasan abajo para dejarle el ancho al dibujo */}
+        <div className="flex-1 w-full grid grid-cols-2 md:grid-cols-[auto_minmax(0,1fr)_auto] content-center items-center justify-items-center gap-3 md:gap-6">
           <button
             type="button"
             onClick={() => cambiarPagina(paginaActual - 1)}
             disabled={paginaActual === 0}
             aria-label="Página anterior"
-            className="shrink-0 w-20 h-20 sm:w-28 sm:h-28 rounded-full bg-surface text-primary border-4 border-borderStrong flex items-center justify-center cursor-pointer hover:border-brand active:scale-95 transition-all shadow-card disabled:opacity-40 disabled:cursor-not-allowed"
+            className="row-start-2 md:row-start-1 md:col-start-1 w-20 h-20 sm:w-28 sm:h-28 rounded-full bg-surface text-primary border-4 border-borderStrong flex items-center justify-center cursor-pointer hover:border-brand active:scale-95 transition-all shadow-card disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <ArrowLeft className="w-12 h-12 sm:w-16 sm:h-16" strokeWidth={3} aria-hidden />
           </button>
 
-          <div className="flex-1 min-w-0 flex items-center justify-center">
-          {unaPalabra ? (
-            <PictogramaCard palabra={palabras[0]} grande isHighlighted={reproduciendo} />
-          ) : (
-            <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 w-full p-4 sm:p-6 bg-surface/90 rounded-card shadow-card">
-              {palabras.map((p, i) => (
-                <PictogramaCard key={`${paginaActual}-${i}`} palabra={p} grande={palabras.length <= 3} isHighlighted={palabraActiva === i} />
-              ))}
-            </div>
-          )}
+          <div className="col-span-2 row-start-1 md:col-span-1 md:col-start-2 w-full min-w-0 flex items-center justify-center">
+            {unaPalabra ? (
+              <PictogramaCard palabra={palabras[0]} grande isHighlighted={reproduciendo} />
+            ) : (
+              <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 w-full p-4 sm:p-6 bg-surface/90 rounded-card shadow-card">
+                {palabras.map((p, i) => (
+                  <PictogramaCard key={`${paginaActual}-${i}`} palabra={p} grande={palabras.length <= 3} isHighlighted={palabraActiva === i} />
+                ))}
+              </div>
+            )}
           </div>
 
           <button
             type="button"
             onClick={() => (esUltimaPagina ? void finalizar() : cambiarPagina(paginaActual + 1))}
             aria-label={esUltimaPagina ? 'Terminar' : 'Página siguiente'}
-            className="shrink-0 w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-brand text-onBrand border-4 border-brand-hover flex items-center justify-center cursor-pointer hover:bg-brand-hover active:scale-95 transition-all shadow-card"
+            className="row-start-2 col-start-2 md:row-start-1 md:col-start-3 w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-brand text-onBrand border-4 border-brand-hover flex items-center justify-center cursor-pointer hover:bg-brand-hover active:scale-95 transition-all shadow-card"
           >
             {esUltimaPagina ? (
               <Check className="w-14 h-14 sm:w-20 sm:h-20" strokeWidth={3} aria-hidden />
@@ -280,7 +280,7 @@ export const LecturaView: React.FC = () => {
           </p>
         )}
 
-        {/* Escuchar la página (las flechas para cambiar de página están a los lados) */}
+        {/* Escuchar la página (las flechas para cambiar de página van junto al dibujo) */}
         <div className="flex items-center justify-center gap-4 sm:gap-8 w-full">
           <button
             type="button"

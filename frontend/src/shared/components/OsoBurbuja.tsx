@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Volume2 } from 'lucide-react';
 import { OsoCabeza } from '@/shared/components/OsoCabeza';
 import { useBocaHabla } from '@/shared/hooks/useBocaHabla';
-import { useHablar } from '@/shared/hooks/useHablar';
+import { callar, useHablar } from '@/shared/hooks/useHablar';
 import type { ClaveAudio } from '@/shared/config/audiosInterfaz';
 import { usePlayerStore } from '@/shared/store/usePlayerStore';
 
@@ -16,6 +16,8 @@ export interface OsoBurbujaProps {
   size?: 'md' | 'lg' | 'xl';
   /** Lo que dice en voz alta, si es distinto del texto de la burbuja. */
   voz?: string;
+  /** Habla solo al aparecer y se calla al desaparecer (p. ej. dentro de una ventana). */
+  hablarAlAparecer?: boolean;
   /** Sin texto visible en la burbuja (solo voz), para quienes aún no leen. */
   className?: string;
 }
@@ -27,12 +29,19 @@ const TAMANOS = {
 };
 
 /** Osito guía con burbuja: al tocarlo dice el mensaje en voz alta. Pensado para quien aún no lee. */
-export const OsoBurbuja: React.FC<OsoBurbujaProps> = ({ mensaje, audioUrl, clave, size = 'md', voz, className = '' }) => {
+export const OsoBurbuja: React.FC<OsoBurbujaProps> = ({ mensaje, audioUrl, clave, size = 'md', voz, hablarAlAparecer = false, className = '' }) => {
   const hablar = useHablar();
   const playAudio = usePlayerStore((s) => s.playAudio);
 
   const { boca, iniciar } = useBocaHabla();
   const [saltando, setSaltando] = useState(false);
+
+  useEffect(() => {
+    if (!hablarAlAparecer) return;
+    hablar(voz ?? mensaje, clave);
+    iniciar(voz ?? mensaje);
+    return callar;
+  }, [hablarAlAparecer, hablar, iniciar, voz, mensaje, clave]);
 
   const escuchar = () => {
     setSaltando(false);
