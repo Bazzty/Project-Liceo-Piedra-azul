@@ -1,4 +1,5 @@
 # Entorno de desarrollo: make setup la primera vez, make up después.
+# container_name es solo el nombre visible: los comandos y la red siguen usando el nombre del servicio.
 x-php: &php
   image: leer-para-todos-php
   # La imagen la construye solo el servicio app; el worker la reutiliza.
@@ -23,6 +24,7 @@ x-php: &php
 
 services:
   db:
+    container_name: liceo-db
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
@@ -40,6 +42,7 @@ services:
       retries: 10
 
   app:
+    container_name: liceo-php
     <<: *php
     build:
       context: ./docker/php
@@ -49,6 +52,7 @@ services:
     restart: unless-stopped
 
   nginx:
+    container_name: liceo-nginx
     image: nginx:1.27-alpine
     restart: unless-stopped
     depends_on:
@@ -61,6 +65,7 @@ services:
 
   # Cola de trabajos (audio de los cuentos). Espera a que make setup instale las dependencias.
   worker:
+    container_name: liceo-worker
     <<: *php
     restart: unless-stopped
     user: www-data
@@ -72,6 +77,7 @@ services:
         exec php artisan queue:listen --tries=3 --timeout=300
 
   vite:
+    container_name: liceo-web
     image: node:24-alpine
     restart: unless-stopped
     working_dir: /app

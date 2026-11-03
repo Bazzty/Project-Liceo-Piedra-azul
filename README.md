@@ -101,13 +101,13 @@ Project-Liceo-Piedra-azul/
    make setup   # la primera vez: construye la imagen, instala dependencias, genera la clave y crea las tablas
    make up      # los días siguientes
    ```
-   | Servicio | Dirección |
-   |---|---|
-   | Web (Vite, React) | [http://localhost:5173](http://localhost:5173) |
-   | API (Nginx + PHP-FPM) | [http://localhost:8000](http://localhost:8000) |
-   | PostgreSQL | `localhost:5432` |
+   | Servicio | Contenedor | Dirección |
+   |---|---|---|
+   | Web (Vite, React) | `liceo-web` | [http://localhost:5173](http://localhost:5173) |
+   | API (Nginx + PHP-FPM) | `liceo-nginx`, `liceo-php` | [http://localhost:8000](http://localhost:8000) |
+   | PostgreSQL | `liceo-db` | `localhost:5432` |
 
-   Además corre un `worker` para la cola de trabajos. Otros comandos: `make shell` (terminal de PHP), `make logs s=worker`, `make psql`, `make down`. Si ya usas el puerto 8000 o 5173, cámbialo en `.env` (`WEB_PORT`, `VITE_PORT`).
+   Además corre un `worker` (`liceo-worker`) para la cola de trabajos. Otros comandos: `make shell` (terminal de PHP), `make logs s=worker`, `make psql`, `make down`. Si ya usas el puerto 8000 o 5173, cámbialo en `.env` (`WEB_PORT`, `VITE_PORT`).
 
    *Solo el frontend, sin Docker:* `cd frontend && npm install && npm run dev`.
 
