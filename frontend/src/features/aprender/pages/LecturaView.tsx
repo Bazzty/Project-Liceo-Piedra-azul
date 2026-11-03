@@ -229,8 +229,19 @@ export const LecturaView: React.FC = () => {
           ))}
         </ol>
 
-        {/* Pictogramas y palabras */}
-        <div className="flex-1 w-full flex items-center justify-center">
+        {/* Pictogramas y palabras, con las flechas grandes a cada lado para que se vean bien */}
+        <div className="flex-1 w-full flex items-center justify-center gap-3 sm:gap-6">
+          <button
+            type="button"
+            onClick={() => cambiarPagina(paginaActual - 1)}
+            disabled={paginaActual === 0}
+            aria-label="Página anterior"
+            className="shrink-0 w-20 h-20 sm:w-28 sm:h-28 rounded-full bg-surface text-primary border-4 border-borderStrong flex items-center justify-center cursor-pointer hover:border-brand active:scale-95 transition-all shadow-card disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <ArrowLeft className="w-12 h-12 sm:w-16 sm:h-16" strokeWidth={3} aria-hidden />
+          </button>
+
+          <div className="flex-1 min-w-0 flex items-center justify-center">
           {unaPalabra ? (
             <PictogramaCard palabra={palabras[0]} grande isHighlighted={reproduciendo} />
           ) : (
@@ -240,6 +251,20 @@ export const LecturaView: React.FC = () => {
               ))}
             </div>
           )}
+          </div>
+
+          <button
+            type="button"
+            onClick={() => (esUltimaPagina ? void finalizar() : cambiarPagina(paginaActual + 1))}
+            aria-label={esUltimaPagina ? 'Terminar' : 'Página siguiente'}
+            className="shrink-0 w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-brand text-onBrand border-4 border-brand-hover flex items-center justify-center cursor-pointer hover:bg-brand-hover active:scale-95 transition-all shadow-card"
+          >
+            {esUltimaPagina ? (
+              <Check className="w-14 h-14 sm:w-20 sm:h-20" strokeWidth={3} aria-hidden />
+            ) : (
+              <ArrowRight className="w-14 h-14 sm:w-20 sm:h-20" strokeWidth={3} aria-hidden />
+            )}
+          </button>
         </div>
 
         {/* La oración completa, con la palabra que suena resaltada */}
@@ -255,18 +280,8 @@ export const LecturaView: React.FC = () => {
           </p>
         )}
 
-        {/* Controles grandes: anterior, escuchar y siguiente */}
+        {/* Escuchar la página (las flechas para cambiar de página están a los lados) */}
         <div className="flex items-center justify-center gap-4 sm:gap-8 w-full">
-          <button
-            type="button"
-            onClick={() => cambiarPagina(paginaActual - 1)}
-            disabled={paginaActual === 0}
-            aria-label="Página anterior"
-            className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-surface text-primary border-4 border-borderStrong flex items-center justify-center cursor-pointer hover:border-brand active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            <ArrowLeft className="w-9 h-9" strokeWidth={2.5} aria-hidden />
-          </button>
-
           <button
             type="button"
             onClick={() => {
@@ -277,15 +292,6 @@ export const LecturaView: React.FC = () => {
           >
             <Volume2 className={`w-10 h-10 sm:w-12 sm:h-12 ${reproduciendo ? 'animate-pulso rounded-full' : ''}`} aria-hidden />
             Escuchar
-          </button>
-
-          <button
-            type="button"
-            onClick={() => (esUltimaPagina ? void finalizar() : cambiarPagina(paginaActual + 1))}
-            aria-label={esUltimaPagina ? 'Terminar' : 'Página siguiente'}
-            className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-brand text-onBrand border-4 border-brand-hover flex items-center justify-center cursor-pointer hover:bg-brand-hover active:scale-95 transition-all shadow-card"
-          >
-            {esUltimaPagina ? <Check className="w-12 h-12" strokeWidth={3} aria-hidden /> : <ArrowRight className="w-12 h-12" strokeWidth={3} aria-hidden />}
           </button>
         </div>
       </main>

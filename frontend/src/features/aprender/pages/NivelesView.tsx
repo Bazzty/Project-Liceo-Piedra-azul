@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Lock, Star, Volume2 } from 'lucide-react';
+import { Check, Lock, Star, Volume2 } from 'lucide-react';
 import { useCuentosDeNivel, useProgresosDeAlumno } from '@/api';
 import { ROUTES } from '@/app/routes';
 import { useAuthStore } from '@/shared/store/useAuthStore';
@@ -9,6 +9,7 @@ import { LayoutEstudiante } from '@/shared/components/LayoutEstudiante';
 import { OsoBurbuja } from '@/shared/components/OsoBurbuja';
 import { NIVELES_CAMINO, type NivelCamino } from '@/shared/config/niveles';
 import { useHablar } from '@/shared/hooks/useHablar';
+import { Button, Modal } from '@/shared/ui';
 
 const BASE = import.meta.env.BASE_URL || '/';
 
@@ -84,10 +85,41 @@ const ParadaNivel: React.FC<ParadaNivelProps> = ({ parada, orden, completados, t
   );
 };
 
+interface InstruccionesNivelProps {
+  parada: Parada | null;
+  onEntendido: () => void;
+  onCerrar: () => void;
+}
+
+/** Antes de entrar a un nivel, el osito dice qué se hace ahí; el niño entra al tocar «Entendido». */
+const InstruccionesNivel: React.FC<InstruccionesNivelProps> = ({ parada, onEntendido, onCerrar }) => {
+  const hablar = useHablar();
+
+  // Al abrirse, el osito dice las instrucciones en voz alta (también se repiten al tocarlo)
+  useEffect(() => {
+    if (parada) hablar(parada.instrucciones);
+  }, [parada, hablar]);
+
+  return (
+    <Modal isOpen={parada !== null} onClose={onCerrar} title={parada ? `Nivel ${parada.letra}: ${parada.nombre}` : ''} size="md">
+      {parada && (
+        <div className="flex flex-col items-center gap-6 text-center">
+          <OsoBurbuja mensaje={parada.instrucciones} size="md" />
+          <Button size="xl" onClick={onEntendido}>
+            <Check className="w-8 h-8" strokeWidth={3} aria-hidden />
+            Entendido
+          </Button>
+        </div>
+      )}
+    </Modal>
+  );
+};
+
 /** Niveles de lectura como un camino con paradas: letra grande, pictograma y estrellas, sin texto que leer. */
 export const NivelesView: React.FC = () => {
   const navigate = useNavigate();
   const activeStudentId = useAuthStore((s) => s.activeStudentId);
+  const [elegida, setElegida] = useState<Parada | null>(null);
   const progresos = useProgresosDeAlumno(activeStudentId);
   const cuentosPorNivel = [
     useCuentosDeNivel(PARADAS[0].id),
@@ -132,13 +164,19 @@ export const NivelesView: React.FC = () => {
                 orden={i}
                 total={publicados(i).length}
                 completados={completadosDe(i)}
-                onElegir={() => navigate(ROUTES.catalogo(p.id))}
+                onElegir={() => setElegida(p)}
               />
             ))}
           </ol>
         </div>
 
         <OsoBurbuja mensaje="¿Dónde jugamos?" voz="Elige un nivel para empezar a leer." clave="elige_nivel" size="md" />
+
+        <InstruccionesNivel
+          parada={elegida}
+          onCerrar={() => setElegida(null)}
+          onEntendido={() => elegida && navigate(ROUTES.catalogo(elegida.id))}
+        />
       </main>
     </LayoutEstudiante>
   );
