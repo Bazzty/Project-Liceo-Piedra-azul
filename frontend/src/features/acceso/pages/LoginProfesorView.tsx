@@ -2,11 +2,16 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BarChart3, BookOpen, CreditCard, UserRound } from 'lucide-react';
 import { ROUTES } from '@/app/routes';
+import { iniciarSesionEnServidor } from '@/api/servidor';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { MarcaPiedra } from '@/features/docente/components/MarcaPiedra';
 import { useThemeStore } from '@/shared/store/useThemeStore';
 
 type Rol = 'docente' | 'revisor';
+
+// Solo en desarrollo (frontend/.env.local): la cuenta de demostración que existe en el servidor local.
+const DEMO_CORREO: string | undefined = import.meta.env.VITE_DEMO_CORREO;
+const DEMO_CLAVE: string | undefined = import.meta.env.VITE_DEMO_CLAVE;
 
 const CAMPO =
   'min-h-12 w-full rounded-control border border-borderStrong bg-surface px-4 text-base text-primary focus-visible:border-brand';
@@ -51,6 +56,8 @@ export const LoginProfesorView: React.FC = () => {
       setError('Escribe tu correo y tu contraseña.');
       return;
     }
+    // El panel sigue funcionando sin servidor: esta sesión solo habilita funciones como generar audio.
+    void iniciarSesionEnServidor(correo.trim(), clave);
     entrar(correo.trim());
   };
 
@@ -161,7 +168,10 @@ export const LoginProfesorView: React.FC = () => {
           <div className="flex flex-col gap-2">
             <button
               type="button"
-              onClick={() => entrar('profesora@piedraazul.cl')}
+              onClick={() => {
+                if (DEMO_CORREO && DEMO_CLAVE) void iniciarSesionEnServidor(DEMO_CORREO, DEMO_CLAVE);
+                entrar('profesora@piedraazul.cl');
+              }}
               className="min-h-12 inline-flex items-center justify-center gap-2 rounded-control border border-borderStrong bg-surface text-sm font-semibold text-primary cursor-pointer hover:border-brand"
             >
               <UserRound className="w-4 h-4" aria-hidden />

@@ -11,6 +11,9 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
+/**
+ * @property string $email Siempre en minúsculas (ver el mutador de abajo).
+ */
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */

@@ -34,6 +34,25 @@ return [
         'voz' => env('PIPER_VOZ', '/opt/piper/voces/es_MX-claude-high.onnx'),
     ],
 
+    // Voz del proyecto. TTS_DRIVER=piper usa solo la voz local; con elevenlabs, Piper queda de respaldo.
+    'tts' => [
+        'driver' => env('TTS_DRIVER', 'elevenlabs'),
+        // Tope por audio: protege la cuota mensual de la API.
+        'max_caracteres' => (int) env('TTS_MAX_CARACTERES', 600),
+    ],
+
+    // Cuenta de la docente de demostración (solo local; ver DocenteDemoSeeder).
+    'demo_docente' => ['clave' => env('DEMO_DOCENTE_CLAVE')],
+
+    'elevenlabs' => [
+        'clave' => env('ELEVENLABS_API_KEY'),
+        'voz' => env('ELEVENLABS_VOICE_ID'),
+        'modelo' => env('ELEVENLABS_MODEL', 'eleven_multilingual_v2'),
+        'estabilidad' => (float) env('VOZ_ESTABILIDAD', 0.3),
+        'similitud' => (float) env('VOZ_SIMILITUD', 1),
+        'velocidad' => (float) env('VOZ_VELOCIDAD', 1),
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),

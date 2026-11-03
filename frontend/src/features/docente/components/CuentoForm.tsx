@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Sparkles, Trash2, Volume2 } from 'lucide-react';
+import { AudioLines, Sparkles, Trash2, Volume2 } from 'lucide-react';
 import type { Cuento, CuentoPagina, CuentoPalabra } from '@/types';
 import { getArasaacImageUrl, fetchArasaacPictogramId, searchArasaacPictograms, type ArasaacOpcion } from '@/features/tablero/arasaac';
 import { normalizar } from '@/features/docente/components/format';
 import { PictoImg } from '@/features/docente/components/widgets';
 import { Button } from '@/shared/ui';
+import { conAudios, generarAudiosDeCuento } from '@/features/docente/audioCuento';
 import { actualizarCuento, crearCuento, listarPictogramas, useNiveles } from '@/api';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
@@ -66,6 +67,8 @@ export const CuentoForm: React.FC<CuentoFormProps> = ({ nivelId, cuento, onGuard
   const [paginas, setPaginas] = useState<CuentoPagina[]>(cuento?.paginas ?? []);
   const [sugiriendo, setSugiriendo] = useState(false);
   const [mensaje, setMensaje] = useState('');
+  // Avance de la generación de audio, en páginas (null = no se está generando)
+  const [generando, setGenerando] = useState<{ hechas: number; total: number } | null>(null);
   const [error, setError] = useState('');
   // Palabra que se está editando: "pagina-indice"
   const [editando, setEditando] = useState<{ p: number; w: number } | null>(null);
@@ -144,6 +147,26 @@ export const CuentoForm: React.FC<CuentoFormProps> = ({ nivelId, cuento, onGuard
     window.speechSynthesis.speak(u);
   };
 
+  /** Genera el audio definitivo de cada página con la voz del proyecto (lo hace el servidor). */
+  const crearAudio = async () => {
+    setError('');
+    setMensaje('');
+    setGenerando({ hechas: 0, total: new Set(paginas.map((p) => p.textoCompleto)).size });
+    try {
+      const { urls, respaldo } = await generarAudiosDeCuento(paginas, (hechas, total) => setGenerando({ hechas, total }));
+      setPaginas((prev) => conAudios(prev, urls));
+      setMensaje(
+        respaldo
+          ? 'Audio listo con la voz de respaldo (la API de voz no respondió). Guarda el cuento para conservarlo.'
+          : 'Audio listo con la voz del proyecto. Guarda el cuento para conservarlo.',
+      );
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'No se pudo generar el audio.');
+    } finally {
+      setGenerando(null);
+    }
+  };
+
   const guardar = async (estado: Cuento['estado']) => {
     setError('');
     if (!titulo.trim()) return setError('El cuento necesita un título.');
@@ -220,17 +243,29 @@ export const CuentoForm: React.FC<CuentoFormProps> = ({ nivelId, cuento, onGuard
         <Button variant="secondary" onClick={probarVoz} disabled={paginas.length === 0}>
           <Volume2 className="w-4 h-4" /> Probar voz
         </Button>
+        <Button variant="accent" onClick={crearAudio} disabled={paginas.length === 0} loading={generando !== null}>
+          <AudioLines className="w-4 h-4" aria-hidden />
+          {generando ? `Generando audio ${Math.min(generando.hechas + 1, generando.total)} de ${generando.total}…` : 'Generar audio'}
+        </Button>
       </div>
       <p className="text-xs font-semibold text-secondary">
         Cada palabra recibe un pictograma sugerido. Puedes cambiarlo antes de enviarlo a revisión. «Probar voz» usa la voz del
-        navegador como vista previa; el audio definitivo del cuento se genera aparte.
+        navegador como vista previa; «Generar audio» crea el audio definitivo con la voz del proyecto (necesita el servidor y haber
+        ingresado con tu cuenta).
       </p>
-      {mensaje && <p className="text-sm font-bold text-statusOk">{mensaje}</p>}
+      {mensaje && (
+        <p role="status" className="text-sm font-bold text-statusOk">
+          {mensaje}
+        </p>
+      )}
 
       {/* Vista previa página por página: palabra + pictograma (tocar para cambiar) */}
       {paginas.map((pg, p) => (
         <div key={p} className="bg-surface border border-borderCustom rounded-control p-3 flex flex-col gap-2">
-          <span className="text-xs font-bold uppercase tracking-wider text-secondary">Página {pg.numeroPagina}</span>
+          <span className="text-xs font-bold uppercase tracking-wider text-secondary">
+            Página {pg.numeroPagina}
+            {pg.audioPaginaUrl && <span className="ml-2 normal-case tracking-normal text-statusOk">· con audio</span>}
+          </span>
           <div className="flex flex-wrap gap-2">
             {pg.palabras.map((w, i) => (
               <button
