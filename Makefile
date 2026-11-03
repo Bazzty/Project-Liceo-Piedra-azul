@@ -1,4 +1,4 @@
-.PHONY: env up down ps logs psql reset-db
+.PHONY: env up down ps logs psql reset-db test-db
 
 env:
 	@test -f .env || (cp .env.example .env && echo "Creado .env desde .env.example")
@@ -17,6 +17,10 @@ logs:
 
 psql: env
 	docker compose exec db sh -c 'psql -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"'
+
+# Base aparte para los tests del backend (se vacía en cada corrida). No hace nada si ya existe.
+test-db: up
+	docker compose exec db sh -c 'psql -U "$$POSTGRES_USER" -d "$$POSTGRES_DB" -lqt | cut -d"|" -f1 | grep -qw "$${POSTGRES_DB}_test" || createdb -U "$$POSTGRES_USER" "$${POSTGRES_DB}_test"'
 
 # Borra el volumen: se pierden todos los datos locales.
 reset-db:
