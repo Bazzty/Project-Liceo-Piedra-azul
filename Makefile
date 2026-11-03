@@ -1,4 +1,4 @@
-.PHONY: env up setup down ps logs psql shell reset-db test-db
+.PHONY: env up setup down ps logs psql shell reset-db test-db test test-api test-web fresh
 
 # Los archivos que crea el contenedor quedan a nombre de tu usuario.
 export HOST_UID := $(shell id -u)
@@ -39,6 +39,19 @@ shell: env
 # Base aparte para los tests del backend (se vacía en cada corrida). No hace nada si ya existe.
 test-db: up
 	docker compose exec db sh -c 'psql -U "$$POSTGRES_USER" -d "$$POSTGRES_DB" -lqt | cut -d"|" -f1 | grep -qw "$${POSTGRES_DB}_test" || createdb -U "$$POSTGRES_USER" "$${POSTGRES_DB}_test"'
+
+# Todos los tests: backend (en la base _test, nunca en la de desarrollo) y frontend.
+test: test-api test-web
+
+test-api: test-db
+	docker compose exec --user www-data app php artisan test
+
+test-web: up
+	docker compose exec vite npm test
+
+# Borra y recrea todas las tablas de desarrollo: se pierden los datos locales. Los seeders llegan con PLPA-56.
+fresh: up
+	docker compose exec --user www-data app php artisan migrate:fresh --force
 
 # Borra el volumen: se pierden todos los datos locales.
 reset-db:
