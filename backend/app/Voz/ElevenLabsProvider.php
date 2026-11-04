@@ -37,7 +37,7 @@ class ElevenLabsProvider implements TtsProvider
         try {
             // Sin reintentos: cada intento que llega a la API gasta caracteres de la cuota.
             $respuesta = Http::withHeaders(['xi-api-key' => $this->config['clave'], 'Accept' => 'audio/mpeg'])
-                ->timeout(30)
+                ->timeout(20)
                 ->post('https://api.elevenlabs.io/v1/text-to-speech/'.rawurlencode($this->config['voz']).'?output_format=mp3_44100_128', [
                     'text' => $texto,
                     'model_id' => $this->config['modelo'],

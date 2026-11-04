@@ -13,7 +13,6 @@ Route::prefix('v1')->group(function () {
             return $request->user();
         });
         Route::post('/auth/logout', [AutenticacionController::class, 'logout']);
-        // Cada audio nuevo gasta cuota de la API de voz: tope por minuto.
-        Route::post('/audio', [AudioController::class, 'store'])->middleware('throttle:30,1');
+        Route::post('/audio', [AudioController::class, 'store'])->middleware('throttle:audio');
     });
 });

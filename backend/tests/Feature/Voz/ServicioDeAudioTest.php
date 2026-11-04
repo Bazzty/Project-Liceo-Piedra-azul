@@ -143,9 +143,40 @@ it('si el archivo no se puede escribir no devuelve una URL que daría 404', func
     $disco = Mockery::mock(Filesystem::class);
     $disco->shouldReceive('exists')->andReturnFalse();
     $disco->shouldReceive('put')->andReturnFalse();
+    $disco->shouldReceive('delete')->once();
 
     (new ServicioDeAudio(motorFalso('elevenlabs'), null, $disco))->generar('Hola');
 })->throws(VozNoDisponible::class, 'no se pudo guardar el archivo');
+
+it('guarda el audio con su nombre final, sin dejar archivos temporales', function () {
+    $audio = (new ServicioDeAudio(motorFalso('elevenlabs'), null, $this->disco))->generar('Hola');
+
+    expect($this->disco->allFiles())->toBe([$audio->archivo]);
+});
+
+it('un archivo vacío en la caché no cuenta: se vuelve a generar', function () {
+    $principal = motorFalso('elevenlabs');
+    $servicio = new ServicioDeAudio($principal, null, $this->disco);
+    $audio = $servicio->generar('Hola');
+    $this->disco->put($audio->archivo, '');
+
+    expect($servicio->yaExiste('Hola'))->toBeFalse();
+    $nuevo = $servicio->generar('Hola');
+
+    expect($nuevo->enCache)->toBeFalse()
+        ->and($principal->llamadas)->toBe(2)
+        ->and($this->disco->size($audio->archivo))->toBeGreaterThan(0);
+});
+
+it('sabe si un texto ya tiene audio en algún motor, con el mismo criterio de espacios', function () {
+    $principal = motorFalso('elevenlabs', falla: true);
+    $servicio = new ServicioDeAudio($principal, motorFalso('piper'), $this->disco);
+
+    expect($servicio->yaExiste('Hola oso'))->toBeFalse();
+    $servicio->generar('Hola oso');
+
+    expect($servicio->yaExiste("  Hola \n oso "))->toBeTrue();
+});
 
 it('un motor sin configurar usa el respaldo sin reportar un error', function () {
     Exceptions::fake();

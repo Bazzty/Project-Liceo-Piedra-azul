@@ -6,13 +6,21 @@ import { ErrorDeServidor } from '@/api/servidor';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import type { Cuento } from '@/types';
 
-const { actualizarCuento, generarAudio } = vi.hoisted(() => ({ actualizarCuento: vi.fn(), generarAudio: vi.fn() }));
+const { actualizarCuento, generarAudio, listarPictogramas } = vi.hoisted(() => ({
+  actualizarCuento: vi.fn(),
+  generarAudio: vi.fn(),
+  listarPictogramas: vi.fn(async () => []),
+}));
 
 vi.mock('@/api', () => ({
   useNiveles: () => [{ id: 'nivel-b', codigo: 'D', nombre: 'Cuentos' }],
-  listarPictogramas: async () => [],
+  listarPictogramas,
   crearCuento: vi.fn(),
   actualizarCuento,
+}));
+vi.mock('@/features/tablero/arasaac', async (original) => ({
+  ...(await original<typeof import('@/features/tablero/arasaac')>()),
+  fetchArasaacPictogramId: async () => null,
 }));
 vi.mock('@/api/servidor', async (original) => ({ ...(await original<typeof import('@/api/servidor')>()), generarAudio }));
 
@@ -44,7 +52,7 @@ describe('CuentoForm: audio del cuento', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Generar audio' }));
 
-    expect(await screen.findByRole('status')).toHaveTextContent('Audio listo con la voz del proyecto');
+    await screen.findByText(/Audio listo con la voz del proyecto/);
     expect(screen.getAllByText('· con audio')).toHaveLength(2);
 
     await userEvent.click(screen.getByRole('button', { name: 'Guardar borrador' }));
@@ -59,7 +67,7 @@ describe('CuentoForm: audio del cuento', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Generar audio' }));
 
-    expect(await screen.findByRole('status')).toHaveTextContent('voz de respaldo');
+    await screen.findByText(/voz de respaldo/);
   });
 
   it('muestra el error del servidor y no marca ninguna página con audio', async () => {
@@ -104,6 +112,78 @@ describe('CuentoForm: casos de borde del audio', () => {
 
     expect(await screen.findByText(/Quedó 1 página con audio; vuelve a intentar para terminar/)).toBeInTheDocument();
     expect(screen.getAllByText('· con audio')).toHaveLength(1);
+  });
+
+  it('mientras se genera el audio no se puede guardar ni sugerir pictogramas', async () => {
+    let terminar!: (audio: unknown) => void;
+    generarAudio.mockReturnValueOnce(new Promise((resolver) => (terminar = resolver)));
+    renderForm();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Generar audio' }));
+
+    expect(screen.getByRole('button', { name: 'Guardar borrador' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Enviar a revisión' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Sugerir pictogramas' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Cancelar' })).toBeEnabled();
+
+    terminar({ url: '/audio-generado/x.mp3', voz: 'elevenlabs', enCache: false, respaldo: false });
+    await screen.findByText(/Audio listo/);
+    expect(screen.getByRole('button', { name: 'Guardar borrador' })).toBeEnabled();
+  });
+
+  it('mientras se sugieren pictogramas no se puede generar audio', async () => {
+    let terminar!: (lista: []) => void;
+    listarPictogramas.mockReturnValueOnce(new Promise((resolver) => (terminar = resolver)));
+    render(<CuentoForm cuento={cuento} onGuardado={vi.fn()} onCancelar={vi.fn()} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Sugerir pictogramas' }));
+
+    expect(screen.getByRole('button', { name: 'Generar audio' })).toBeDisabled();
+
+    terminar([]);
+    await screen.findByText(/palabra\(s\) sin pictograma|Pictogramas sugeridos/);
+    expect(screen.getByRole('button', { name: 'Generar audio' })).toBeEnabled();
+  });
+
+  it('al salir del formulario deja de pedir audios', async () => {
+    let terminar!: (audio: unknown) => void;
+    generarAudio.mockReturnValueOnce(new Promise((resolver) => (terminar = resolver)));
+    const { unmount } = renderForm();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Generar audio' }));
+    unmount();
+    terminar({ url: '/audio-generado/x.mp3', voz: 'elevenlabs', enCache: false, respaldo: false });
+    await new Promise((resolver) => setTimeout(resolver));
+
+    expect(generarAudio).toHaveBeenCalledTimes(1);
+  });
+
+  it('las regiones que anuncian el resultado existen antes de que haya algo que anunciar', async () => {
+    generarAudio.mockRejectedValue(new ErrorDeServidor('No hay conexión con el servidor.', 0));
+    renderForm();
+    const aviso = screen.getByRole('alert');
+    const estado = screen.getByRole('status');
+    expect(aviso).toBeEmptyDOMElement();
+    expect(estado).toBeEmptyDOMElement();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Generar audio' }));
+
+    await screen.findByText('No hay conexión con el servidor.');
+    expect(screen.getByRole('alert')).toBe(aviso);
+    expect(aviso).toHaveTextContent('No hay conexión con el servidor.');
+  });
+
+  it('anuncia el avance de la generación', async () => {
+    let terminar!: (audio: unknown) => void;
+    generarAudio.mockReturnValueOnce(new Promise((resolver) => (terminar = resolver)));
+    renderForm();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Generar audio' }));
+
+    expect(screen.getByRole('status')).toHaveTextContent('Generando audio 1 de 2…');
+
+    terminar({ url: '/audio-generado/x.mp3', voz: 'elevenlabs', enCache: false, respaldo: false });
+    await screen.findByText(/Audio listo/);
   });
 
   it('el revisor no ve el botón de generar audio', () => {

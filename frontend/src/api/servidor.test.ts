@@ -24,6 +24,34 @@ describe('servidor', () => {
     expect(JSON.parse(opciones.body)).toEqual({ texto: 'Hola oso' });
   });
 
+  it('al olvidar la sesión revoca el token en el servidor y lo borra aquí', async () => {
+    vi.stubGlobal('fetch', responder({ token: '1|abc' }));
+    await iniciarSesionEnServidor('a@b.cl', 'x');
+
+    const fetchLogout = vi.fn().mockResolvedValue(new Response(null, { status: 204 }));
+    vi.stubGlobal('fetch', fetchLogout);
+    olvidarSesionDelServidor();
+
+    const [url, opciones] = fetchLogout.mock.calls[0];
+    expect(url).toBe('/api/v1/auth/logout');
+    expect(opciones.method).toBe('POST');
+    expect(opciones.headers.Authorization).toBe('Bearer 1|abc');
+    await expect(generarAudio('Hola')).rejects.toMatchObject({ estado: 401 });
+    expect(fetchLogout).toHaveBeenCalledTimes(1);
+  });
+
+  it('sin token no llama al servidor, y si no hay conexión al cerrar sesión no falla', async () => {
+    const sinLlamar = vi.fn();
+    vi.stubGlobal('fetch', sinLlamar);
+    olvidarSesionDelServidor();
+    expect(sinLlamar).not.toHaveBeenCalled();
+
+    vi.stubGlobal('fetch', responder({ token: '1|abc' }));
+    await iniciarSesionEnServidor('a@b.cl', 'x');
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('sin red')));
+    expect(() => olvidarSesionDelServidor()).not.toThrow();
+  });
+
   it('si el inicio de sesión sigue en camino, espera en vez de decir que no hay sesión', async () => {
     let terminarLogin!: (r: Response) => void;
     const login = vi.fn().mockReturnValue(new Promise<Response>((resolver) => (terminarLogin = resolver)));

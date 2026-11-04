@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { AudioLines, Sparkles, Trash2, Volume2 } from 'lucide-react';
 import type { Cuento, CuentoPagina, CuentoPalabra } from '@/types';
 import { getArasaacImageUrl, fetchArasaacPictogramId, searchArasaacPictograms, type ArasaacOpcion } from '@/features/tablero/arasaac';
@@ -70,11 +70,15 @@ export const CuentoForm: React.FC<CuentoFormProps> = ({ nivelId, cuento, onGuard
   const [mensaje, setMensaje] = useState('');
   // Avance de la generación de audio, en páginas (null = no se está generando)
   const [generando, setGenerando] = useState<{ hechas: number; total: number } | null>(null);
+  const generacion = useRef<AbortController | null>(null);
   const [error, setError] = useState('');
   // Palabra que se está editando: "pagina-indice"
   const [editando, setEditando] = useState<{ p: number; w: number } | null>(null);
   const [opciones, setOpciones] = useState<ArasaacOpcion[] | null>(null);
   const [buscando, setBuscando] = useState(false);
+
+  // Al salir del formulario se dejan de pedir audios: nadie los usaría y cada uno gasta cuota.
+  useEffect(() => () => generacion.current?.abort(), []);
 
   const cambiarTexto = (nuevo: string) => {
     setTexto(nuevo);
@@ -153,6 +157,7 @@ export const CuentoForm: React.FC<CuentoFormProps> = ({ nivelId, cuento, onGuard
     setError('');
     setMensaje('');
     setGenerando({ hechas: 0, total: new Set(paginas.map((p) => p.textoCompleto)).size });
+    generacion.current = new AbortController();
     let hechas = 0;
     try {
       const { respaldo } = await generarAudiosDeCuento(
@@ -163,6 +168,7 @@ export const CuentoForm: React.FC<CuentoFormProps> = ({ nivelId, cuento, onGuard
         },
         // Cada audio se pone en su página apenas llega: si una falla, las anteriores se conservan.
         (texto, url) => setPaginas((prev) => conAudios(prev, { [texto]: url })),
+        generacion.current.signal,
       );
       setMensaje(
         respaldo
@@ -205,17 +211,22 @@ export const CuentoForm: React.FC<CuentoFormProps> = ({ nivelId, cuento, onGuard
     onGuardado();
   };
 
+  const avanceAudio = generando && `Generando audio ${Math.min(generando.hechas + 1, generando.total)} de ${generando.total}…`;
+
   const campo = 'w-full bg-app border border-borderCustom rounded-control px-4 py-3 text-sm font-bold text-primary outline-none focus:border-brand';
 
   return (
     <div className="bg-app border border-borderCustom rounded-control p-5 flex flex-col gap-4">
       <h3 className="font-display text-2xl font-semibold text-primary">{cuento ? 'Editar cuento' : 'Subir cuento nuevo'}</h3>
 
-      {error && (
-        <p className="bg-statusDanger-bg text-statusDanger border-2 border-statusDanger rounded-control px-4 py-2 text-sm font-bold">
-          {error}
-        </p>
-      )}
+      {/* Siempre montada: un lector de pantalla solo anuncia los cambios dentro de una región que ya existía */}
+      <div role="alert" className="empty:absolute">
+        {error && (
+          <p className="bg-statusDanger-bg text-statusDanger border-2 border-statusDanger rounded-control px-4 py-2 text-sm font-bold">
+            {error}
+          </p>
+        )}
+      </div>
 
       <label className="flex flex-col gap-1.5">
         <span className="text-sm font-bold text-primary">Nivel</span>
@@ -247,7 +258,7 @@ export const CuentoForm: React.FC<CuentoFormProps> = ({ nivelId, cuento, onGuard
         <Button
           variant="secondary"
           onClick={sugerirPictogramas}
-          disabled={sugiriendo || paginas.length === 0}
+          disabled={sugiriendo || generando !== null || paginas.length === 0}
         >
           <Sparkles className="w-4 h-4" /> {sugiriendo ? 'Buscando…' : 'Sugerir pictogramas'}
         </Button>
@@ -256,9 +267,9 @@ export const CuentoForm: React.FC<CuentoFormProps> = ({ nivelId, cuento, onGuard
         </Button>
         {/* El revisor solo valida cuentos: el servidor le negaría el audio (403) */}
         {!esRevisor && (
-          <Button variant="accent" onClick={crearAudio} disabled={paginas.length === 0} loading={generando !== null}>
+          <Button variant="accent" onClick={crearAudio} disabled={sugiriendo || paginas.length === 0} loading={generando !== null}>
             <AudioLines className="w-4 h-4" aria-hidden />
-            {generando ? `Generando audio ${Math.min(generando.hechas + 1, generando.total)} de ${generando.total}…` : 'Generar audio'}
+            {avanceAudio || 'Generar audio'}
           </Button>
         )}
       </div>
@@ -267,11 +278,10 @@ export const CuentoForm: React.FC<CuentoFormProps> = ({ nivelId, cuento, onGuard
         navegador como vista previa; «Generar audio» crea el audio definitivo con la voz del proyecto (necesita el servidor y haber
         ingresado con tu cuenta).
       </p>
-      {mensaje && (
-        <p role="status" className="text-sm font-bold text-statusOk">
-          {mensaje}
-        </p>
-      )}
+      <div role="status" className="empty:absolute">
+        {avanceAudio && <span className="sr-only">{avanceAudio}</span>}
+        {mensaje && <p className="text-sm font-bold text-statusOk">{mensaje}</p>}
+      </div>
 
       {/* Vista previa página por página: palabra + pictograma (tocar para cambiar) */}
       {paginas.map((pg, p) => (
@@ -343,10 +353,11 @@ export const CuentoForm: React.FC<CuentoFormProps> = ({ nivelId, cuento, onGuard
       ))}
 
       <div className="flex flex-wrap gap-3">
-        <Button onClick={() => guardar(esRevisor ? 'publicado' : 'en_revision')}>
+        {/* Mientras se genera el audio no se guarda: el cuento quedaría sin las páginas que faltan */}
+        <Button onClick={() => guardar(esRevisor ? 'publicado' : 'en_revision')} disabled={generando !== null}>
           {esRevisor ? 'Validar y publicar' : 'Enviar a revisión'}
         </Button>
-        <Button variant="secondary" onClick={() => guardar('borrador')}>
+        <Button variant="secondary" onClick={() => guardar('borrador')} disabled={generando !== null}>
           Guardar borrador
         </Button>
         <Button variant="ghost" onClick={onCancelar}>

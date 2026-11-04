@@ -58,6 +58,18 @@ describe('generarAudiosDeCuento', () => {
   });
 });
 
+describe('generarAudiosDeCuento con señal de aborto', () => {
+  it('no pide más páginas cuando la señal se aborta', async () => {
+    const control = new AbortController();
+    generarAudio.mockReset();
+    generarAudio.mockResolvedValue({ url: '/a.mp3', voz: 'piper', enCache: false, respaldo: false });
+
+    await generarAudiosDeCuento([pagina(1, 'Uno'), pagina(2, 'Dos')], undefined, () => control.abort(), control.signal);
+
+    expect(generarAudio).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe('conAudios', () => {
   it('asigna cada audio a la página con ese texto y no toca las demás', () => {
     const resultado = conAudios([pagina(1, 'Hola'), pagina(2, 'Cambiada después')], { Hola: '/audio-generado/h.mp3' });
