@@ -39,7 +39,7 @@ el botón «Generar audio» del formulario de cuentos y el lector del niño que 
 
 | # | Pendiente | Detalle |
 |---|---|---|
-| 14 | **Textos dinámicos con la voz del navegador** | El número que toca el niño, los stickers, los títulos de cuentos y el barrido no tienen archivo y suenan con otra voz. Se resuelve pregenerando los textos fijos (números, stickers) o con un endpoint de voz que no pida sesión de docente. |
+| 14 | **Textos dinámicos con la voz del navegador** | Los textos fijos (palabras, dígitos, días, stickers, títulos de demostración) ya tienen archivo y se buscan por texto. Siguen con el navegador los que cambian: el barrido, «Tienes N de M stickers», «Tarea de la profe. …» y los cuentos nuevos de la docente sin «Generar audio». Se resuelve con un endpoint de voz que no pida sesión de docente. |
 | 15 | **Velocidad de lectura** | La voz nueva lee más rápido que las grabaciones viejas (en los cuentos, 1,4 s de media frente a 3,0 s). Para niños que están aprendiendo a leer conviene `VOZ_VELOCIDAD=0.9` y regenerar con `npm run audios -- --forzar`. |
 | 16 | **`fonemas/m.mp3` sigue con la voz vieja** | Es el sonido /m/ suelto. Un TTS diría «eme», así que se dejó como estaba. Hay que regrabarlo a mano o buscar otro modo de generarlo. |
 | 17 | **Los fonemas con TTS no se escucharon** | Se comprobó que los 30 archivos son válidos y de duración razonable, pero nadie los ha oído. Una vocal o sílaba suelta puede sonar rara; hay que revisarlos con la docente. |
