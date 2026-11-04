@@ -75,6 +75,18 @@ describe('Mi cuento', () => {
     expect(dichas).toContain('Había una vez un gato.');
   });
 
+  it('con teclado el foco no se pierde: pasa a la primera opción del paso siguiente y luego al cuento', async () => {
+    renderCuento();
+
+    await elegir('Había una vez un gato.');
+    await screen.findByRole('radiogroup', { name: '¿Dónde?' });
+    await waitFor(() => expect(screen.getByRole('radio', { name: 'Estaba en el colegio.' })).toHaveFocus());
+
+    await elegir('Estaba en la sala.');
+    await elegir('Allí saltó muy alto.');
+    await waitFor(() => expect(screen.getByRole('region', { name: 'Tu cuento' })).toHaveFocus());
+  });
+
   it('con «pocas opciones» ofrece solo dos por paso', async () => {
     useAjustesStore.setState({ pocasOpciones: true });
     renderCuento();

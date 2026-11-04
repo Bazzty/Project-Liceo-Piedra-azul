@@ -25,6 +25,9 @@ export const PaginaDelCuento: React.FC<PaginaDelCuentoProps> = ({ partes, lectur
     alLeerRef.current = alLeer;
   }, [alLeer]);
   const boca = useBocaActiva(activa !== null);
+  const seccion = useRef<HTMLElement>(null);
+  // Al llegar al cuento el foco queda aquí (con teclado, el siguiente Tab es «Escuchar otra vez»)
+  useEffect(() => seccion.current?.focus({ preventScroll: true }), []);
 
   const leer = useCallback(async () => {
     corte.current += 1;
@@ -56,7 +59,7 @@ export const PaginaDelCuento: React.FC<PaginaDelCuentoProps> = ({ partes, lectur
   );
 
   return (
-    <section className="w-full flex flex-col items-center gap-4 sm:gap-6" aria-label="Tu cuento">
+    <section ref={seccion} tabIndex={-1} className="w-full flex flex-col items-center gap-4 sm:gap-6 outline-none" aria-label="Tu cuento">
       <span className="block w-24 h-24 sm:w-32 sm:h-32 bg-surface rounded-full border-4 border-borderStrong p-1 overflow-hidden" role="img" aria-label="El osito lee tu cuento">
         <OsoCabeza boca={boca} />
       </span>

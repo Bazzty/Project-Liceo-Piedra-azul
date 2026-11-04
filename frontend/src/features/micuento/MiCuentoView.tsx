@@ -43,11 +43,17 @@ const PasoElegir: React.FC<{ paso: PasoCuento; indice: number; elegida: string |
   const pocasOpciones = useAjustesStore((s) => s.pocasOpciones);
   const opciones = OPCIONES[paso].slice(0, pocasOpciones ? 2 : 4);
   const { texto, clave } = PREGUNTAS[paso];
+  const grupo = useRef<HTMLDivElement>(null);
+  // Al pasar al paso siguiente las opciones anteriores desaparecen y el foco se perdería: con teclado se sigue desde aquí
+  useEffect(() => {
+    if (indice > 0) grupo.current?.querySelector<HTMLElement>('[role="radio"]')?.focus({ preventScroll: true });
+  }, [indice]);
   return (
     <>
       <Avance paso={indice} />
       <OsoBurbuja key={paso} mensaje={texto} clave={clave} hablarAlAparecer size="md" />
       <div
+        ref={grupo}
         role="radiogroup"
         aria-label={texto}
         className={`w-full grid gap-4 sm:gap-6 ${opciones.length === 2 ? 'grid-cols-2 max-w-2xl' : 'grid-cols-2 lg:grid-cols-4'}`}
