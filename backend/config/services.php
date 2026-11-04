@@ -55,6 +55,15 @@ return [
         'velocidad' => (float) env('VOZ_VELOCIDAD', 1),
     ],
 
+    // IA que redacta el borrador del cuento (la docente lo revisa). Modelo abierto en Ollama: sin costo por uso.
+    // OLLAMA_URL apunta al contenedor `ollama` o a un servidor remoto; sin URL, el botón avisa que no está activada.
+    'ollama' => [
+        'url' => env('OLLAMA_URL'),
+        'clave' => env('OLLAMA_API_KEY'),
+        'modelo' => env('OLLAMA_MODEL', 'qwen2.5:3b'),
+        'espera' => (int) env('OLLAMA_ESPERA', 90),
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),
