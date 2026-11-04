@@ -59,7 +59,7 @@ export const PaginaDelCuento: React.FC<PaginaDelCuentoProps> = ({ partes, lectur
   );
 
   return (
-    <section ref={seccion} tabIndex={-1} className="w-full flex flex-col items-center gap-4 sm:gap-6 outline-none" aria-label="Tu cuento">
+    <section ref={seccion} tabIndex={-1} className="w-full flex flex-col items-center gap-4 sm:gap-6 focus-visible:outline-none focus-visible:shadow-none" aria-label="Tu cuento">
       <span className="block w-24 h-24 sm:w-32 sm:h-32 bg-surface rounded-full border-4 border-borderStrong p-1 overflow-hidden" role="img" aria-label="El osito lee tu cuento">
         <OsoCabeza boca={boca} />
       </span>

@@ -200,13 +200,13 @@ export const MiCuentoView: React.FC = () => {
                 <RotateCcw className="w-8 h-8" aria-hidden />
                 Crear otro
               </Button>
+              {guardado && (
+                <Button variant="secondary" size="xl" data-clave-voz="mis_cuentos" onClick={() => navigate(ROUTES.misCuentos)}>
+                  <Library className="w-8 h-8" aria-hidden />
+                  Mis cuentos
+                </Button>
+              )}
             </div>
-            {guardado && (
-              <Button variant="secondary" size="xl" data-clave-voz="mis_cuentos" onClick={() => navigate(ROUTES.misCuentos)}>
-                <Library className="w-8 h-8" aria-hidden />
-                Mis cuentos
-              </Button>
-            )}
           </>
         )}
 
