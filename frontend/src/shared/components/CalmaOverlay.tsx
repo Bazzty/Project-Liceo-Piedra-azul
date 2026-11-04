@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Droplets, Frown, LayoutGrid, Meh, Paintbrush, RotateCcw, Smile, Sparkles, Volume2, Wind } from 'lucide-react';
 import { crearRegistro } from '@/api';
-import { useAuthStore } from '@/shared/store/useAuthStore';
+import { lugarDeLaSesion, useAuthStore } from '@/shared/store/useAuthStore';
 import type { ActividadCalma, RegistroCalma } from '@/types';
 import { sonarBurbuja, sonarRespiro } from '@/shared/audio/sonidos';
 import { DibujarConLuz } from '@/shared/components/calma/DibujarConLuz';
@@ -201,7 +201,7 @@ export const CalmaOverlay: React.FC<{ abierto: boolean; onCerrar: () => void }> 
           alumnoId: activeStudentId,
           tipo: 'calma',
           detalle: `Usó la calma${sentir ? ` y ${sentir}` : ''}`,
-          lugar: 'casa',
+          lugar: lugarDeLaSesion(useAuthStore.getState().sessionType),
           fecha: new Date().toISOString(),
           calma: { actividades, animo, segundos: Math.round((Date.now() - desde.current) / 1000) },
         });

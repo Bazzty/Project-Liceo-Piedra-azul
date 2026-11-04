@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, BookOpen, Check, Gamepad2, Home, Volume2 } from 'lucide-react';
 import { crearRegistro, registrarProgreso, useCuento } from '@/api';
 import { ROUTES } from '@/app/routes';
-import { useAuthStore } from '@/shared/store/useAuthStore';
+import { lugarDeLaSesion, useAuthStore } from '@/shared/store/useAuthStore';
 import { PictogramaCard } from '@/features/aprender/components/PictogramaCard';
 import { Sticker } from '@/features/estrellas/Sticker';
 import { useColeccion } from '@/features/estrellas/useColeccion';
@@ -70,21 +70,23 @@ export const LecturaView: React.FC = () => {
     const { sonido, vozLenta } = useAjustesStore.getState();
     const tasa = vozLenta ? 0.8 : 1;
 
+    /** `true` si el archivo sonó completo; `false` si no se pudo reproducir (para usar la voz de respaldo). */
     const reproducir = (url: string, alCargar?: (duracionMs: number) => void) =>
-      new Promise<void>((resolve) => {
+      new Promise<boolean>((resolve) => {
         const audio = new Audio(url);
         audio.playbackRate = tasa;
         audioActual.current = audio;
         audio.onloadedmetadata = () => alCargar?.((audio.duration / tasa) * 1000);
-        audio.onended = () => resolve();
-        audio.onerror = () => resolve();
-        audio.play().catch(() => resolve());
+        audio.onended = () => resolve(true);
+        audio.onerror = () => resolve(false);
+        audio.play().catch(() => resolve(false));
       });
 
+    let paginaLeida = false;
     if (sonido && paginaData?.audioPaginaUrl) {
       // Narración de toda la página: se reparte el resaltado en partes iguales
       let temporizador: ReturnType<typeof setInterval> | undefined;
-      await reproducir(paginaData.audioPaginaUrl, (duracionMs) => {
+      paginaLeida = await reproducir(paginaData.audioPaginaUrl, (duracionMs) => {
         const paso = duracionMs / palabras.length;
         let indice = 0;
         setPalabraActiva(0);
@@ -95,15 +97,21 @@ export const LecturaView: React.FC = () => {
         }, paso);
       });
       clearInterval(temporizador);
-    } else {
-      // Palabra por palabra: suena y se resalta cada una (sin sonido, solo el resaltado)
+      if (ejecucion.current !== miId) return;
+    }
+
+    if (!paginaLeida) {
+      // Palabra por palabra (también si el MP3 de la página falló: nunca queda en silencio)
       for (let i = 0; i < palabras.length; i += 1) {
         if (ejecucion.current !== miId) return;
         setPalabraActiva(i);
         const url = palabras[i].audioUrl;
-        if (sonido && url) await reproducir(url);
-        else if (sonido) {
-          // Sin audio grabado todavía: se lee con la voz del navegador
+        const sono = sonido && url ? await reproducir(url) : false;
+        if (ejecucion.current !== miId) return;
+        if (sono) {
+          // sonó la grabación de la palabra
+        } else if (sonido) {
+          // Sin audio grabado todavía (o falló): se lee con la voz del navegador
           hablar(palabras[i].texto);
           await pausa(Math.max(900, palabras[i].texto.length * 110));
         } else await pausa(900);
@@ -136,7 +144,7 @@ export const LecturaView: React.FC = () => {
     if (activeStudentId && cuento?.id && !supervision) {
       const ahora = new Date().toISOString();
       await registrarProgreso({ alumnoId: activeStudentId, cuentoId: cuento.id, completado: true, fechaUltimoAcceso: ahora });
-      await crearRegistro({ alumnoId: activeStudentId, tipo: 'lectura', detalle: `Terminó «${cuento.titulo}»`, lugar: 'casa', fecha: ahora });
+      await crearRegistro({ alumnoId: activeStudentId, tipo: 'lectura', detalle: `Terminó «${cuento.titulo}»`, lugar: lugarDeLaSesion(useAuthStore.getState().sessionType), fecha: ahora });
     }
   };
 

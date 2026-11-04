@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowLeft, Delete, HandHelping, MousePointerClick, Volume2 } from 'lucide-react';
 import type { Pictograma } from '@/types';
 import { crearRegistro, usePictogramas } from '@/api';
-import { useAuthStore } from '@/shared/store/useAuthStore';
+import { lugarDeLaSesion, useAuthStore } from '@/shared/store/useAuthStore';
 import { franjaDe, ordenarTablero } from '@/features/tablero/categoriasTablero';
 import { resolverYGuardarPictograma } from '@/features/tablero/arasaac';
 import { audioDeTexto } from '@/shared/audio/audioDeTexto';
@@ -98,7 +98,7 @@ export const TableroSAAC: React.FC<{ onCerrar: () => void }> = ({ onCerrar }) =>
       alumnoId: activeStudentId,
       tipo: 'tablero',
       detalle: `Tablero: «${pics.map((p) => p.palabra).join(' ')}»${extra}`,
-      lugar: 'casa',
+      lugar: lugarDeLaSesion(useAuthStore.getState().sessionType),
       fecha: new Date().toISOString(),
       pictogramaIds: pics.map((p) => p.id ?? '').filter(Boolean),
     });
