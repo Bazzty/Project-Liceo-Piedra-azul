@@ -15,7 +15,8 @@
  * Configuración (variables de entorno o archivo .env.local, que NO se sube a git):
  *   ELEVENLABS_API_KEY   clave de la cuenta (nunca en el código ni en el chat)
  *   ELEVENLABS_VOICE_ID  id de la voz del proyecto
- *   ELEVENLABS_MODEL     opcional, por defecto eleven_multilingual_v2
+ *   ELEVENLABS_MODEL     opcional, por defecto eleven_turbo_v2_5 (permite forzar el idioma)
+ *   ELEVENLABS_IDIOMA    opcional, por defecto es: sin él una palabra suelta puede leerse como inglés («Lana»)
  *   VOZ_ESTABILIDAD / VOZ_SIMILITUD / VOZ_VELOCIDAD   opcionales (0.3 / 1 / 1)
  *
  * Los textos se envían a ElevenLabs: no incluir nombres ni datos de niños en el manifiesto.
@@ -81,7 +82,9 @@ if (!clave || !voz) {
   process.exit(1);
 }
 
-const modelo = process.env.ELEVENLABS_MODEL ?? 'eleven_multilingual_v2';
+const modelo = process.env.ELEVENLABS_MODEL ?? 'eleven_turbo_v2_5';
+// Todo el proyecto es en español: se le dice al modelo, en vez de dejar que lo adivine por el texto.
+const idioma = process.env.ELEVENLABS_IDIOMA ?? 'es';
 const ajustes = {
   stability: Number(process.env.VOZ_ESTABILIDAD ?? 0.3),
   similarity_boost: Number(process.env.VOZ_SIMILITUD ?? 1),
@@ -92,7 +95,7 @@ const generar = async (texto, intento = 1) => {
   const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voz}?output_format=mp3_44100_128`, {
     method: 'POST',
     headers: { 'xi-api-key': clave, 'Content-Type': 'application/json', Accept: 'audio/mpeg' },
-    body: JSON.stringify({ text: texto, model_id: modelo, voice_settings: ajustes }),
+    body: JSON.stringify({ text: texto, model_id: modelo, language_code: idioma, voice_settings: ajustes }),
   });
   if (res.status === 401) throw new Error('La clave de ElevenLabs no es válida (401).');
   if (res.status === 429 && intento <= 3) {

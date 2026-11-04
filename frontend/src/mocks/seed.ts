@@ -98,6 +98,7 @@ async function sembrarPalabrasNucleo() {
 			palabra,
 			categoria: (archivo === 'abrazar' ? 'acciones' : 'basicas') as 'acciones' | 'basicas',
 			imagenUrl: `/pictogramas/arasaac/${archivo}.png`,
+			audioUrl: `/audio/pictogramas/${archivo}.mp3`,
 			esFotoReal: false,
 		})),
 	);

@@ -5,6 +5,7 @@ import { crearRegistro, usePictogramas } from '@/api';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { franjaDe, ordenarTablero } from '@/features/tablero/categoriasTablero';
 import { resolverYGuardarPictograma } from '@/features/tablero/arasaac';
+import { audioDeTexto } from '@/shared/audio/audioDeTexto';
 import { decirSecuencia, type ElementoDeVoz } from '@/shared/audio/decirSecuencia';
 import { sonarAcierto, sonarToque } from '@/shared/audio/sonidos';
 import { LluviaEstrellas } from '@/shared/components/LluviaEstrellas';
@@ -135,7 +136,7 @@ export const TableroSAAC: React.FC<{ onCerrar: () => void }> = ({ onCerrar }) =>
     sonarToque();
     corte.current += 1;
     setFrase([ayuda]);
-    void decirSecuencia([{ texto: 'Necesito ayuda', audioUrl: ayuda.audioUrl }], { alDecir: setSonando });
+    void decirSecuencia([{ texto: 'Necesito ayuda', audioUrl: audioDeTexto('Necesito ayuda') ?? ayuda.audioUrl }], { alDecir: setSonando });
     registrar([ayuda], ' (botón de ayuda)');
   };
 

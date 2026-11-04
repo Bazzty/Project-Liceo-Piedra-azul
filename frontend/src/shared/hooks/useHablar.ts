@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { audioDeTexto } from '@/shared/audio/audioDeTexto';
 import { AUDIOS_INTERFAZ, type ClaveAudio } from '@/shared/config/audiosInterfaz';
 import { usePlayerStore } from '@/shared/store/usePlayerStore';
 import { useAjustesStore } from '@/shared/store/useAjustesStore';
@@ -21,15 +22,16 @@ export const callar = () => {
 };
 
 /**
- * Dice algo en voz alta. Si se indica `clave`, usa la grabación de la voz del proyecto (la suave).
- * Solo si esa grabación no existe, lee el texto con la voz del navegador como respaldo.
+ * Dice algo en voz alta con la voz del osito. Busca primero la grabación: la de la `clave` si se indica
+ * (ver audiosInterfaz.ts) y, si no, la que tenga ese mismo texto (una palabra, un número, el nombre de un
+ * sticker…; ver audiosPorTexto.json). Solo si no hay ninguna, lee el texto con la voz del navegador.
  */
 export const useHablar = () =>
   useCallback((texto: string, clave?: ClaveAudio) => {
     if (typeof window === 'undefined' || !useAjustesStore.getState().sonido) return;
     if ('speechSynthesis' in window) window.speechSynthesis.cancel();
 
-    const url = clave ? AUDIOS_INTERFAZ[clave] : undefined;
+    const url = (clave ? AUDIOS_INTERFAZ[clave] : undefined) ?? audioDeTexto(texto);
     if (url) usePlayerStore.getState().playAudio(url, { alFallar: () => hablarConVozDelNavegador(texto) });
     else hablarConVozDelNavegador(texto);
   }, []);

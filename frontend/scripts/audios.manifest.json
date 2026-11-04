@@ -558,5 +558,975 @@
   {
     "archivo": "personaje/esperando_profesora.mp3",
     "texto": "Estoy esperando a que la profesora active la sesión. ¡Ya casi comenzamos!"
+  },
+  {
+    "archivo": "textos/como.mp3",
+    "texto": "Como.",
+    "para": [
+      "como"
+    ]
+  },
+  {
+    "archivo": "textos/pan.mp3",
+    "texto": "Pan.",
+    "para": [
+      "pan"
+    ]
+  },
+  {
+    "archivo": "textos/voy.mp3",
+    "texto": "Voy.",
+    "para": [
+      "voy"
+    ]
+  },
+  {
+    "archivo": "textos/al.mp3",
+    "texto": "Al.",
+    "para": [
+      "al"
+    ]
+  },
+  {
+    "archivo": "textos/juego.mp3",
+    "texto": "Juego.",
+    "para": [
+      "juego"
+    ]
+  },
+  {
+    "archivo": "textos/con.mp3",
+    "texto": "Con.",
+    "para": [
+      "con"
+    ]
+  },
+  {
+    "archivo": "textos/abraza.mp3",
+    "texto": "Abraza.",
+    "para": [
+      "abraza"
+    ]
+  },
+  {
+    "archivo": "textos/duermo.mp3",
+    "texto": "Duermo.",
+    "para": [
+      "duermo"
+    ]
+  },
+  {
+    "archivo": "textos/en.mp3",
+    "texto": "En.",
+    "para": [
+      "en"
+    ]
+  },
+  {
+    "archivo": "textos/cama.mp3",
+    "texto": "Cama.",
+    "para": [
+      "cama"
+    ]
+  },
+  {
+    "archivo": "textos/es.mp3",
+    "texto": "Es.",
+    "para": [
+      "es"
+    ]
+  },
+  {
+    "archivo": "textos/una.mp3",
+    "texto": "Una.",
+    "para": [
+      "una"
+    ]
+  },
+  {
+    "archivo": "textos/gata.mp3",
+    "texto": "Gata.",
+    "para": [
+      "gata"
+    ]
+  },
+  {
+    "archivo": "textos/ve.mp3",
+    "texto": "Ve.",
+    "para": [
+      "ve"
+    ]
+  },
+  {
+    "archivo": "textos/juega.mp3",
+    "texto": "Juega.",
+    "para": [
+      "juega"
+    ]
+  },
+  {
+    "archivo": "textos/salta.mp3",
+    "texto": "Salta.",
+    "para": [
+      "salta"
+    ]
+  },
+  {
+    "archivo": "textos/duerme.mp3",
+    "texto": "Duerme.",
+    "para": [
+      "duerme"
+    ]
+  },
+  {
+    "archivo": "textos/tengo.mp3",
+    "texto": "Tengo.",
+    "para": [
+      "tengo"
+    ]
+  },
+  {
+    "archivo": "textos/nueva.mp3",
+    "texto": "Nueva.",
+    "para": [
+      "nueva"
+    ]
+  },
+  {
+    "archivo": "textos/pepe.mp3",
+    "texto": "Pepe.",
+    "para": [
+      "pepe"
+    ]
+  },
+  {
+    "archivo": "textos/un.mp3",
+    "texto": "Un.",
+    "para": [
+      "un"
+    ]
+  },
+  {
+    "archivo": "textos/toma.mp3",
+    "texto": "Toma.",
+    "para": [
+      "toma"
+    ]
+  },
+  {
+    "archivo": "textos/abeja.mp3",
+    "texto": "Abeja.",
+    "para": [
+      "abeja"
+    ]
+  },
+  {
+    "archivo": "textos/elefante.mp3",
+    "texto": "Elefante.",
+    "para": [
+      "elefante"
+    ]
+  },
+  {
+    "archivo": "textos/escalera.mp3",
+    "texto": "Escalera.",
+    "para": [
+      "escalera"
+    ]
+  },
+  {
+    "archivo": "textos/isla.mp3",
+    "texto": "Isla.",
+    "para": [
+      "isla"
+    ]
+  },
+  {
+    "archivo": "textos/iguana.mp3",
+    "texto": "Iguana.",
+    "para": [
+      "iguana"
+    ]
+  },
+  {
+    "archivo": "textos/iman.mp3",
+    "texto": "Imán.",
+    "para": [
+      "imán"
+    ]
+  },
+  {
+    "archivo": "textos/oso.mp3",
+    "texto": "Oso.",
+    "para": [
+      "oso"
+    ]
+  },
+  {
+    "archivo": "textos/ojo.mp3",
+    "texto": "Ojo.",
+    "para": [
+      "ojo"
+    ]
+  },
+  {
+    "archivo": "textos/oreja.mp3",
+    "texto": "Oreja.",
+    "para": [
+      "oreja"
+    ]
+  },
+  {
+    "archivo": "textos/uva.mp3",
+    "texto": "Uva.",
+    "para": [
+      "uva"
+    ]
+  },
+  {
+    "archivo": "textos/una_2.mp3",
+    "texto": "Uña.",
+    "para": [
+      "uña"
+    ]
+  },
+  {
+    "archivo": "textos/unicornio.mp3",
+    "texto": "Unicornio.",
+    "para": [
+      "unicornio"
+    ]
+  },
+  {
+    "archivo": "textos/cero.mp3",
+    "texto": "Cero.",
+    "para": [
+      "0"
+    ]
+  },
+  {
+    "archivo": "textos/uno.mp3",
+    "texto": "Uno.",
+    "para": [
+      "1"
+    ]
+  },
+  {
+    "archivo": "textos/dos.mp3",
+    "texto": "Dos.",
+    "para": [
+      "2"
+    ]
+  },
+  {
+    "archivo": "textos/tres.mp3",
+    "texto": "Tres.",
+    "para": [
+      "3"
+    ]
+  },
+  {
+    "archivo": "textos/cuatro.mp3",
+    "texto": "Cuatro.",
+    "para": [
+      "4"
+    ]
+  },
+  {
+    "archivo": "textos/cinco.mp3",
+    "texto": "Cinco.",
+    "para": [
+      "5"
+    ]
+  },
+  {
+    "archivo": "textos/seis.mp3",
+    "texto": "Seis.",
+    "para": [
+      "6"
+    ]
+  },
+  {
+    "archivo": "textos/siete.mp3",
+    "texto": "Siete.",
+    "para": [
+      "7"
+    ]
+  },
+  {
+    "archivo": "textos/ocho.mp3",
+    "texto": "Ocho.",
+    "para": [
+      "8"
+    ]
+  },
+  {
+    "archivo": "textos/nueve.mp3",
+    "texto": "Nueve.",
+    "para": [
+      "9"
+    ]
+  },
+  {
+    "archivo": "textos/domingo.mp3",
+    "texto": "Domingo.",
+    "para": [
+      "domingo"
+    ]
+  },
+  {
+    "archivo": "textos/domingo_jugaste.mp3",
+    "texto": "Domingo, ¡jugaste!",
+    "para": [
+      "domingo: ¡jugaste!"
+    ]
+  },
+  {
+    "archivo": "textos/lunes.mp3",
+    "texto": "Lunes.",
+    "para": [
+      "lunes"
+    ]
+  },
+  {
+    "archivo": "textos/lunes_jugaste.mp3",
+    "texto": "Lunes, ¡jugaste!",
+    "para": [
+      "lunes: ¡jugaste!"
+    ]
+  },
+  {
+    "archivo": "textos/martes.mp3",
+    "texto": "Martes.",
+    "para": [
+      "martes"
+    ]
+  },
+  {
+    "archivo": "textos/martes_jugaste.mp3",
+    "texto": "Martes, ¡jugaste!",
+    "para": [
+      "martes: ¡jugaste!"
+    ]
+  },
+  {
+    "archivo": "textos/miercoles.mp3",
+    "texto": "Miércoles.",
+    "para": [
+      "miércoles"
+    ]
+  },
+  {
+    "archivo": "textos/miercoles_jugaste.mp3",
+    "texto": "Miércoles, ¡jugaste!",
+    "para": [
+      "miércoles: ¡jugaste!"
+    ]
+  },
+  {
+    "archivo": "textos/jueves.mp3",
+    "texto": "Jueves.",
+    "para": [
+      "jueves"
+    ]
+  },
+  {
+    "archivo": "textos/jueves_jugaste.mp3",
+    "texto": "Jueves, ¡jugaste!",
+    "para": [
+      "jueves: ¡jugaste!"
+    ]
+  },
+  {
+    "archivo": "textos/viernes.mp3",
+    "texto": "Viernes.",
+    "para": [
+      "viernes"
+    ]
+  },
+  {
+    "archivo": "textos/viernes_jugaste.mp3",
+    "texto": "Viernes, ¡jugaste!",
+    "para": [
+      "viernes: ¡jugaste!"
+    ]
+  },
+  {
+    "archivo": "textos/sabado.mp3",
+    "texto": "Sábado.",
+    "para": [
+      "sábado"
+    ]
+  },
+  {
+    "archivo": "textos/sabado_jugaste.mp3",
+    "texto": "Sábado, ¡jugaste!",
+    "para": [
+      "sábado: ¡jugaste!"
+    ]
+  },
+  {
+    "archivo": "textos/todavia_no_lo_tienes_sigue_jugando.mp3",
+    "texto": "Todavía no lo tienes. ¡Sigue jugando!"
+  },
+  {
+    "archivo": "textos/animales.mp3",
+    "texto": "Animales.",
+    "para": [
+      "Animales"
+    ]
+  },
+  {
+    "archivo": "textos/mar.mp3",
+    "texto": "Mar.",
+    "para": [
+      "Mar"
+    ]
+  },
+  {
+    "archivo": "textos/cielo.mp3",
+    "texto": "Cielo.",
+    "para": [
+      "Cielo"
+    ]
+  },
+  {
+    "archivo": "textos/jardin.mp3",
+    "texto": "Jardín.",
+    "para": [
+      "Jardín"
+    ]
+  },
+  {
+    "archivo": "textos/comida.mp3",
+    "texto": "Comida.",
+    "para": [
+      "Comida"
+    ]
+  },
+  {
+    "archivo": "textos/viajes.mp3",
+    "texto": "Viajes.",
+    "para": [
+      "Viajes"
+    ]
+  },
+  {
+    "archivo": "textos/fiesta.mp3",
+    "texto": "Fiesta.",
+    "para": [
+      "Fiesta"
+    ]
+  },
+  {
+    "archivo": "textos/gato.mp3",
+    "texto": "Gato.",
+    "para": [
+      "Gato"
+    ]
+  },
+  {
+    "archivo": "textos/perro.mp3",
+    "texto": "Perro.",
+    "para": [
+      "Perro"
+    ]
+  },
+  {
+    "archivo": "textos/conejo.mp3",
+    "texto": "Conejo.",
+    "para": [
+      "Conejo"
+    ]
+  },
+  {
+    "archivo": "textos/tortuga.mp3",
+    "texto": "Tortuga.",
+    "para": [
+      "Tortuga"
+    ]
+  },
+  {
+    "archivo": "textos/ardilla.mp3",
+    "texto": "Ardilla.",
+    "para": [
+      "Ardilla"
+    ]
+  },
+  {
+    "archivo": "textos/caracol.mp3",
+    "texto": "Caracol.",
+    "para": [
+      "Caracol"
+    ]
+  },
+  {
+    "archivo": "textos/panda.mp3",
+    "texto": "Panda.",
+    "para": [
+      "Panda"
+    ]
+  },
+  {
+    "archivo": "textos/pajaro.mp3",
+    "texto": "Pájaro.",
+    "para": [
+      "Pájaro"
+    ]
+  },
+  {
+    "archivo": "textos/pez.mp3",
+    "texto": "Pez.",
+    "para": [
+      "Pez"
+    ]
+  },
+  {
+    "archivo": "textos/concha.mp3",
+    "texto": "Concha.",
+    "para": [
+      "Concha"
+    ]
+  },
+  {
+    "archivo": "textos/olas.mp3",
+    "texto": "Olas.",
+    "para": [
+      "Olas"
+    ]
+  },
+  {
+    "archivo": "textos/ancla.mp3",
+    "texto": "Ancla.",
+    "para": [
+      "Ancla"
+    ]
+  },
+  {
+    "archivo": "textos/barco.mp3",
+    "texto": "Barco.",
+    "para": [
+      "Barco"
+    ]
+  },
+  {
+    "archivo": "textos/velero.mp3",
+    "texto": "Velero.",
+    "para": [
+      "Velero"
+    ]
+  },
+  {
+    "archivo": "textos/camaron.mp3",
+    "texto": "Camarón.",
+    "para": [
+      "Camarón"
+    ]
+  },
+  {
+    "archivo": "textos/gota.mp3",
+    "texto": "Gota.",
+    "para": [
+      "Gota"
+    ]
+  },
+  {
+    "archivo": "textos/cohete.mp3",
+    "texto": "Cohete.",
+    "para": [
+      "Cohete"
+    ]
+  },
+  {
+    "archivo": "textos/luna.mp3",
+    "texto": "Luna.",
+    "para": [
+      "Luna"
+    ]
+  },
+  {
+    "archivo": "textos/sol.mp3",
+    "texto": "Sol.",
+    "para": [
+      "Sol"
+    ]
+  },
+  {
+    "archivo": "textos/estrella.mp3",
+    "texto": "Estrella.",
+    "para": [
+      "Estrella"
+    ]
+  },
+  {
+    "archivo": "textos/orbita.mp3",
+    "texto": "Órbita.",
+    "para": [
+      "Órbita"
+    ]
+  },
+  {
+    "archivo": "textos/telescopio.mp3",
+    "texto": "Telescopio.",
+    "para": [
+      "Telescopio"
+    ]
+  },
+  {
+    "archivo": "textos/nube.mp3",
+    "texto": "Nube.",
+    "para": [
+      "Nube"
+    ]
+  },
+  {
+    "archivo": "textos/arcoiris.mp3",
+    "texto": "Arcoíris.",
+    "para": [
+      "Arcoíris"
+    ]
+  },
+  {
+    "archivo": "textos/flor.mp3",
+    "texto": "Flor.",
+    "para": [
+      "Flor"
+    ]
+  },
+  {
+    "archivo": "textos/margarita.mp3",
+    "texto": "Margarita.",
+    "para": [
+      "Margarita"
+    ]
+  },
+  {
+    "archivo": "textos/arbol.mp3",
+    "texto": "Árbol.",
+    "para": [
+      "Árbol"
+    ]
+  },
+  {
+    "archivo": "textos/pino.mp3",
+    "texto": "Pino.",
+    "para": [
+      "Pino"
+    ]
+  },
+  {
+    "archivo": "textos/hoja.mp3",
+    "texto": "Hoja.",
+    "para": [
+      "Hoja"
+    ]
+  },
+  {
+    "archivo": "textos/brote.mp3",
+    "texto": "Brote.",
+    "para": [
+      "Brote"
+    ]
+  },
+  {
+    "archivo": "textos/trebol.mp3",
+    "texto": "Trébol.",
+    "para": [
+      "Trébol"
+    ]
+  },
+  {
+    "archivo": "textos/bichito.mp3",
+    "texto": "Bichito.",
+    "para": [
+      "Bichito"
+    ]
+  },
+  {
+    "archivo": "textos/manzana.mp3",
+    "texto": "Manzana.",
+    "para": [
+      "Manzana"
+    ]
+  },
+  {
+    "archivo": "textos/cereza.mp3",
+    "texto": "Cereza.",
+    "para": [
+      "Cereza"
+    ]
+  },
+  {
+    "archivo": "textos/zanahoria.mp3",
+    "texto": "Zanahoria.",
+    "para": [
+      "Zanahoria"
+    ]
+  },
+  {
+    "archivo": "textos/platano.mp3",
+    "texto": "Plátano.",
+    "para": [
+      "Plátano"
+    ]
+  },
+  {
+    "archivo": "textos/uvas.mp3",
+    "texto": "Uvas.",
+    "para": [
+      "Uvas"
+    ]
+  },
+  {
+    "archivo": "textos/naranja.mp3",
+    "texto": "Naranja.",
+    "para": [
+      "Naranja"
+    ]
+  },
+  {
+    "archivo": "textos/galleta.mp3",
+    "texto": "Galleta.",
+    "para": [
+      "Galleta"
+    ]
+  },
+  {
+    "archivo": "textos/helado.mp3",
+    "texto": "Helado.",
+    "para": [
+      "Helado"
+    ]
+  },
+  {
+    "archivo": "textos/bus.mp3",
+    "texto": "Bus.",
+    "para": [
+      "Bus"
+    ]
+  },
+  {
+    "archivo": "textos/tren.mp3",
+    "texto": "Tren.",
+    "para": [
+      "Tren"
+    ]
+  },
+  {
+    "archivo": "textos/avion.mp3",
+    "texto": "Avión.",
+    "para": [
+      "Avión"
+    ]
+  },
+  {
+    "archivo": "textos/bicicleta.mp3",
+    "texto": "Bicicleta.",
+    "para": [
+      "Bicicleta"
+    ]
+  },
+  {
+    "archivo": "textos/camion.mp3",
+    "texto": "Camión.",
+    "para": [
+      "Camión"
+    ]
+  },
+  {
+    "archivo": "textos/tractor.mp3",
+    "texto": "Tractor.",
+    "para": [
+      "Tractor"
+    ]
+  },
+  {
+    "archivo": "textos/helicoptero.mp3",
+    "texto": "Helicóptero.",
+    "para": [
+      "Helicóptero"
+    ]
+  },
+  {
+    "archivo": "textos/torta.mp3",
+    "texto": "Torta.",
+    "para": [
+      "Torta"
+    ]
+  },
+  {
+    "archivo": "textos/regalo.mp3",
+    "texto": "Regalo.",
+    "para": [
+      "Regalo"
+    ]
+  },
+  {
+    "archivo": "textos/musica.mp3",
+    "texto": "Música.",
+    "para": [
+      "Música"
+    ]
+  },
+  {
+    "archivo": "textos/pinturas.mp3",
+    "texto": "Pinturas.",
+    "para": [
+      "Pinturas"
+    ]
+  },
+  {
+    "archivo": "textos/corona.mp3",
+    "texto": "Corona.",
+    "para": [
+      "Corona"
+    ]
+  },
+  {
+    "archivo": "textos/gema.mp3",
+    "texto": "Gema.",
+    "para": [
+      "Gema"
+    ]
+  },
+  {
+    "archivo": "textos/copa.mp3",
+    "texto": "Copa.",
+    "para": [
+      "Copa"
+    ]
+  },
+  {
+    "archivo": "textos/mis_primeras_palabras.mp3",
+    "texto": "Mis primeras palabras.",
+    "para": [
+      "Mis Primeras Palabras (M, L, S, P, D)"
+    ]
+  },
+  {
+    "archivo": "textos/el_auto_de_ana.mp3",
+    "texto": "El Auto de Ana.",
+    "para": [
+      "El Auto de Ana"
+    ]
+  },
+  {
+    "archivo": "textos/mi_liceo_piedra_azul.mp3",
+    "texto": "Mi Liceo Piedra Azul.",
+    "para": [
+      "Mi Liceo Piedra Azul"
+    ]
+  },
+  {
+    "archivo": "textos/mi_dia.mp3",
+    "texto": "Mi Día.",
+    "para": [
+      "Mi Día"
+    ]
+  },
+  {
+    "archivo": "textos/mimi_y_la_lana.mp3",
+    "texto": "Mimi y la Lana.",
+    "para": [
+      "Mimi y la Lana"
+    ]
+  },
+  {
+    "archivo": "textos/el_sapo_pepe.mp3",
+    "texto": "El Sapo Pepe.",
+    "para": [
+      "El Sapo Pepe"
+    ]
+  },
+  {
+    "archivo": "textos/lo_que_hago.mp3",
+    "texto": "Lo Que Hago.",
+    "para": [
+      "Lo Que Hago"
+    ]
+  },
+  {
+    "archivo": "textos/mis_cosas.mp3",
+    "texto": "Mis Cosas.",
+    "para": [
+      "Mis Cosas"
+    ]
+  },
+  {
+    "archivo": "textos/como_me_siento.mp3",
+    "texto": "Cómo Me Siento.",
+    "para": [
+      "Cómo Me Siento"
+    ]
+  },
+  {
+    "archivo": "textos/mi_familia_y_mis_amigos.mp3",
+    "texto": "Mi Familia y Mis Amigos.",
+    "para": [
+      "Mi Familia y Mis Amigos"
+    ]
+  },
+  {
+    "archivo": "textos/la_vocal_a.mp3",
+    "texto": "La vocal A.",
+    "para": [
+      "La vocal A"
+    ]
+  },
+  {
+    "archivo": "textos/la_vocal_e.mp3",
+    "texto": "La vocal E.",
+    "para": [
+      "La vocal E"
+    ]
+  },
+  {
+    "archivo": "textos/la_vocal_i.mp3",
+    "texto": "La vocal I.",
+    "para": [
+      "La vocal I"
+    ]
+  },
+  {
+    "archivo": "textos/la_vocal_o.mp3",
+    "texto": "La vocal O.",
+    "para": [
+      "La vocal O"
+    ]
+  },
+  {
+    "archivo": "textos/la_vocal_u.mp3",
+    "texto": "La vocal U.",
+    "para": [
+      "La vocal U"
+    ]
+  },
+  {
+    "archivo": "pictogramas/si.mp3",
+    "texto": "Sí."
+  },
+  {
+    "archivo": "pictogramas/no.mp3",
+    "texto": "No."
+  },
+  {
+    "archivo": "pictogramas/mas.mp3",
+    "texto": "Más."
+  },
+  {
+    "archivo": "pictogramas/terminado.mp3",
+    "texto": "Terminado."
+  },
+  {
+    "archivo": "pictogramas/gracias.mp3",
+    "texto": "Gracias."
+  },
+  {
+    "archivo": "pictogramas/abrazar.mp3",
+    "texto": "Abrazo."
+  },
+  {
+    "archivo": "textos/necesito_ayuda.mp3",
+    "texto": "Necesito ayuda."
   }
 ]
