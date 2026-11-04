@@ -4,6 +4,7 @@ import { crearCuento, useNiveles } from '@/api';
 import { Hoja } from '@/features/docente/components/Hoja';
 import { resolverImagenes } from '@/features/docente/components/resolverImagenes';
 import { PictoImg } from '@/features/docente/components/widgets';
+import { idUnico } from '@/shared/idUnico';
 import { Button } from '@/shared/ui';
 import type { Cuento } from '@/types';
 
@@ -46,7 +47,7 @@ export const CrearActividad: React.FC<{ alCrear: (cuentoId: string) => void }> =
     setError('');
     if (!titulo.trim()) return setError('Ponle un nombre a la actividad.');
     if (conImagen.length < MIN_CON_IMAGEN) return setError(`Hacen falta al menos ${MIN_CON_IMAGEN} palabras con dibujo para armar los juegos.`);
-    const id = `actividad-propia-${crypto.randomUUID().slice(0, 8)}`;
+    const id = `actividad-propia-${idUnico().slice(0, 8)}`;
     const cuento: Cuento = {
       id,
       nivelId: nivel,

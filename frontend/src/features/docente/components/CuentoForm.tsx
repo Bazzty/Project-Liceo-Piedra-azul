@@ -9,6 +9,7 @@ import { Button } from '@/shared/ui';
 import { conAudios, generarAudiosDeCuento } from '@/features/docente/audioCuento';
 import { actualizarCuento, crearCuento, listarPictogramas, useNiveles } from '@/api';
 import { calentarIaDeCuentos, fueCancelada, generarCuentoConIa, type PedidoDeCuento } from '@/api/servidor';
+import { idUnico } from '@/shared/idUnico';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
 // Niveles que ya leen oraciones (Cuentos e Historias). Los anteriores trabajan sílabas, vocales y palabras: frases mínimas.
@@ -321,7 +322,7 @@ export const CuentoForm: React.FC<CuentoFormProps> = ({ nivelId, cuento, palabra
       } else {
         await crearCuento({
           ...datos,
-          id: `cuento-${crypto.randomUUID()}`,
+          id: `cuento-${idUnico()}`,
           fechaCreacion: new Date().toISOString(),
         });
       }
