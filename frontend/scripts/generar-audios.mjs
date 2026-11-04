@@ -84,7 +84,8 @@ if (!clave || !voz) {
 
 const modelo = process.env.ELEVENLABS_MODEL ?? 'eleven_turbo_v2_5';
 // Todo el proyecto es en español: se le dice al modelo, en vez de dejar que lo adivine por el texto.
-const idioma = process.env.ELEVENLABS_IDIOMA ?? 'es';
+// Los modelos multilingual_v2 no aceptan language_code: si el .env aún fija uno, no se manda por defecto.
+const idioma = process.env.ELEVENLABS_IDIOMA ?? (modelo.includes('multilingual') ? undefined : 'es');
 const ajustes = {
   stability: Number(process.env.VOZ_ESTABILIDAD ?? 0.3),
   similarity_boost: Number(process.env.VOZ_SIMILITUD ?? 1),
