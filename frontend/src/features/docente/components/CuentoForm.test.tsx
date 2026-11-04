@@ -6,7 +6,8 @@ import { ErrorDeServidor } from '@/api/servidor';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import type { Cuento } from '@/types';
 
-const { actualizarCuento, generarAudio, listarPictogramas } = vi.hoisted(() => ({
+const { actualizarCuento, generarAudio, generarCuentoConIa, listarPictogramas } = vi.hoisted(() => ({
+  generarCuentoConIa: vi.fn(),
   actualizarCuento: vi.fn(),
   generarAudio: vi.fn(),
   listarPictogramas: vi.fn(async () => []),
@@ -22,7 +23,7 @@ vi.mock('@/features/tablero/arasaac', async (original) => ({
   ...(await original<typeof import('@/features/tablero/arasaac')>()),
   fetchArasaacPictogramId: async () => null,
 }));
-vi.mock('@/api/servidor', async (original) => ({ ...(await original<typeof import('@/api/servidor')>()), generarAudio }));
+vi.mock('@/api/servidor', async (original) => ({ ...(await original<typeof import('@/api/servidor')>()), generarAudio, generarCuentoConIa }));
 
 const cuento: Cuento = {
   id: 'cuento-1',
@@ -194,5 +195,68 @@ describe('CuentoForm: casos de borde del audio', () => {
 
     expect(screen.queryByRole('button', { name: 'Generar audio' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Probar voz' })).toBeInTheDocument();
+  });
+});
+
+describe('CuentoForm: crear con IA', () => {
+  const borrador = {
+    titulo: 'El osito y el dentista',
+    descripcion: 'Un osito pierde el miedo.',
+    frases: ['El osito va al dentista', 'Abre la boca grande'],
+  };
+  const renderNuevo = () => render(<CuentoForm onGuardado={vi.fn()} onCancelar={vi.fn()} />);
+
+  beforeEach(() => {
+    useAuthStore.setState({ user: { id: 'prof-1', nombre: 'Profesora PIE', email: 'profesora@piedraazul.cl', role: 'docente' } });
+    generarCuentoConIa.mockReset();
+    generarCuentoConIa.mockResolvedValue(borrador);
+  });
+
+  it('llena título, descripción y páginas con el borrador y deja el cuento editable', async () => {
+    renderNuevo();
+
+    const crear = screen.getByRole('button', { name: /Crear borrador/ });
+    expect(crear).toBeDisabled();
+    await userEvent.type(screen.getByLabelText('¿De qué trata el cuento?'), 'El osito va al dentista');
+    await userEvent.click(screen.getByRole('button', { name: /Crear borrador/ }));
+
+    await screen.findByText(/Borrador creado con IA/);
+    expect(generarCuentoConIa).toHaveBeenCalledWith({ tema: 'El osito va al dentista', nivel: 'B', paginas: 5 });
+    expect(screen.getByLabelText('Título del cuento')).toHaveValue('El osito y el dentista');
+    expect(screen.getByLabelText('Descripción (opcional)')).toHaveValue('Un osito pierde el miedo.');
+    expect(screen.getByLabelText('Texto: una frase por página')).toHaveValue('El osito va al dentista\nAbre la boca grande');
+    expect(screen.getByText('Página 2')).toBeInTheDocument();
+  });
+
+  it('muestra el motivo si la IA no responde y no toca lo escrito', async () => {
+    generarCuentoConIa.mockRejectedValueOnce(new ErrorDeServidor('La IA de cuentos aún no está activada en este servidor.', 503));
+    renderNuevo();
+    await userEvent.type(screen.getByLabelText('Título del cuento'), 'Mi cuento');
+    await userEvent.type(screen.getByLabelText('¿De qué trata el cuento?'), 'un gato');
+
+    await userEvent.click(screen.getByRole('button', { name: /Crear borrador/ }));
+
+    expect(await screen.findByText('La IA de cuentos aún no está activada en este servidor.')).toBeInTheDocument();
+    expect(screen.getByLabelText('Título del cuento')).toHaveValue('Mi cuento');
+  });
+
+  it('pide confirmación antes de reemplazar un texto que ya existe', async () => {
+    const confirmar = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    render(<CuentoForm cuento={cuento} onGuardado={vi.fn()} onCancelar={vi.fn()} />);
+    await userEvent.type(screen.getByLabelText('¿De qué trata el cuento?'), 'un gato');
+
+    await userEvent.click(screen.getByRole('button', { name: /Crear borrador/ }));
+
+    expect(confirmar).toHaveBeenCalled();
+    expect(generarCuentoConIa).not.toHaveBeenCalled();
+    expect(screen.getByLabelText('Título del cuento')).toHaveValue('El oso');
+    confirmar.mockRestore();
+  });
+
+  it('no se ofrece al revisor, que solo valida cuentos', () => {
+    useAuthStore.setState({ user: { id: 'rev-1', nombre: 'Revisora', email: 'rev@piedraazul.cl', role: 'revisor' } });
+    renderNuevo();
+
+    expect(screen.queryByRole('button', { name: /Crear borrador/ })).not.toBeInTheDocument();
   });
 });

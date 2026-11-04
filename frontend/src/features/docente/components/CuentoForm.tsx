@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { AudioLines, Sparkles, Trash2, Volume2 } from 'lucide-react';
+import { AudioLines, Sparkles, Trash2, Volume2, Wand2 } from 'lucide-react';
 import type { Cuento, CuentoPagina, CuentoPalabra } from '@/types';
 import { getArasaacImageUrl, fetchArasaacPictogramId, searchArasaacPictograms, type ArasaacOpcion } from '@/features/tablero/arasaac';
 import { normalizar } from '@/features/docente/components/format';
@@ -7,6 +7,7 @@ import { PictoImg } from '@/features/docente/components/widgets';
 import { Button } from '@/shared/ui';
 import { conAudios, generarAudiosDeCuento } from '@/features/docente/audioCuento';
 import { actualizarCuento, crearCuento, listarPictogramas, useNiveles } from '@/api';
+import { generarCuentoConIa } from '@/api/servidor';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
 // Palabras funcionales que NO reciben pictograma sugerido (igual que en los cuentos del seed).
@@ -68,6 +69,10 @@ export const CuentoForm: React.FC<CuentoFormProps> = ({ nivelId, cuento, onGuard
   const [paginas, setPaginas] = useState<CuentoPagina[]>(cuento?.paginas ?? []);
   const [sugiriendo, setSugiriendo] = useState(false);
   const [mensaje, setMensaje] = useState('');
+  // Cuento con IA: de qué trata y cuántas páginas; `redactando` mientras el servidor trabaja
+  const [tema, setTema] = useState('');
+  const [numPaginas, setNumPaginas] = useState(5);
+  const [redactando, setRedactando] = useState(false);
   // Avance de la generación de audio, en páginas (null = no se está generando)
   const [generando, setGenerando] = useState<{ hechas: number; total: number } | null>(null);
   const generacion = useRef<AbortController | null>(null);
@@ -95,7 +100,9 @@ export const CuentoForm: React.FC<CuentoFormProps> = ({ nivelId, cuento, onGuard
   };
 
   /** Sugiere pictogramas: primero el catálogo local (funciona offline), luego ARASAAC (requiere internet). */
-  const sugerirPictogramas = async () => {
+  const sugerirPictogramas = () => buscarPictogramas(paginas);
+
+  const buscarPictogramas = async (base: CuentoPagina[]) => {
     setSugiriendo(true);
     setMensaje('');
     const locales = await listarPictogramas();
@@ -117,7 +124,7 @@ export const CuentoForm: React.FC<CuentoFormProps> = ({ nivelId, cuento, onGuard
     };
 
     const nuevas: CuentoPagina[] = [];
-    for (const pg of paginas) {
+    for (const pg of base) {
       const palabras: CuentoPalabra[] = [];
       for (const w of pg.palabras) {
         if (w.pictogramaUrl || SIN_PICTOGRAMA.includes(normalizar(w.texto))) palabras.push(w);
@@ -132,6 +139,33 @@ export const CuentoForm: React.FC<CuentoFormProps> = ({ nivelId, cuento, onGuard
         ? `${sinInternet} palabra(s) sin pictograma (sin coincidencia o sin internet). Puedes agregarlas a mano.`
         : 'Pictogramas sugeridos. Toca una palabra para cambiar su pictograma.',
     );
+  };
+
+  /** Pide un borrador a la IA del servidor. Queda como texto editable: la docente lo revisa antes de guardarlo. */
+  const redactarConIa = async () => {
+    setError('');
+    setMensaje('');
+    if (texto.trim() && !window.confirm('Esto reemplaza el título y el texto actuales. ¿Continuar?')) return;
+    setRedactando(true);
+    try {
+      const codigo = niveles?.find((n) => n.id === nivel)?.codigo;
+      const borrador = await generarCuentoConIa({ tema: tema.trim(), nivel: codigo === 'A' ? 'A' : 'B', paginas: numPaginas });
+      const nuevoTexto = borrador.frases.join('\n');
+      const nuevas = construirPaginas(nuevoTexto, []);
+      setTitulo(borrador.titulo);
+      setDescripcion(borrador.descripcion);
+      setTexto(nuevoTexto);
+      setPaginas(nuevas);
+      setEditando(null);
+      setRedactando(false);
+      // Los pictogramas se buscan solos: así el borrador queda listo para leerlo y revisarlo.
+      await buscarPictogramas(nuevas);
+      setMensaje('Borrador creado con IA. Léelo con calma, corrige lo que haga falta y luego genera el audio.');
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'No se pudo crear el cuento.');
+    } finally {
+      setRedactando(false);
+    }
   };
 
   const abrirEditor = async (p: number, w: number) => {
@@ -237,6 +271,49 @@ export const CuentoForm: React.FC<CuentoFormProps> = ({ nivelId, cuento, onGuard
           ))}
         </select>
       </label>
+
+      {/* El revisor solo valida cuentos: el servidor le negaría el borrador (403) */}
+      {!esRevisor && (
+        <section aria-labelledby="crear-con-ia" className="bg-surface border border-borderCustom rounded-control p-4 flex flex-col gap-3">
+          <h4 id="crear-con-ia" className="font-display text-lg font-semibold text-primary">
+            Crear con IA
+          </h4>
+          <label className="flex flex-col gap-1.5">
+            <span className="text-sm font-bold text-primary">¿De qué trata el cuento?</span>
+            <input
+              className={campo}
+              value={tema}
+              maxLength={200}
+              placeholder="Por ejemplo: el osito va al dentista"
+              onChange={(e) => setTema(e.target.value)}
+            />
+          </label>
+          <div className="flex flex-wrap items-end gap-3">
+            <label className="flex flex-col gap-1.5">
+              <span className="text-sm font-bold text-primary">Páginas</span>
+              <select className={campo} value={numPaginas} onChange={(e) => setNumPaginas(Number(e.target.value))}>
+                {[3, 4, 5, 6, 7, 8].map((n) => (
+                  <option key={n} value={n}>
+                    {n}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <Button
+              variant="accent"
+              onClick={redactarConIa}
+              disabled={tema.trim().length < 3 || sugiriendo || generando !== null}
+              loading={redactando}
+            >
+              <Wand2 className="w-4 h-4" aria-hidden /> {redactando ? 'Escribiendo el cuento…' : 'Crear borrador'}
+            </Button>
+          </div>
+          <p className="text-xs font-semibold text-secondary">
+            La IA escribe un borrador según el nivel elegido. Siempre se revisa y se edita antes de enviarlo: nada llega a los niños sin
+            tu aprobación.
+          </p>
+        </section>
+      )}
 
       <label className="flex flex-col gap-1.5">
         <span className="text-sm font-bold text-primary">Título del cuento</span>
