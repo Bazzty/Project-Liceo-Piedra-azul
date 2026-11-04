@@ -2,6 +2,18 @@
 
 La app busca primero una **grabación** (la voz suave del proyecto) y solo usa la voz del navegador si el archivo aún no existe. Cada frase tiene una clave (`frontend/src/shared/config/audiosInterfaz.ts`) y un archivo en `frontend/public/audio/interfaz/`.
 
+## Estado actual: una sola voz, la del osito
+
+Los audios de `frontend/scripts/audios.manifest.json` (interfaz, cuentos, pictogramas, palabras y fonemas) se generan con la **voz del osito** (ElevenLabs, voz masculina joven y alegre), con el modelo `eleven_turbo_v2_5` y `language_code: es`. Sin forzar el idioma, una palabra suelta puede leerse como inglés («Lana»); el modelo `eleven_multilingual_v2` no admite ese parámetro, por eso se usa turbo. La API del servidor envía los mismos ajustes.
+
+**Revisar la pronunciación:** con el servidor de Vite en marcha, abre `http://localhost:5173/revision-audios.html` (si existe en tu copia), escucha los audios y marca los que suenen mal. Una palabra mal dicha se corrige cambiando su `texto` en el manifiesto (por ejemplo, separando sílabas o con otra grafía) y ejecutando `npm run audios -- --forzar --solo=<carpeta>`. Para regenerarlos: `npm run audios -- --forzar` desde `frontend/`, con la clave en el entorno (ver abajo).
+
+- **Fuera del manifiesto, a propósito:** `fonemas/m.mp3` (el sonido /m/ suelto; un TTS diría «eme»).
+- **Cómo elige el osito la voz:** el tablero «Hablar» usa `decirSecuencia` (cada palabra con su `audioUrl`, y si falta, la del índice); el resto de la app usa `useHablar`, que busca primero la grabación por **clave** (`audiosInterfaz.ts`) y, si no hay, por el **texto** exacto (`src/shared/config/audiosPorTexto.json`: palabras, dígitos, días, stickers, títulos de los cuentos de demostración). Solo si no encuentra ninguna usa la voz del navegador.
+- **Agregar un texto fijo:** suma una entrada al manifiesto en `textos/` (con `para: [...]` si la app lo pide con otras palabras), corre `npm run audios` (genera lo que falta y reescribe el índice) y revisa el resultado. Los tests fallan si un sticker o un dígito queda sin audio, o si el índice no coincide con el manifiesto (`npm run audios:indice`).
+- **Siguen con la voz del navegador** solo los textos que no se conocen de antemano: los cuentos y palabras que cree la docente (hasta que genere su audio con «Generar audio»), los pictogramas con foto real que suba la docente, los nombres que lee el barrido y frases con datos del niño (cuántos stickers tiene, el título de una tarea).
+- **Cambiar la voz** obliga a regenerar todo: los audios ya grabados no se actualizan solos.
+
 ## Ya grabados (no hay que hacer nada)
 
 | Clave | Archivo | Dónde suena |

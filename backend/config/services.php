@@ -47,10 +47,22 @@ return [
     'elevenlabs' => [
         'clave' => env('ELEVENLABS_API_KEY'),
         'voz' => env('ELEVENLABS_VOICE_ID'),
-        'modelo' => env('ELEVENLABS_MODEL', 'eleven_multilingual_v2'),
+        'modelo' => env('ELEVENLABS_MODEL', 'eleven_turbo_v2_5'),
+        // Sin esto una palabra suelta puede leerse como inglés. Solo lo aceptan los modelos turbo, flash y v3:
+        // si el .env aún fija un multilingual_v2, no se manda por defecto (la API respondería 400).
+        'idioma' => env('ELEVENLABS_IDIOMA', str_contains((string) env('ELEVENLABS_MODEL'), 'multilingual') ? null : 'es'),
         'estabilidad' => (float) env('VOZ_ESTABILIDAD', 0.3),
         'similitud' => (float) env('VOZ_SIMILITUD', 1),
         'velocidad' => (float) env('VOZ_VELOCIDAD', 1),
+    ],
+
+    // IA que redacta el borrador del cuento (la docente lo revisa). Modelo abierto en Ollama: sin costo por uso.
+    // OLLAMA_URL apunta al contenedor `ollama` o a un servidor remoto; sin URL, el botón avisa que no está activada.
+    'ollama' => [
+        'url' => env('OLLAMA_URL'),
+        'clave' => env('OLLAMA_API_KEY'),
+        'modelo' => env('OLLAMA_MODEL', 'qwen2.5:3b'),
+        'espera' => (int) env('OLLAMA_ESPERA', 90),
     ],
 
     'slack' => [

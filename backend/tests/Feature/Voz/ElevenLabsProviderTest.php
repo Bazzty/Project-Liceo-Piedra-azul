@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Http;
 function configElevenLabs(array $cambios = []): array
 {
     return [
-        'clave' => 'clave-de-prueba', 'voz' => 'voz-123', 'modelo' => 'eleven_multilingual_v2',
+        'clave' => 'clave-de-prueba', 'voz' => 'voz-123', 'modelo' => 'eleven_turbo_v2_5', 'idioma' => 'es',
         'estabilidad' => 0.3, 'similitud' => 1.0, 'velocidad' => 1.0, ...$cambios,
     ];
 }
@@ -23,7 +23,8 @@ it('pide el audio a la API con la voz y los ajustes del proyecto', function () {
         return $r->url() === 'https://api.elevenlabs.io/v1/text-to-speech/voz-123?output_format=mp3_44100_128'
             && $r->hasHeader('xi-api-key', 'clave-de-prueba')
             && $r['text'] === 'Había una vez un oso'
-            && $r['model_id'] === 'eleven_multilingual_v2'
+            && $r['model_id'] === 'eleven_turbo_v2_5'
+            && $r['language_code'] === 'es'
             && $r['voice_settings'] === ['stability' => 0.3, 'similarity_boost' => 1.0, 'speed' => 1.0];
     });
     Http::assertSentCount(1);
@@ -53,5 +54,14 @@ it('la huella cambia con la voz y los ajustes', function () {
 
     expect((new ElevenLabsProvider(configElevenLabs(['voz' => 'otra'])))->huella())->not->toBe($base)
         ->and((new ElevenLabsProvider(configElevenLabs(['estabilidad' => 0.5])))->huella())->not->toBe($base)
+        ->and((new ElevenLabsProvider(configElevenLabs(['idioma' => 'en'])))->huella())->not->toBe($base)
         ->and((new ElevenLabsProvider(configElevenLabs(['clave' => 'otra-clave'])))->huella())->toBe($base);
+});
+
+it('sin idioma configurado no manda language_code (los modelos multilingual_v2 no lo aceptan)', function () {
+    Http::fake(['api.elevenlabs.io/*' => Http::response('MP3', 200)]);
+
+    (new ElevenLabsProvider(configElevenLabs(['idioma' => null, 'modelo' => 'eleven_multilingual_v2'])))->sintetizar('Hola');
+
+    Http::assertSent(fn (Request $r) => ! array_key_exists('language_code', $r->data()));
 });

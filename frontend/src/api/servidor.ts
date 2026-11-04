@@ -33,11 +33,6 @@ const guardarToken = (token: string | null) => {
   }
 };
 
-/** Mensajes para la docente. Laravel responde en inglés a un 403 o un 429, así que no se muestran tal cual. */
-const MENSAJE_POR_ESTADO: Record<number, string> = {
-  403: 'Tu cuenta no puede generar audio: es solo para docentes.',
-  429: 'Se pidieron muchos audios seguidos. Espera un minuto y vuelve a intentar.',
-};
 /** Estados en los que el mensaje del servidor ya viene en español y dice algo útil (texto largo, sin voz). */
 const CON_MENSAJE_PROPIO = new Set([422, 503]);
 
@@ -107,18 +102,28 @@ export interface AudioGenerado {
   respaldo: boolean;
 }
 
-/** Pide al servidor el audio de un texto con la voz del proyecto. */
-export async function generarAudio(texto: string): Promise<AudioGenerado> {
+/** Lo que cambia entre una petición y otra: cómo se le nombra la acción a la docente. */
+interface Accion {
+  /** Qué se estaba haciendo, para los mensajes: «generar audio», «crear el cuento». */
+  nombre: string;
+  /** Mensaje cuando falla sin una explicación mejor. */
+  fallo: string;
+  /** Mensaje cuando el servidor dice que se pidió demasiado (429). */
+  demasiado: string;
+}
+
+/** Hace una petición con la sesión de la docente. Laravel responde en inglés a un 403 o 429, así que no se muestra tal cual. */
+async function pedirConSesion<T extends object>(ruta: string, cuerpo: object, accion: Accion, esValida: (r: T) => boolean): Promise<T> {
   await inicioEnCurso;
   const token = leerToken();
-  if (!token) throw new ErrorDeServidor('Para generar audio, vuelve a ingresar con tu cuenta de docente.', 401);
+  if (!token) throw new ErrorDeServidor(`Para ${accion.nombre}, vuelve a ingresar con tu cuenta de docente.`, 401);
 
   let respuesta: Response;
   try {
-    respuesta = await fetch(`${BASE}/audio`, {
+    respuesta = await fetch(`${BASE}${ruta}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ texto }),
+      body: JSON.stringify(cuerpo),
     });
   } catch {
     throw new ErrorDeServidor('No hay conexión con el servidor.', 0);
@@ -131,12 +136,57 @@ export async function generarAudio(texto: string): Promise<AudioGenerado> {
   if (!respuesta.ok) {
     const { message } = ((await respuesta.json().catch(() => null)) ?? {}) as { message?: string };
     const propio = CON_MENSAJE_PROPIO.has(respuesta.status) ? message : undefined;
-    const generico = respuesta.status >= 500 ? 'El servidor tuvo un problema. Intenta de nuevo.' : 'No se pudo generar el audio.';
-    throw new ErrorDeServidor(MENSAJE_POR_ESTADO[respuesta.status] ?? propio ?? generico, respuesta.status);
+    const porEstado: Record<number, string> = {
+      403: `Tu cuenta no puede ${accion.nombre}: es solo para docentes.`,
+      429: accion.demasiado,
+    };
+    const generico = respuesta.status >= 500 ? 'El servidor tuvo un problema. Intenta de nuevo.' : accion.fallo;
+    throw new ErrorDeServidor(porEstado[respuesta.status] ?? propio ?? generico, respuesta.status);
   }
 
   // Sin proxy (p. ej. un servidor estático), /api devuelve el index.html con 200: no es una respuesta de la API.
-  const audio = (await respuesta.json().catch(() => null)) as AudioGenerado | null;
-  if (!audio?.url) throw new ErrorDeServidor('El servidor no respondió como se esperaba. Revisa que esté encendido.', 502);
-  return audio;
+  const datos = (await respuesta.json().catch(() => null)) as T | null;
+  if (!datos || !esValida(datos)) {
+    throw new ErrorDeServidor('El servidor no respondió como se esperaba. Revisa que esté encendido.', 502);
+  }
+  return datos;
 }
+
+/** Pide al servidor el audio de un texto con la voz del proyecto. */
+export const generarAudio = (texto: string) =>
+  pedirConSesion<AudioGenerado>(
+    '/audio',
+    { texto },
+    {
+      nombre: 'generar audio',
+      fallo: 'No se pudo generar el audio.',
+      demasiado: 'Se pidieron muchos audios seguidos. Espera un minuto y vuelve a intentar.',
+    },
+    (a) => Boolean(a.url),
+  );
+
+export interface BorradorDeCuento {
+  titulo: string;
+  descripcion: string;
+  /** Una por página. */
+  frases: string[];
+}
+
+export interface PedidoDeCuento {
+  tema: string;
+  nivel: 'A' | 'B';
+  paginas: number;
+}
+
+/** Pide a la IA del servidor un borrador de cuento. Es solo texto: la docente lo revisa antes de guardarlo. */
+export const generarCuentoConIa = (pedido: PedidoDeCuento) =>
+  pedirConSesion<BorradorDeCuento>(
+    '/cuentos/generar',
+    pedido,
+    {
+      nombre: 'crear el cuento',
+      fallo: 'No se pudo crear el cuento.',
+      demasiado: 'Se pidieron muchos cuentos seguidos. Espera un minuto y vuelve a intentar.',
+    },
+    (c) => Array.isArray(c.frases) && c.frases.length > 0,
+  );

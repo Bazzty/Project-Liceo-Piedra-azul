@@ -1,9 +1,10 @@
+import { audioDeTexto } from '@/shared/audio/audioDeTexto';
 import { useAjustesStore } from '@/shared/store/useAjustesStore';
 import { usePlayerStore } from '@/shared/store/usePlayerStore';
 
 export interface ElementoDeVoz {
   texto: string;
-  /** Grabación de ese elemento; si no existe o falla, se lee con la voz del navegador. */
+  /** Grabación de ese elemento. Si falta o falla se prueba la que tenga ese mismo texto (audiosPorTexto.json) y, al final, la voz del navegador. */
   audioUrl?: string;
 }
 
@@ -12,9 +13,7 @@ const ESPERA_MAXIMA_MS = 5000;
 /** Reproduce por el store del reproductor (una sola voz a la vez, misma velocidad). `false` si hay que usar el respaldo. */
 const reproducirArchivo = (url: string, cancelada?: () => boolean) =>
   new Promise<boolean>((resolve) => {
-    const store = usePlayerStore.getState();
-    store.playAudio(url, { alFallar: () => terminar(false) });
-    const audio = usePlayerStore.getState().activeAudioInstance;
+    // El vigilante existe antes de pedir el audio: si falla de inmediato, `alFallar` ya necesita `terminar`.
     const vigilante = setInterval(() => {
       if (cancelada?.()) {
         usePlayerStore.getState().stopAudio();
@@ -25,6 +24,9 @@ const reproducirArchivo = (url: string, cancelada?: () => boolean) =>
       clearInterval(vigilante);
       resolve(sono);
     }
+    const store = usePlayerStore.getState();
+    store.playAudio(url, { alFallar: () => terminar(false) });
+    const audio = usePlayerStore.getState().activeAudioInstance;
     if (!audio) return terminar(false);
     // `pause` cubre que otro audio o stopAudio lo corten: no se vuelve a leer encima
     audio.addEventListener('ended', () => terminar(true), { once: true });
@@ -61,7 +63,12 @@ export async function decirSecuencia(
     opciones.alDecir?.(i);
     if (sonido) {
       const { texto, audioUrl } = elementos[i];
-      const sono = audioUrl ? await reproducirArchivo(audioUrl, opciones.cancelada) : false;
+      const grabaciones = [audioUrl, audioDeTexto(texto)].filter((u, k, todas): u is string => Boolean(u) && todas.indexOf(u) === k);
+      let sono = false;
+      for (const url of grabaciones) {
+        sono = await reproducirArchivo(url, opciones.cancelada);
+        if (sono) break;
+      }
       if (!sono && !opciones.cancelada?.()) await leerEnVoz(texto, vozLenta);
     } else {
       await new Promise((r) => setTimeout(r, 700));
