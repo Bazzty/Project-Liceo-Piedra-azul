@@ -208,3 +208,17 @@ export const generarCuentoConIa = (pedido: PedidoDeCuento, senal?: AbortSignal) 
     (c) => Array.isArray(c.frases) && c.frases.length > 0,
     senal,
   );
+
+/**
+ * Avisa al servidor que se viene un cuento con IA, para que cargue el modelo mientras la docente escribe.
+ * No espera nada, no manda datos y no avisa de fallos: sin servidor o sin sesión simplemente no hace nada.
+ */
+export const calentarIaDeCuentos = (): void => {
+  const token = leerToken();
+  if (!token) return;
+  fetch(`${BASE}/cuentos/calentar`, {
+    method: 'POST',
+    keepalive: true,
+    headers: { Accept: 'application/json', Authorization: `Bearer ${token}` },
+  }).catch(() => undefined);
+};

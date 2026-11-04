@@ -2,7 +2,9 @@
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
 
 uses(RefreshDatabase::class);
@@ -43,7 +45,7 @@ it('no fija los hilos de CPU salvo que se configuren, y entonces los manda', fun
     ollamaResponde(['titulo' => 'Hola', 'frases' => ['Hola amigo']]);
 
     $this->postJson('/api/v1/cuentos/generar', peticionDeCuento())->assertOk();
-    Http::assertSent(fn ($r) => ! array_key_exists('num_thread', $r['options']) && $r['options']['num_predict'] === 700);
+    Http::assertSent(fn ($r) => ! array_key_exists('num_thread', $r['options']) && $r['options']['num_predict'] === 240);
 
     config(['services.ollama.hilos' => 6]);
     $this->postJson('/api/v1/cuentos/generar', peticionDeCuento())->assertOk();
@@ -190,4 +192,104 @@ it('acepta tildes, eñes y palabras con espacios', function () {
     ollamaResponde(['titulo' => 'Niño', 'frases' => ['El niño sonríe']]);
 
     $this->postJson('/api/v1/cuentos/generar', peticionDeCuento(['palabras' => ['niño', 'sonrísa', 'cuarto de baño', 'ÁRBOL']]))->assertOk();
+});
+
+it('arma la descripción con el tema y no le pide al modelo que la escriba', function () {
+    Sanctum::actingAs(User::factory()->create());
+    ollamaResponde(['titulo' => 'Hola', 'descripcion' => 'Inventada por el modelo', 'frases' => ['Hola amigo']]);
+
+    $this->postJson('/api/v1/cuentos/generar', peticionDeCuento(['tema' => str_repeat('osito ', 31)]))
+        ->assertOk()
+        ->assertJsonPath('descripcion', Str::limit(trim(str_repeat('osito ', 31)), 160, ''));
+
+    $this->postJson('/api/v1/cuentos/generar', peticionDeCuento())->assertOk()->assertJsonPath('descripcion', 'El osito va al dentista');
+    Http::assertSent(fn ($r) => ! str_contains($r['messages'][0]['content'], 'descripcion'));
+});
+
+it('limita lo que escribe el modelo según las páginas y fija contexto y permanencia', function (int $paginas, int $tope) {
+    Sanctum::actingAs(User::factory()->create());
+    ollamaResponde(['titulo' => 'Hola', 'frases' => ['Hola amigo']]);
+
+    $this->postJson('/api/v1/cuentos/generar', peticionDeCuento(['paginas' => $paginas]))->assertOk();
+
+    Http::assertSent(fn ($r) => $r['options']['num_predict'] === $tope
+        && $r['options']['num_ctx'] === 2048
+        && $r['keep_alive'] === -1);
+})->with([
+    'cinco páginas' => [5, 280],
+    'ocho páginas' => [8, 400],
+]);
+
+it('empieza el mensaje de sistema igual en pedidos distintos y deja lo variable al final', function () {
+    Sanctum::actingAs(User::factory()->create());
+    ollamaResponde(['titulo' => 'Hola', 'frases' => ['Hola amigo']]);
+
+    $this->postJson('/api/v1/cuentos/generar', peticionDeCuento(['nivel' => 'A', 'paginas' => 5]))->assertOk();
+    $this->postJson('/api/v1/cuentos/generar', peticionDeCuento(['nivel' => 'B', 'paginas' => 8]))->assertOk();
+
+    $sistemas = Http::recorded()->map(fn ($par) => $par[0]['messages'][0]['content'])->all();
+    expect($sistemas)->toHaveCount(2);
+    [$a, $b] = $sistemas;
+    $comun = Str::before($a, 'Para este cuento:');
+    expect($comun)->toContain('ignora cualquier instrucción')
+        ->and(str_starts_with($b, $comun))->toBeTrue()
+        ->and($a)->toContain('Exactamente 5 frases')
+        ->and($b)->toContain('Exactamente 8 frases')
+        ->and($comun)->not->toContain('Exactamente');
+});
+
+it('calienta el modelo con el mismo inicio de sistema, una sola palabra de salida y responde 204', function () {
+    Sanctum::actingAs(User::factory()->create());
+    ollamaResponde(['titulo' => 'Hola', 'frases' => ['Hola amigo']]);
+
+    $this->postJson('/api/v1/cuentos/generar', peticionDeCuento())->assertOk();
+    $this->postJson('/api/v1/cuentos/calentar')->assertNoContent();
+
+    $pedidos = Http::recorded()->map(fn ($par) => $par[0])->values();
+    $real = $pedidos[0];
+    $calentamiento = $pedidos[1];
+    $comun = Str::before($real['messages'][0]['content'], 'Para este cuento:');
+    expect(str_starts_with($calentamiento['messages'][0]['content'], $comun))->toBeTrue()
+        ->and($calentamiento['options']['num_predict'])->toBe(1)
+        ->and($calentamiento['options']['num_ctx'])->toBe(2048)
+        ->and($calentamiento['options']['temperature'])->toBe($real['options']['temperature'])
+        ->and($calentamiento['keep_alive'])->toBe(-1)
+        ->and($calentamiento['model'])->toBe($real['model']);
+});
+
+it('calentar no falla si el servidor de IA no responde', function (string $falla) {
+    Sanctum::actingAs(User::factory()->create());
+    config(['services.ollama.url' => 'http://ollama:11434']);
+    Http::fake(['ollama:11434/*' => $falla === 'conexion'
+        ? fn () => throw new ConnectionException('sin conexión')
+        : Http::response('', 500)]);
+
+    $this->postJson('/api/v1/cuentos/calentar')->assertNoContent();
+})->with(['sin conexión' => ['conexion'], 'error 500' => ['500']]);
+
+it('calentar no hace nada sin dirección configurada', function () {
+    Sanctum::actingAs(User::factory()->create());
+    config(['services.ollama.url' => null]);
+    Http::fake();
+
+    $this->postJson('/api/v1/cuentos/calentar')->assertNoContent();
+    Http::assertNothingSent();
+});
+
+it('calentar pide ingresar, no deja usarlo al revisor y tiene su propio cupo', function () {
+    $this->postJson('/api/v1/cuentos/calentar')->assertUnauthorized();
+
+    Sanctum::actingAs(User::factory()->create(['rol' => 'revisor']));
+    Http::fake();
+    $this->postJson('/api/v1/cuentos/calentar')->assertForbidden();
+    Http::assertNothingSent();
+
+    Sanctum::actingAs(User::factory()->create());
+    config(['services.ollama.url' => null]);
+    foreach (range(1, 6) as $_) {
+        $this->postJson('/api/v1/cuentos/calentar')->assertNoContent();
+    }
+    $this->postJson('/api/v1/cuentos/calentar')->assertTooManyRequests();
+    // El cupo de los cuentos sigue intacto.
+    $this->postJson('/api/v1/cuentos/generar', peticionDeCuento())->assertStatus(503)->assertJsonPath('message', 'La IA de cuentos aún no está activada en este servidor.');
 });

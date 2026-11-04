@@ -11,4 +11,7 @@ interface GeneradorDeCuentos
      * @throws CuentoNoGenerado
      */
     public function generar(string $tema, string $nivel, int $paginas, array $palabras = []): CuentoGenerado;
+
+    /** Prepara el servidor de IA para un pedido cercano. Nunca lanza error: si falla, no pasa nada. */
+    public function calentar(): void;
 }

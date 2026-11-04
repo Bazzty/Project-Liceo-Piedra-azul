@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { ErrorDeServidor, fueCancelada, generarAudio, generarCuentoConIa, iniciarSesionEnServidor, olvidarSesionDelServidor } from '@/api/servidor';
+import { calentarIaDeCuentos, ErrorDeServidor, fueCancelada, generarAudio, generarCuentoConIa, iniciarSesionEnServidor, olvidarSesionDelServidor } from '@/api/servidor';
 
 const responder = (cuerpo: unknown, estado = 200) =>
   vi.fn().mockResolvedValue(new Response(JSON.stringify(cuerpo), { status: estado, headers: { 'Content-Type': 'application/json' } }));
@@ -51,6 +51,41 @@ describe('servidor', () => {
     const revocacion = llamadas.mock.calls.find(([url]) => url === '/api/v1/auth/logout');
     expect(revocacion?.[1].headers.Authorization).toBe('Bearer 1|viejo');
     await expect(generarAudio('Hola')).rejects.toMatchObject({ estado: 401 });
+  });
+
+  describe('calentarIaDeCuentos', () => {
+    it('avisa al servidor con la sesión y sin mandar datos', async () => {
+      vi.stubGlobal('fetch', responder({ token: '1|abc' }));
+      await iniciarSesionEnServidor('a@b.cl', 'x');
+      const fetchCalentar = vi.fn().mockResolvedValue(new Response(null, { status: 204 }));
+      vi.stubGlobal('fetch', fetchCalentar);
+
+      calentarIaDeCuentos();
+
+      const [url, opciones] = fetchCalentar.mock.calls[0];
+      expect(url).toBe('/api/v1/cuentos/calentar');
+      expect(opciones.method).toBe('POST');
+      expect(opciones.headers.Authorization).toBe('Bearer 1|abc');
+      expect(opciones.body).toBeUndefined();
+    });
+
+    it('sin sesión no llama al servidor', () => {
+      const fetchCalentar = vi.fn();
+      vi.stubGlobal('fetch', fetchCalentar);
+
+      calentarIaDeCuentos();
+
+      expect(fetchCalentar).not.toHaveBeenCalled();
+    });
+
+    it('si el servidor no responde, no lanza error', async () => {
+      vi.stubGlobal('fetch', responder({ token: '1|abc' }));
+      await iniciarSesionEnServidor('a@b.cl', 'x');
+      vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('sin red')));
+
+      expect(() => calentarIaDeCuentos()).not.toThrow();
+      await Promise.resolve();
+    });
   });
 
   describe('generarCuentoConIa', () => {

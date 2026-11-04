@@ -69,6 +69,9 @@ class AppServiceProvider extends ServiceProvider
         // Cada borrador ocupa el servidor de IA durante varios segundos.
         RateLimiter::for('cuento-ia', fn (Request $request) => Limit::perMinute(10)->by((string) $request->user()?->getKey()));
 
+        // El calentamiento no genera nada, pero cada pedido llega al servidor de IA: cupo aparte para no gastar el de los cuentos.
+        RateLimiter::for('cuento-calentar', fn (Request $request) => Limit::perMinute(6)->by((string) $request->user()?->getKey()));
+
         // Una cuenta desactivada pierde sus tokens vigentes de inmediato, no cuando vencen.
         Sanctum::authenticateAccessTokensUsing(
             fn (PersonalAccessToken $token, bool $valido) => $valido && $token->tokenable instanceof User && $token->tokenable->activo,

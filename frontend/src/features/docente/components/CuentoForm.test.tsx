@@ -1,3 +1,4 @@
+import { StrictMode } from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -6,8 +7,9 @@ import { ErrorDeServidor } from '@/api/servidor';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import type { Cuento } from '@/types';
 
-const { actualizarCuento, crearCuento, generarAudio, generarCuentoConIa, listarPictogramas } = vi.hoisted(() => ({
+const { actualizarCuento, calentarIaDeCuentos, crearCuento, generarAudio, generarCuentoConIa, listarPictogramas } = vi.hoisted(() => ({
   generarCuentoConIa: vi.fn(),
+  calentarIaDeCuentos: vi.fn(),
   crearCuento: vi.fn(),
   actualizarCuento: vi.fn(),
   generarAudio: vi.fn(),
@@ -27,7 +29,7 @@ vi.mock('@/features/tablero/arasaac', async (original) => ({
   ...(await original<typeof import('@/features/tablero/arasaac')>()),
   fetchArasaacPictogramId: async () => null,
 }));
-vi.mock('@/api/servidor', async (original) => ({ ...(await original<typeof import('@/api/servidor')>()), generarAudio, generarCuentoConIa }));
+vi.mock('@/api/servidor', async (original) => ({ ...(await original<typeof import('@/api/servidor')>()), generarAudio, generarCuentoConIa, calentarIaDeCuentos }));
 
 const cuento: Cuento = {
   id: 'cuento-1',
@@ -216,6 +218,25 @@ describe('CuentoForm: crear con IA', () => {
     generarCuentoConIa.mockResolvedValue(borrador);
     listarPictogramas.mockReset();
     listarPictogramas.mockImplementation(async () => []);
+  });
+
+  it('al abrir un cuento nuevo carga el modelo de la IA una sola vez, aunque StrictMode monte dos veces', () => {
+    calentarIaDeCuentos.mockClear();
+    render(
+      <StrictMode>
+        <CuentoForm onGuardado={vi.fn()} onCancelar={vi.fn()} />
+      </StrictMode>,
+    );
+
+    expect(calentarIaDeCuentos).toHaveBeenCalledTimes(1);
+    expect(calentarIaDeCuentos).toHaveBeenCalledWith();
+  });
+
+  it('al editar un cuento existente no carga el modelo', () => {
+    calentarIaDeCuentos.mockClear();
+    renderForm();
+
+    expect(calentarIaDeCuentos).not.toHaveBeenCalled();
   });
 
   const pedirBorrador = async () => {

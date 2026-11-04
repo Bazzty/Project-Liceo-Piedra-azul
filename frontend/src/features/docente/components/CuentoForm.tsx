@@ -8,7 +8,7 @@ import { PictoImg } from '@/features/docente/components/widgets';
 import { Button } from '@/shared/ui';
 import { conAudios, generarAudiosDeCuento } from '@/features/docente/audioCuento';
 import { actualizarCuento, crearCuento, listarPictogramas, useNiveles } from '@/api';
-import { fueCancelada, generarCuentoConIa, type PedidoDeCuento } from '@/api/servidor';
+import { calentarIaDeCuentos, fueCancelada, generarCuentoConIa, type PedidoDeCuento } from '@/api/servidor';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
 // Niveles que ya leen oraciones (Cuentos e Historias). Los anteriores trabajan sílabas, vocales y palabras: frases mínimas.
@@ -113,6 +113,15 @@ export const CuentoForm: React.FC<CuentoFormProps> = ({ nivelId, cuento, palabra
     },
     [],
   );
+
+  // Cuento nuevo: se carga el modelo de la IA mientras la docente escribe. El ref evita el doble aviso de StrictMode.
+  const calentado = useRef(false);
+  const esNuevo = !cuento;
+  useEffect(() => {
+    if (!esNuevo || calentado.current) return;
+    calentado.current = true;
+    calentarIaDeCuentos();
+  }, [esNuevo]);
 
   const cambiarTexto = (nuevo: string) => {
     setTexto(nuevo);

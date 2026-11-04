@@ -7,10 +7,21 @@ La docente escribe de qué trata el cuento y el servidor redacta un **borrador**
 `POST /api/v1/cuentos/generar` (docente o admin, 10 por minuto) → `OllamaGenerador` → servidor Ollama (`/api/chat`, `format: json`).
 
 - Modelo abierto, **sin costo por uso** y sin mandar datos a un tercero: viajan el tema y, si se piden, las palabras para practicar; y van a tu propio servidor.
+- El modelo escribe solo el título y las frases. La **descripción** del borrador se arma en el servidor con el tema (hasta 160 caracteres); la API sigue devolviendo el campo `descripcion`.
 - La respuesta se valida: JSON con título y frases, sin frases vacías, sin frases que no tengan letras (por ejemplo «...») ni de más de 120 caracteres, y no más de las páginas pedidas.
 - El prompt fija el largo de las frases (`nivel` A de la API: 2 a 4 palabras; B: 4 a 8), tono tranquilo, sin miedo ni violencia, sin nombres reales, y que ignore instrucciones escondidas en el tema.
 - Ese `nivel` no es el código de la app: Cuentos e Historias (D y E) piden frases de 4 a 8 palabras; los demás niveles, las mínimas.
 - Sin `OLLAMA_URL`, el botón responde «La IA de cuentos aún no está activada» y el resto de la app sigue igual.
+
+## Menos trabajo para la IA
+
+En CPU el tiempo depende sobre todo de cuántos tokens escribe el modelo, luego de cuántos lee sin caché y de cargarlo en frío. Por eso:
+
+- **Menos salida:** no se le pide la descripción, y `num_predict` es `páginas × 40 + 80` (280 con 5 páginas, 400 con 8) en vez de un tope fijo. Si el JSON llega cortado por el tope, se responde el error controlado de siempre.
+- **Prompt cacheable:** el mensaje `system` empieza con todo lo común (idéntico entre pedidos) y deja al final solo lo variable bajo «Para este cuento:»: número de frases, largo según el nivel y el ejemplo. El tema y las palabras para practicar siguen en el mensaje `user`.
+- **Contexto fijo:** `num_ctx` es 2048 en todo pedido, incluido el calentamiento; si cambiara entre pedidos, Ollama recargaría el modelo.
+- **Modelo siempre cargado:** `keep_alive` es `-1`.
+- **Calentamiento:** al abrir el formulario de un cuento **nuevo**, el frontend llama a `POST /api/v1/cuentos/calentar` (docente o admin, 6 por minuto, cupo aparte del de los cuentos). El servidor envía a Ollama el mismo inicio de `system` y las mismas opciones con `num_predict` 1 (espera máxima de 15 s), así que el modelo y el inicio del prompt ya están listos cuando la docente pide el borrador. No manda datos del niño, responde siempre 204 y no avisa de fallos; sin `OLLAMA_URL` no hace nada. Sin servidor o sin sesión, el frontend no llama.
 
 ## Palabras para practicar
 
@@ -47,9 +58,11 @@ También sirve un Ollama en otro servidor: pon su dirección en `OLLAMA_URL` y, 
 | Solo CPU, 8 GB o más | `qwen2.5:7b` | Mejor redacción, 2 a 3 veces más lento. |
 | Con GPU | `qwen2.5:7b` o mayor | Segundos por borrador. |
 
-`OLLAMA_NUM_PARALLEL=1` y `OLLAMA_MAX_LOADED_MODELS=1` evitan que dos cuentos a la vez dejen lento el servidor. `keep_alive` de 30 min mantiene el modelo en memoria: el primer borrador del día tarda más, los siguientes no.
+`OLLAMA_NUM_PARALLEL=1` y `OLLAMA_MAX_LOADED_MODELS=1` evitan que dos cuentos a la vez dejen lento el servidor. `keep_alive` en `-1` mantiene el modelo en memoria; el calentamiento lo carga al abrir el formulario.
 
-## Velocidad medida
+## Velocidad medida (antes de los cambios de «Menos trabajo para la IA»)
+
+Estas mediciones son anteriores al prompt actual, a la descripción armada en el servidor y al `num_predict` por páginas; no se volvieron a medir.
 
 Mac con Docker (10 CPU, 8 GB), `qwen2.5:3b`, sin GPU, 4 de noviembre de 2026. El Mac no estaba libre: otros procesos del sistema mantenían un promedio de carga de 10 a 16 durante las mediciones, y Ollama arrancaba en 0 % de CPU. Por eso hay mucho ruido (±15 %). Las medianas son de 6 cuentos por escenario y excluyen la carga del modelo.
 
@@ -63,7 +76,7 @@ Mac con Docker (10 CPU, 8 GB), `qwen2.5:3b`, sin GPU, 4 de noviembre de 2026. El
 
 Conclusión: **ningún cambio de prompt ni de parámetros mejoró la velocidad de forma consistente**. El ahorro del prompt (menos cálculo al repetir el prefijo fijo) se compensó con respuestas más largas. Con ese ruido no se puede afirmar una mejora del 5 %.
 
-**Calidad del prompt reestructurado** (24 cuentos por prompt): en frases mínimas dejó de respetar el largo por nivel con más frecuencia (6 de 12 en rango contra 9 de 12 con el actual) y en oraciones también (6 de 12 contra 8 de 12). A cambio entregó las 8 frases pedidas más veces (8 de 12 contra 5 de 12). Se **descartó** y el prompt sigue siendo el original.
+**Calidad del prompt reestructurado** (24 cuentos por prompt): en frases mínimas dejó de respetar el largo por nivel con más frecuencia (6 de 12 en rango contra 9 de 12 con el actual) y en oraciones también (6 de 12 contra 8 de 12). A cambio entregó las 8 frases pedidas más veces (8 de 12 contra 5 de 12). Esa versión, que movía los datos variables al mensaje `user`, se **descartó**. El prompt actual es otra: mantiene todo en `system` y solo deja lo variable al final. Su efecto en el largo de las frases aún no se ha medido.
 
 **Hilos de CPU** (`num_thread`, prompt actual, 12 cuentos por valor, alternados): con 6 hilos el tiempo total fue casi igual (13,2 y 15,9 s contra 13,6 y 16,0 s); con 8 hilos bajó (12,3 y 13,2 s), pero esas respuestas fueron más cortas y la máquina estaba ocupada, así que no es concluyente. La velocidad de escritura sí subió (de 11,5 y 16,9 tok/s a entre 19 y 22 tok/s), pero la lectura del prompt, que es la parte más lenta, no mejoró. Queda como opción `OLLAMA_HILOS` en `backend/.env`, **vacía por defecto**: pruébala en tu equipo antes de fijarla.
 
