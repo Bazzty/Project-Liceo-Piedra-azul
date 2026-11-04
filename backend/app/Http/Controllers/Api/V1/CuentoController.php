@@ -18,6 +18,7 @@ class CuentoController extends Controller
                 $request->validated('tema'),
                 $request->validated('nivel'),
                 (int) $request->validated('paginas'),
+                $this->palabras($request->validated('palabras') ?? []),
             );
         } catch (CuentoSinConfigurar) {
             return response()->json(['message' => 'La IA de cuentos aún no está activada en este servidor.'], 503);
@@ -28,5 +29,20 @@ class CuentoController extends Controller
         }
 
         return response()->json($cuento->toArray());
+    }
+
+    /**
+     * Sin repetidas ni espacios de más.
+     *
+     * @param  list<string>  $palabras
+     * @return list<string>
+     */
+    private function palabras(array $palabras): array
+    {
+        return collect($palabras)
+            ->map(fn (string $p) => trim((string) preg_replace('/\s+/u', ' ', $p)))
+            ->unique(fn (string $p) => mb_strtolower($p))
+            ->values()
+            ->all();
     }
 }

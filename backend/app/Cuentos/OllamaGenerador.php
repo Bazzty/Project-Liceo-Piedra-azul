@@ -17,7 +17,7 @@ class OllamaGenerador implements GeneradorDeCuentos
     /** @param array{url?: ?string, clave?: ?string, modelo: string, espera: int} $config */
     public function __construct(private readonly array $config) {}
 
-    public function generar(string $tema, string $nivel, int $paginas): CuentoGenerado
+    public function generar(string $tema, string $nivel, int $paginas, array $palabras = []): CuentoGenerado
     {
         if (blank($this->config['url'] ?? null)) {
             throw CuentoNoGenerado::sinConfigurar();
@@ -36,7 +36,7 @@ class OllamaGenerador implements GeneradorDeCuentos
                     'options' => ['temperature' => 0.5, 'num_predict' => 700],
                     'messages' => [
                         ['role' => 'system', 'content' => $this->instrucciones($nivel, $paginas)],
-                        ['role' => 'user', 'content' => "Tema del cuento: {$tema}"],
+                        ['role' => 'user', 'content' => $this->tema($tema, $palabras)],
                     ],
                 ]);
         } catch (ConnectionException) {
@@ -48,6 +48,14 @@ class OllamaGenerador implements GeneradorDeCuentos
         }
 
         return $this->interpretar((string) $respuesta->json('message.content'), $paginas);
+    }
+
+    /** @param  list<string>  $palabras */
+    private function tema(string $tema, array $palabras): string
+    {
+        $mensaje = "Tema del cuento: {$tema}";
+
+        return $palabras === [] ? $mensaje : $mensaje."\nUsa estas palabras en el cuento: ".implode(', ', $palabras).'.';
     }
 
     private function instrucciones(string $nivel, int $paginas): string

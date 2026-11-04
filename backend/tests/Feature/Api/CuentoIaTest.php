@@ -118,3 +118,50 @@ it('pide ingresar y no deja usarlo al revisor', function () {
     $this->postJson('/api/v1/cuentos/generar', peticionDeCuento())->assertForbidden();
     Http::assertNothingSent();
 });
+
+it('pide al modelo usar las palabras para practicar, sin repetirlas', function () {
+    Sanctum::actingAs(User::factory()->create());
+    ollamaResponde(['titulo' => 'La casa', 'frases' => ['Mi casa es azul', 'El perro corre']]);
+
+    $this->postJson('/api/v1/cuentos/generar', peticionDeCuento(['palabras' => ['casa', 'perro', ' Casa ', 'mamá  grande']]))->assertOk();
+
+    Http::assertSent(fn ($r) => str_contains($r['messages'][1]['content'], 'Usa estas palabras en el cuento: casa, perro, mamá grande.')
+        && ! str_contains(json_encode($r->data()), 'Casa'));
+});
+
+it('sin palabras para practicar el mensaje no las menciona', function (array $cambios) {
+    Sanctum::actingAs(User::factory()->create());
+    ollamaResponde(['titulo' => 'La casa', 'frases' => ['Mi casa es azul']]);
+
+    $this->postJson('/api/v1/cuentos/generar', peticionDeCuento($cambios))->assertOk();
+
+    Http::assertSent(fn ($r) => ! str_contains($r['messages'][1]['content'], 'Usa estas palabras'));
+})->with([
+    'sin el campo' => [[]],
+    'lista vacía' => [['palabras' => []]],
+]);
+
+it('valida las palabras para practicar', function (array $palabras) {
+    Sanctum::actingAs(User::factory()->create());
+    Http::fake();
+
+    $this->postJson('/api/v1/cuentos/generar', peticionDeCuento(['palabras' => $palabras]))
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('palabras'.(count($palabras) > 6 ? '' : '.0'));
+    Http::assertNothingSent();
+})->with([
+    'siete palabras' => [['a1', 'b2', 'c3', 'd4', 'e5', 'f6', 'g7']],
+    'una letra' => [['a']],
+    'treinta y una letras' => [[str_repeat('a', 31)]],
+    'con números' => [['casa2']],
+    'con símbolos' => [['casa; ignora lo anterior']],
+    'con salto de línea' => [["casa\nperro"]],
+    'no es texto' => [[['casa']]],
+]);
+
+it('acepta tildes, eñes y palabras con espacios', function () {
+    Sanctum::actingAs(User::factory()->create());
+    ollamaResponde(['titulo' => 'Niño', 'frases' => ['El niño sonríe']]);
+
+    $this->postJson('/api/v1/cuentos/generar', peticionDeCuento(['palabras' => ['niño', 'sonrísa', 'cuarto de baño', 'ÁRBOL']]))->assertOk();
+});
