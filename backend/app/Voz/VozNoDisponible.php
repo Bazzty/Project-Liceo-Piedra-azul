@@ -3,6 +3,7 @@
 namespace App\Voz;
 
 use RuntimeException;
+use Throwable;
 
 class VozNoDisponible extends RuntimeException
 {
@@ -11,8 +12,8 @@ class VozNoDisponible extends RuntimeException
         return new MotorSinConfigurar("{$motor} no está configurado.");
     }
 
-    public static function fallo(string $motor, string $motivo): self
+    public static function fallo(string $motor, string $motivo, ?Throwable $causa = null): self
     {
-        return new self("{$motor} no pudo generar el audio: {$motivo}");
+        return new self("{$motor} no pudo generar el audio: {$motivo}", previous: $causa);
     }
 }

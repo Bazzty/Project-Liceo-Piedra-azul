@@ -24,6 +24,35 @@ describe('servidor', () => {
     expect(JSON.parse(opciones.body)).toEqual({ texto: 'Hola oso' });
   });
 
+  it('si se cierra la sesión mientras inicia, revoca el token que llega tarde y no lo guarda', async () => {
+    let terminarLogin!: (r: Response) => void;
+    vi.stubGlobal('fetch', vi.fn().mockReturnValue(new Promise<Response>((resolver) => (terminarLogin = resolver))));
+    const sesion = iniciarSesionEnServidor('a@b.cl', 'x');
+    olvidarSesionDelServidor();
+
+    const fetchLogout = vi.fn().mockResolvedValue(new Response(null, { status: 204 }));
+    vi.stubGlobal('fetch', fetchLogout);
+    terminarLogin(new Response(JSON.stringify({ token: '9|tardio' }), { status: 200 }));
+
+    await expect(sesion).resolves.toBe(false);
+    expect(fetchLogout.mock.calls[0][0]).toBe('/api/v1/auth/logout');
+    expect(fetchLogout.mock.calls[0][1].headers.Authorization).toBe('Bearer 9|tardio');
+    await expect(generarAudio('Hola')).rejects.toMatchObject({ estado: 401 });
+  });
+
+  it('un inicio nuevo revoca el token anterior, aunque el nuevo falle', async () => {
+    vi.stubGlobal('fetch', responder({ token: '1|viejo' }));
+    await iniciarSesionEnServidor('a@b.cl', 'x');
+
+    const llamadas = vi.fn().mockImplementation(async () => new Response(JSON.stringify({ message: 'no' }), { status: 401 }));
+    vi.stubGlobal('fetch', llamadas);
+    await expect(iniciarSesionEnServidor('otra@b.cl', 'mala')).resolves.toBe(false);
+
+    const revocacion = llamadas.mock.calls.find(([url]) => url === '/api/v1/auth/logout');
+    expect(revocacion?.[1].headers.Authorization).toBe('Bearer 1|viejo');
+    await expect(generarAudio('Hola')).rejects.toMatchObject({ estado: 401 });
+  });
+
   it('al olvidar la sesión revoca el token en el servidor y lo borra aquí', async () => {
     vi.stubGlobal('fetch', responder({ token: '1|abc' }));
     await iniciarSesionEnServidor('a@b.cl', 'x');

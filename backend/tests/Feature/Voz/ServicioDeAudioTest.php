@@ -26,6 +26,11 @@ function motorFalso(string $nombre, bool $falla = false, string $voz = 'v1', boo
             return "{$this->nombre}:{$this->voz}";
         }
 
+        public function disponible(): bool
+        {
+            return ! $this->sinConfigurar;
+        }
+
         public function sintetizar(string $texto): string
         {
             $this->llamadas++;
@@ -127,6 +132,11 @@ it('un MP3 vacío no se guarda como bueno: se pasa al respaldo', function () {
             return 'elevenlabs:vacio';
         }
 
+        public function disponible(): bool
+        {
+            return true;
+        }
+
         public function sintetizar(string $texto): string
         {
             return '';
@@ -160,7 +170,7 @@ it('un archivo vacío en la caché no cuenta: se vuelve a generar', function () 
     $audio = $servicio->generar('Hola');
     $this->disco->put($audio->archivo, '');
 
-    expect($servicio->yaExiste('Hola'))->toBeFalse();
+    expect($servicio->debeSintetizar('Hola'))->toBeTrue();
     $nuevo = $servicio->generar('Hola');
 
     expect($nuevo->enCache)->toBeFalse()
@@ -168,14 +178,41 @@ it('un archivo vacío en la caché no cuenta: se vuelve a generar', function () 
         ->and($this->disco->size($audio->archivo))->toBeGreaterThan(0);
 });
 
-it('sabe si un texto ya tiene audio en algún motor, con el mismo criterio de espacios', function () {
-    $principal = motorFalso('elevenlabs', falla: true);
-    $servicio = new ServicioDeAudio($principal, motorFalso('piper'), $this->disco);
+it('no sintetiza lo que el primer motor ya tiene, con el mismo criterio de espacios', function () {
+    $servicio = new ServicioDeAudio(motorFalso('elevenlabs'), null, $this->disco);
 
-    expect($servicio->yaExiste('Hola oso'))->toBeFalse();
+    expect($servicio->debeSintetizar('Hola oso'))->toBeTrue();
     $servicio->generar('Hola oso');
 
-    expect($servicio->yaExiste("  Hola \n oso "))->toBeTrue();
+    expect($servicio->debeSintetizar("  Hola \n oso "))->toBeFalse();
+});
+
+it('tener el audio de respaldo no evita llamar al motor principal si está disponible', function () {
+    $principal = motorFalso('elevenlabs', falla: true);
+    $servicio = new ServicioDeAudio($principal, motorFalso('piper'), $this->disco);
+    $servicio->generar('Hola oso');
+
+    expect($servicio->debeSintetizar('Hola oso'))->toBeTrue();
+});
+
+it('con el motor principal sin configurar, el audio de respaldo basta', function () {
+    $servicio = new ServicioDeAudio(motorFalso('elevenlabs', sinConfigurar: true), motorFalso('piper'), $this->disco);
+
+    expect($servicio->debeSintetizar('Hola oso'))->toBeTrue();
+    $servicio->generar('Hola oso');
+
+    expect($servicio->debeSintetizar('Hola oso'))->toBeFalse();
+});
+
+it('borra los temporales abandonados y respeta los recientes', function () {
+    $this->disco->put('.tmp/abandonado', 'x');
+    touch($this->disco->path('.tmp/abandonado'), now()->subHours(2)->getTimestamp());
+    $this->disco->put('.tmp/reciente', 'x');
+
+    (new ServicioDeAudio(motorFalso('elevenlabs'), null, $this->disco))->generar('Hola');
+
+    $this->disco->assertMissing('.tmp/abandonado');
+    $this->disco->assertExists('.tmp/reciente');
 });
 
 it('un motor sin configurar usa el respaldo sin reportar un error', function () {

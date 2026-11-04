@@ -17,11 +17,12 @@ class AutenticacionController extends Controller
         $usuario = User::where('email', mb_strtolower(trim($datos['email'])))->first();
 
         // Un solo cálculo de hash en ambos caminos: así tampoco el tiempo de respuesta delata qué correos tienen cuenta.
+        // Se hashea un valor fijo: bcrypt rechaza la clave recibida si trae un NUL y ese error también lo delataría.
         $claveCorrecta = false;
         if ($usuario instanceof User) {
             $claveCorrecta = Hash::check($datos['password'], $usuario->password);
         } else {
-            Hash::make($datos['password']);
+            Hash::make('correo-sin-cuenta');
         }
 
         // Mismo mensaje para correo desconocido, clave errónea o cuenta inactiva: no se revela cuál fue.

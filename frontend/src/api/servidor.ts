@@ -41,11 +41,8 @@ const MENSAJE_POR_ESTADO: Record<number, string> = {
 /** Estados en los que el mensaje del servidor ya viene en español y dice algo útil (texto largo, sin voz). */
 const CON_MENSAJE_PROPIO = new Set([422, 503]);
 
-/** Borra el token de esta pestaña y lo revoca en el servidor. Sin conexión no se insiste: vence solo a las 12 horas. */
-export const olvidarSesionDelServidor = () => {
-  const token = leerToken();
-  guardarToken(null);
-  if (!token) return;
+/** Sin conexión no se insiste: el token vence solo a las 12 horas. */
+const revocarToken = (token: string) => {
   fetch(`${BASE}/auth/logout`, {
     method: 'POST',
     keepalive: true,
@@ -53,32 +50,46 @@ export const olvidarSesionDelServidor = () => {
   }).catch(() => undefined);
 };
 
+/** Sube cada vez que la sesión termina: un inicio que responde tarde ve que ya no vale y revoca su token. */
+let turnoDeSesion = 0;
+
+/** Borra el token de esta pestaña y lo revoca en el servidor. */
+export const olvidarSesionDelServidor = () => {
+  turnoDeSesion += 1;
+  const token = leerToken();
+  guardarToken(null);
+  if (token) revocarToken(token);
+};
+
 let inicioEnCurso: Promise<boolean> | null = null;
 
 /**
  * Inicia sesión en el servidor sin molestar: devuelve false si no hay servidor o las credenciales no sirven.
  * Si la docente pide un audio antes de que termine, `generarAudio` espera este inicio en vez de decir que no hay sesión.
+ * Parte de cero: el token anterior, si había, se revoca para que no quede vivo sin que nadie lo tenga.
  */
 export function iniciarSesionEnServidor(email: string, password: string): Promise<boolean> {
-  const inicio = pedirSesion(email, password).finally(() => {
+  olvidarSesionDelServidor();
+  const inicio = pedirSesion(email, password, turnoDeSesion).finally(() => {
     if (inicioEnCurso === inicio) inicioEnCurso = null;
   });
   inicioEnCurso = inicio;
   return inicio;
 }
 
-async function pedirSesion(email: string, password: string): Promise<boolean> {
+async function pedirSesion(email: string, password: string, turno: number): Promise<boolean> {
   try {
     const respuesta = await fetch(`${BASE}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
       body: JSON.stringify({ email, password }),
     });
-    if (!respuesta.ok) {
-      guardarToken(null);
+    if (!respuesta.ok) return false;
+    const { token } = (await respuesta.json()) as { token?: string };
+    if (turno !== turnoDeSesion) {
+      if (token) revocarToken(token);
       return false;
     }
-    const { token } = (await respuesta.json()) as { token?: string };
     guardarToken(token ?? null);
     return Boolean(token);
   } catch {

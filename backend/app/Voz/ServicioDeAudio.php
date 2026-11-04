@@ -11,6 +11,9 @@ use Illuminate\Support\Str;
  */
 class ServicioDeAudio
 {
+    /** Con punto al inicio: nginx no sirve estas rutas. Dentro del mismo disco, para que renombrar sea atómico. */
+    private const TEMPORALES = '.tmp';
+
     /** @var list<TtsProvider> */
     private readonly array $motores;
 
@@ -19,18 +22,21 @@ class ServicioDeAudio
         $this->motores = $respaldo ? [$principal, $respaldo] : [$principal];
     }
 
-    /** Algún motor ya tiene este texto: pedirlo de nuevo no sintetiza nada nuevo con ese motor. */
-    public function yaExiste(string $texto): bool
+    /** Si generar este texto llamaría a un motor, igual que generar(): el primero disponible que aún no lo tenga. */
+    public function debeSintetizar(string $texto): bool
     {
         $texto = $this->normalizar($texto);
 
         foreach ($this->motores as $motor) {
             if ($this->existe($this->archivoDe($motor, $texto))) {
+                return false;
+            }
+            if ($motor->disponible()) {
                 return true;
             }
         }
 
-        return false;
+        return true;
     }
 
     /** @throws VozNoDisponible Si ningún motor pudo generar el audio. */
@@ -89,14 +95,26 @@ class ServicioDeAudio
     /** Se escribe aparte y se renombra: un MP3 a medio escribir nunca lleva el nombre que la caché da por bueno. */
     private function guardar(string $archivo, string $mp3): bool
     {
-        $temporal = $archivo.'.'.Str::random(8).'.tmp';
+        $temporal = self::TEMPORALES.'/'.$archivo.'.'.Str::random(8);
 
         if ($this->disco->put($temporal, $mp3) && $this->disco->move($temporal, $archivo)) {
+            $this->limpiarTemporales();
+
             return true;
         }
 
         $this->disco->delete($temporal);
 
         return false;
+    }
+
+    /** Un proceso interrumpido deja su temporal: pasada una hora ya nadie lo está escribiendo. */
+    private function limpiarTemporales(): void
+    {
+        foreach ($this->disco->files(self::TEMPORALES) as $temporal) {
+            if ($this->disco->lastModified($temporal) < now()->subHour()->getTimestamp()) {
+                $this->disco->delete($temporal);
+            }
+        }
     }
 }

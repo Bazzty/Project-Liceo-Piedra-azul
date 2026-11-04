@@ -27,6 +27,11 @@ function usarMotor(bool $falla = false): void
             return 'elevenlabs:prueba';
         }
 
+        public function disponible(): bool
+        {
+            return true;
+        }
+
         public function sintetizar(string $texto): string
         {
             return $this->falla ? throw VozNoDisponible::fallo('elevenlabs', 'simulado') : 'MP3';
@@ -78,10 +83,38 @@ it('el límite de intentos es por correo: uno bloqueado no bloquea a los demás'
 });
 
 it('calcula un solo hash aunque el correo no exista, para que el tiempo no lo delate', function () {
-    Hash::shouldReceive('make')->once()->with('x')->andReturn('hash-falso');
+    Hash::shouldReceive('make')->once()->andReturn('hash-falso');
     Hash::shouldReceive('check')->never();
 
     $this->postJson('/api/v1/auth/login', ['email' => 'nadie@liceo.cl', 'password' => 'x'])->assertUnauthorized();
+});
+
+it('una clave con un carácter NUL responde igual exista o no el correo', function (string $correo) {
+    User::factory()->create(['email' => 'profe@liceo.cl', 'password' => 'clave-segura-1']);
+
+    $this->postJson('/api/v1/auth/login', ['email' => $correo, 'password' => "a\0b"])
+        ->assertUnauthorized()
+        ->assertExactJson(['message' => 'Correo o contraseña incorrectos.']);
+})->with(['correo existente' => ['profe@liceo.cl'], 'correo desconocido' => ['nadie@liceo.cl']]);
+
+it('detrás de un proxy de confianza el cupo de intentos usa la IP real', function () {
+    config(['trustedproxy.proxies' => '127.0.0.1']);
+    $desde = fn (string $ip) => ['X-Forwarded-For' => $ip];
+
+    foreach (range(1, 5) as $_) {
+        $this->postJson('/api/v1/auth/login', ['email' => 'a@b.cl', 'password' => 'x'], $desde('203.0.113.1'))->assertUnauthorized();
+    }
+
+    $this->postJson('/api/v1/auth/login', ['email' => 'a@b.cl', 'password' => 'x'], $desde('203.0.113.1'))->assertTooManyRequests();
+    $this->postJson('/api/v1/auth/login', ['email' => 'a@b.cl', 'password' => 'x'], $desde('203.0.113.2'))->assertUnauthorized();
+});
+
+it('sin proxy de confianza no se cree en la IP que manda el cliente', function () {
+    foreach (range(1, 5) as $i) {
+        $this->postJson('/api/v1/auth/login', ['email' => 'a@b.cl', 'password' => 'x'], ['X-Forwarded-For' => "203.0.113.{$i}"])->assertUnauthorized();
+    }
+
+    $this->postJson('/api/v1/auth/login', ['email' => 'a@b.cl', 'password' => 'x'], ['X-Forwarded-For' => '203.0.113.9'])->assertTooManyRequests();
 });
 
 it('un correo que no es texto se rechaza con 422, no con un error del servidor', function () {

@@ -156,7 +156,6 @@ export const CuentoForm: React.FC<CuentoFormProps> = ({ nivelId, cuento, onGuard
   const crearAudio = async () => {
     setError('');
     setMensaje('');
-    setGenerando({ hechas: 0, total: new Set(paginas.map((p) => p.textoCompleto)).size });
     generacion.current = new AbortController();
     let hechas = 0;
     try {

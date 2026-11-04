@@ -19,9 +19,14 @@ class PiperProvider implements TtsProvider
         return 'piper:'.basename($this->voz);
     }
 
+    public function disponible(): bool
+    {
+        return is_executable($this->binario);
+    }
+
     public function sintetizar(string $texto): string
     {
-        if (! is_executable($this->binario)) {
+        if (! $this->disponible()) {
             throw VozNoDisponible::sinConfigurar('Piper');
         }
 
@@ -31,11 +36,11 @@ class PiperProvider implements TtsProvider
 
         try {
             Process::input($texto)->timeout(60)->run([$this->binario, '-m', $this->voz, '-f', $wav])->throw();
-            Process::timeout(30)->run(['lame', '--quiet', '-b', '64', $wav, $mp3])->throw();
+            Process::timeout(10)->run(['lame', '--quiet', '-b', '64', $wav, $mp3])->throw();
 
             return (string) file_get_contents($mp3);
-        } catch (\Throwable) {
-            throw VozNoDisponible::fallo('Piper', 'falló la síntesis');
+        } catch (\Throwable $causa) {
+            throw VozNoDisponible::fallo('Piper', 'falló la síntesis', $causa);
         } finally {
             @unlink($base);
             @unlink($wav);

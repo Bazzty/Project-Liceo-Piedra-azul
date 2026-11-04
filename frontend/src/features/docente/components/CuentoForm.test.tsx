@@ -121,6 +121,7 @@ describe('CuentoForm: casos de borde del audio', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Generar audio' }));
 
+    expect(screen.getByRole('button', { name: /Generando audio/ })).toHaveFocus();
     expect(screen.getByRole('button', { name: 'Guardar borrador' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Enviar a revisión' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Sugerir pictogramas' })).toBeDisabled();

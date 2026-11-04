@@ -38,7 +38,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Detrás de nginx todas las peticiones llegan con la misma IP: limitar solo por IP bloquearía a todo el liceo.
+        // Todo el liceo puede salir por una misma IP: limitar solo por IP lo bloquearía entero. Detrás de un proxy, la IP
+        // real depende de TRUSTED_PROXIES; sin eso, el cupo de cada correo lo comparten todos y otro podría agotarlo.
         // Cada correo tiene su cupo (contra adivinar claves) y la IP uno más amplio (contra probar muchos correos).
         RateLimiter::for('login', function (Request $request) {
             // El límite corre antes de validar: un correo que no es texto lo rechaza la validación con un 422.
@@ -50,13 +51,13 @@ class AppServiceProvider extends ServiceProvider
             ];
         });
 
-        // Cada audio nuevo gasta cuota de la API de voz. Los que ya existen tienen cupo aparte: si contaran en el mismo,
+        // Cada audio que se sintetiza gasta cuota de la API de voz. Los demás tienen cupo aparte: si contaran en el mismo,
         // al reintentar un cuento de más de 30 páginas las primeras gastarían el cupo y la 31 nunca se generaría.
         RateLimiter::for('audio', function (Request $request) {
             $texto = $request->input('texto');
             $usuario = (string) $request->user()?->getKey();
 
-            return is_string($texto) && app(ServicioDeAudio::class)->yaExiste($texto)
+            return is_string($texto) && ! app(ServicioDeAudio::class)->debeSintetizar($texto)
                 ? Limit::perMinute(300)->by('existente|'.$usuario)
                 : Limit::perMinute(30)->by('nuevo|'.$usuario);
         });

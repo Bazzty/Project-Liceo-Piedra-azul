@@ -11,6 +11,9 @@ interface TtsProvider
     /** Motor + voz + ajustes: entra al hash de la caché, así que cambiar la voz regenera el audio. */
     public function huella(): string;
 
+    /** Tiene lo que necesita para sintetizar (clave, binario). */
+    public function disponible(): bool;
+
     /**
      * @return string El MP3 completo.
      *

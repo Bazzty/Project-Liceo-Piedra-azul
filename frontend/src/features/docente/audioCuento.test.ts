@@ -16,7 +16,9 @@ describe('generarAudiosDeCuento', () => {
   it('pide un audio por página, en orden, e informa el avance', async () => {
     const avance: Array<[number, number]> = [];
 
-    const { urls } = await generarAudiosDeCuento([pagina(1, 'Hola'), pagina(2, 'El oso lee')], (h, t) => avance.push([h, t]));
+    const urls: Record<string, string> = {};
+
+    await generarAudiosDeCuento([pagina(1, 'Hola'), pagina(2, 'El oso lee')], (h, t) => avance.push([h, t]), (texto, url) => (urls[texto] = url));
 
     expect(generarAudio.mock.calls.map(([t]) => t)).toEqual(['Hola', 'El oso lee']);
     expect(urls).toEqual({ Hola: '/audio-generado/4.mp3', 'El oso lee': '/audio-generado/10.mp3' });

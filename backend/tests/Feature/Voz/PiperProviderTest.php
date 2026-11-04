@@ -27,6 +27,15 @@ it('falla con VozNoDisponible y limpia si la voz no existe', function () {
     expect(count(glob(sys_get_temp_dir().'/piper*')))->toBe($antes);
 });
 
+it('conserva la causa del fallo para poder diagnosticarlo', function () {
+    try {
+        (new PiperProvider(config('services.piper.binario'), '/no/existe.onnx'))->sintetizar('Hola');
+        $this->fail('Debía fallar');
+    } catch (VozNoDisponible $fallo) {
+        expect($fallo->getPrevious())->not->toBeNull();
+    }
+});
+
 it('avisa que no está configurado si falta el binario', function () {
     expect(fn () => (new PiperProvider('/no/hay/piper', '/no/existe.onnx'))->sintetizar('Hola'))
         ->toThrow(MotorSinConfigurar::class);

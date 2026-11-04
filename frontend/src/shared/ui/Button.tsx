@@ -7,13 +7,13 @@ export type ButtonSize = 'sm' | 'md' | 'lg' | 'xl';
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
   size?: ButtonSize;
-  /** Muestra un indicador y bloquea el botón mientras una acción está en curso. */
+  /** Muestra un indicador y bloquea el botón mientras una acción está en curso, sin quitarle el foco del teclado. */
   loading?: boolean;
   fullWidth?: boolean;
 }
 
 const BASE =
-  'inline-flex items-center justify-center gap-2 font-bold rounded-control transition-all duration-200 cursor-pointer active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100';
+  'inline-flex items-center justify-center gap-2 font-bold rounded-control transition-all duration-200 cursor-pointer active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 aria-disabled:opacity-50 aria-disabled:cursor-not-allowed aria-disabled:active:scale-100';
 
 const VARIANTS: Record<ButtonVariant, string> = {
   primary: 'bg-brand text-onBrand hover:bg-brand-hover shadow-card',
@@ -38,13 +38,16 @@ export const Button: React.FC<ButtonProps> = ({
   disabled,
   className = '',
   children,
+  onClick,
   type = 'button',
   ...props
 }) => (
   <button
     type={type}
-    disabled={disabled || loading}
+    disabled={disabled}
+    aria-disabled={loading || undefined}
     aria-busy={loading || undefined}
+    onClick={loading ? (e) => e.preventDefault() : onClick}
     className={`${BASE} ${VARIANTS[variant]} ${SIZES[size]} ${fullWidth ? 'w-full' : ''} ${className}`}
     {...props}
   >

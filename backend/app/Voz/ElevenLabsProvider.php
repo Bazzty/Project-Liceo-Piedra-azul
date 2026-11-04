@@ -28,16 +28,21 @@ class ElevenLabsProvider implements TtsProvider
         ]);
     }
 
+    public function disponible(): bool
+    {
+        return filled($this->config['clave'] ?? null) && filled($this->config['voz'] ?? null);
+    }
+
     public function sintetizar(string $texto): string
     {
-        if (blank($this->config['clave'] ?? null) || blank($this->config['voz'] ?? null)) {
+        if (! $this->disponible()) {
             throw VozNoDisponible::sinConfigurar('ElevenLabs');
         }
 
         try {
             // Sin reintentos: cada intento que llega a la API gasta caracteres de la cuota.
             $respuesta = Http::withHeaders(['xi-api-key' => $this->config['clave'], 'Accept' => 'audio/mpeg'])
-                ->timeout(20)
+                ->timeout(30)
                 ->post('https://api.elevenlabs.io/v1/text-to-speech/'.rawurlencode($this->config['voz']).'?output_format=mp3_44100_128', [
                     'text' => $texto,
                     'model_id' => $this->config['modelo'],
