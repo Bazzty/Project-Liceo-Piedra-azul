@@ -175,13 +175,6 @@ export const MiCuentoView: React.FC = () => {
       <main data-barrido-esperar className="relative flex-1 w-full max-w-5xl mx-auto px-4 py-4 sm:py-6 flex flex-col items-center gap-4 sm:gap-6">
         <h1 className="sr-only">Mi cuento</h1>
 
-        <div className="w-full flex justify-end">
-          <Button variant="secondary" size="lg" onClick={() => navigate(ROUTES.menu)}>
-            <Home className="w-6 h-6" aria-hidden />
-            Inicio
-          </Button>
-        </div>
-
         {!enFinal && <PasoElegir key={paso} paso={PASOS[paso]} indice={paso} elegida={elegida} alElegir={(o) => void elegir(o)} />}
 
         {partes && (
@@ -217,6 +210,14 @@ export const MiCuentoView: React.FC = () => {
             Mis cuentos
           </Button>
         )}
+
+        {/* Última en el orden de lectura y de barrido: así un toque apurado no saca al niño de su cuento, pero la salida siempre está */}
+        <div className="w-full flex justify-end">
+          <Button variant="secondary" size="lg" onClick={() => navigate(ROUTES.menu)}>
+            <Home className="w-6 h-6" aria-hidden />
+            Inicio
+          </Button>
+        </div>
       </main>
     </LayoutEstudiante>
   );
