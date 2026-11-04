@@ -66,7 +66,8 @@ erDiagram
 |---|---|---|
 | `validaciones` | id, recurso_type, recurso_id, revisor_id, estado_anterior, estado_nuevo, observacion, created_at | Acta de validación (RF-13). Solo inserción. |
 | `progresos` | id, estudiante_id, recurso_type, recurso_id, pagina_actual, completado, ultimo_acceso | Único (estudiante_id, recurso_type, recurso_id). |
-| `eventos_uso` | id, estudiante_id, tipo (`sesion`, `lectura`, `tablero`), recurso_type (nulo), recurso_id (nulo), lugar (`liceo`, `casa`), detalle (jsonb), ocurrido_at | Base del panel y de los indicadores (RF-03, RF-09). Índice (estudiante_id, ocurrido_at). |
+| `eventos_uso` | id, estudiante_id, tipo (`sesion`, `lectura`, `tablero`, `mi_cuento`), recurso_type (nulo), recurso_id (nulo), lugar (`liceo`, `casa`), detalle (jsonb), ocurrido_at | Base del panel y de los indicadores (RF-03, RF-09). Índice (estudiante_id, ocurrido_at). |
+| `cuentos_estudiante` | id, estudiante_id, quien, donde, accion, creado_en | «Mi cuento»: cuento que el niño arma con pictogramas. Solo ids de opciones fijas (`gato`, `sala`, `saltar`…), sin texto libre ni datos personales. Hoy vive solo en IndexedDB (tabla `misCuentos`, versión 4 de Dexie); se agrega aquí cuando los datos pasen a la API. Cada cuento guardado crea un evento `mi_cuento` para la ficha de la docente. |
 
 ### Laravel
 

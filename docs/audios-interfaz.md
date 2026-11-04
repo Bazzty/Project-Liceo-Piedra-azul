@@ -62,6 +62,21 @@ Guardar cada una como `frontend/public/audio/interfaz/<clave>.mp3`.
 | `respira` | Respira conmigo. Inhala... y exhala. |
 | `sigues_ahi` | ¿Sigues ahí? |
 
+## Mi cuento (22 audios, ya grabados con la voz del osito)
+
+El estudiante arma su cuento eligiendo quién, dónde y qué hace; el osito lo lee. Las frases son fijas, revisadas por adultos y **no dependen unas de otras**, así que 13 grabaciones (4 + 4 + 4 + 1) cubren las 64 combinaciones. Están en `frontend/src/features/micuento/frases.ts`; un test comprueba que cada frase tenga su archivo, que diga lo mismo que el manifiesto y que las 64 combinaciones queden naturales (sin pronombres ni adjetivos que dependan del género). Para cambiar una frase: editar `frases.ts` y el manifiesto, y ejecutar `npm run audios` (regenera solo esa).
+
+| Paso | Frases (archivo en `public/audio/textos/`) |
+|---|---|
+| ¿Quién? | Había una vez una niña. / un gato. / un sapo. / un elefante. (`mi-cuento-quien-*.mp3`) |
+| ¿Dónde? | Estaba en el colegio. / en una isla. / en la sala. / en su cama. (`mi-cuento-donde-*.mp3`) |
+| ¿Qué hace? | Allí saltó muy alto. / Allí comió una sopa muy rica. / Allí jugó con un amigo. / Allí durmió una siesta. (`mi-cuento-accion-*.mp3`) |
+| Final | Y fue un día muy feliz. Fin. (`mi-cuento-final.mp3`) |
+
+Entran al índice por texto (`audiosPorTexto.json`), por eso `decirSecuencia` las encuentra solas. Además hay 9 frases de interfaz, que se piden por clave (`audiosInterfaz.ts`): `mi_cuento` («Mi cuento.»), `mis_cuentos`, `quien` («¿Quién?»), `donde`, `que_hace` («¿Qué hace?»), `escuchar_otra_vez`, `guardar_cuento`, `crear_otro` y `cuento_guardado` («Tu cuento está guardado.»). Los botones de «Mi cuento» llevan `data-clave-voz` para que el barrido los diga con esta voz.
+
+Sin IA en la zona del estudiante: el contenido que ve un niño siempre fue escrito y revisado por adultos, y por eso funciona sin internet.
+
 ## Generarlas automáticamente (recomendado)
 
 Desde `frontend/`, un script crea los audios que falten con la voz del proyecto (ElevenLabs). Está en `scripts/generar-audios.mjs` y lee la lista `scripts/audios.manifest.json`.
