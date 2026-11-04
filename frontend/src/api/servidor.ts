@@ -41,7 +41,17 @@ const MENSAJE_POR_ESTADO: Record<number, string> = {
 /** Estados en los que el mensaje del servidor ya viene en español y dice algo útil (texto largo, sin voz). */
 const CON_MENSAJE_PROPIO = new Set([422, 503]);
 
-export const olvidarSesionDelServidor = () => guardarToken(null);
+/** Borra el token de esta pestaña y lo revoca en el servidor. Sin conexión no se insiste: vence solo a las 12 horas. */
+export const olvidarSesionDelServidor = () => {
+  const token = leerToken();
+  guardarToken(null);
+  if (!token) return;
+  fetch(`${BASE}/auth/logout`, {
+    method: 'POST',
+    keepalive: true,
+    headers: { Accept: 'application/json', Authorization: `Bearer ${token}` },
+  }).catch(() => undefined);
+};
 
 let inicioEnCurso: Promise<boolean> | null = null;
 

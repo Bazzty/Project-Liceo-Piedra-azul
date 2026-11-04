@@ -7,7 +7,6 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 
 class AutenticacionController extends Controller
 {
@@ -17,9 +16,13 @@ class AutenticacionController extends Controller
 
         $usuario = User::where('email', mb_strtolower(trim($datos['email'])))->first();
 
-        // Se revisa la clave aunque el correo no exista: así tampoco el tiempo de respuesta delata qué correos tienen cuenta.
-        $hash = $usuario instanceof User ? $usuario->password : Hash::make(Str::random(16));
-        $claveCorrecta = Hash::check($datos['password'], $hash);
+        // Un solo cálculo de hash en ambos caminos: así tampoco el tiempo de respuesta delata qué correos tienen cuenta.
+        $claveCorrecta = false;
+        if ($usuario instanceof User) {
+            $claveCorrecta = Hash::check($datos['password'], $usuario->password);
+        } else {
+            Hash::make($datos['password']);
+        }
 
         // Mismo mensaje para correo desconocido, clave errónea o cuenta inactiva: no se revela cuál fue.
         if (! $usuario || ! $usuario->activo || ! $claveCorrecta) {

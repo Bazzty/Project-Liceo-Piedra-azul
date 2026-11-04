@@ -12,7 +12,7 @@ el botón «Generar audio» del formulario de cuentos y el lector del niño que 
 | # | Pendiente | Qué pasa hoy | Cómo se arregla |
 |---|---|---|---|
 | 1 | **Probar ElevenLabs de verdad** | Solo se probó con respuestas simuladas (`Http::fake`). Sin clave, todo sale con Piper y el formulario dice «voz de respaldo». | Poner `ELEVENLABS_API_KEY` y `ELEVENLABS_VOICE_ID` en `backend/.env`, generar un cuento y comprobar que dice «voz del proyecto». Escuchar el resultado. |
-| 2 | **Enrutar `/api` y `/audio-generado` en producción** | El proxy de Vite solo cubre `npm run dev` y `npm run preview`. Un servidor estático devuelve el `index.html` y «Generar audio» falla con «El servidor no respondió como se esperaba». | Que el servidor web de producción (nginx) mande `/api` y `/audio-generado` al backend. Es parte del despliegue, no del código. |
+| 2 | **Enrutar `/api` y `/audio-generado` en producción** | El proxy de Vite solo cubre `npm run dev` y `npm run preview`. Un servidor estático devuelve el `index.html` y «Generar audio» falla con «El servidor no respondió como se esperaba». | Que el servidor web de producción (nginx) mande `/api` y `/audio-generado` al backend, con `fastcgi_read_timeout 120s` como en `docker/nginx/default.conf` (con ElevenLabs caído, un audio puede tardar más de 60 s). Es parte del despliegue, no del código. |
 | 3 | **Los cuentos viven en cada navegador** | El frontend guarda los cuentos en IndexedDB (Dexie). El MP3 queda en el servidor, pero el cuento y su `audioPaginaUrl` solo existen en el navegador de la docente: otra tablet no los ve. | Es la conexión completa (opción C): pasar los cuentos a la API. Ver PLPA-64 y el modelo en `docs/modelo-datos.md`. |
 | 4 | **Los audios guardados dependen del caché del servidor** | `backend/public/audio-generado/` está fuera de git. Si se borra esa carpeta (nuevo despliegue, limpieza), los cuentos guardados apuntan a MP3 que dan 404 y el lector queda sin voz, sin aviso. | Regenerar desde el texto al detectar el 404, o guardar los audios en un disco persistente (S3) y no bajo `public/`. |
 
@@ -21,7 +21,7 @@ el botón «Generar audio» del formulario de cuentos y el lector del niño que 
 | # | Pendiente | Detalle |
 |---|---|---|
 | 5 | **Tokens de cuentas inactivas nunca se podan** | Cada login borra solo los tokens vencidos **de esa docente**. Los de quien no vuelve a ingresar se acumulan en `personal_access_tokens`. Falta programar `sanctum:prune-expired`, y hoy ningún contenedor ejecuta el scheduler (`schedule:work`). |
-| 6 | **Sin tope mensual de caracteres** | Cada audio nuevo gasta cuota de ElevenLabs. Hay tope por audio (600 caracteres) y por minuto (30), pero no por mes. Es PLPA-95: al llegar al tope debe usar Piper y regenerar con la API cuando vuelva la cuota. |
+| 6 | **Sin tope mensual de caracteres** | Cada audio nuevo gasta cuota de ElevenLabs. Hay tope por audio (600 caracteres) y 30 audios nuevos por minuto, pero no por mes. Es PLPA-95: al llegar al tope debe usar Piper y regenerar con la API cuando vuelva la cuota. |
 | 7 | **Dos peticiones iguales a la vez gastan cuota doble** | Si dos docentes piden el mismo texto nuevo en el mismo instante, ambas llaman a ElevenLabs antes de que exista el archivo. El botón se desactiva mientras genera, así que solo pasa entre dos personas. Un bloqueo por hash (`Cache::lock`) lo evita. |
 | 8 | **El token vive en `sessionStorage`** | Se borra al cerrar la pestaña y vence a las 12 h, pero un XSS podría leerlo. Aceptable para el prototipo; en producción conviene cookie `HttpOnly` (Sanctum en modo SPA). |
 | 9 | **Los MP3 son públicos** | `/audio-generado/<hash>.mp3` no pide sesión. El nombre es un hash del texto y la voz, y los cuentos no llevan datos de menores, pero cualquiera que conozca una frase puede comprobar si existe. |
@@ -31,7 +31,7 @@ el botón «Generar audio» del formulario de cuentos y el lector del niño que 
 | # | Pendiente | Detalle |
 |---|---|---|
 | 10 | **Cola de trabajos** (PLPA-64) | La API genera el audio dentro de la petición (entre 1 y 2 s por página con ElevenLabs). Para cuentos largos corresponde un job en cola con el estado «generando audio» (PLPA-96). El `ServicioDeAudio` actual se reutiliza dentro del job. |
-| 11 | **Cuentos de más de 30 páginas** | El límite de 30 audios por minuto corta la generación a mitad. Los audios ya hechos se conservan y el error lo dice, pero hay que esperar un minuto y repetir. |
+| 11 | **Cuentos de más de 30 páginas** | El límite de 30 audios nuevos por minuto corta la generación a mitad. Los audios ya hechos se conservan y el error lo dice: hay que esperar un minuto y repetir. Los ya generados tienen un cupo aparte (300 por minuto), así que cada intento avanza. |
 | 12 | **El audio no se guarda para uso offline** | La PWA no precachea `/audio-generado/*`. Sin conexión, un cuento nuevo se lee sin su voz. Falta incluirlo en la estrategia de Workbox. |
 | 13 | **Sin e2e de punta a punta** | El recorrido login → generar → guardar → reproducir solo se probó con un script manual que no quedó en el repo. El CI de `ci-web` no levanta el backend. Falta un workflow que arranque Docker y corra Playwright contra los dos. |
 

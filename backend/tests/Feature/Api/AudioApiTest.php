@@ -77,11 +77,17 @@ it('el límite de intentos es por correo: uno bloqueado no bloquea a los demás'
     $this->postJson('/api/v1/auth/login', ['email' => 'otra@b.cl', 'password' => 'x'])->assertUnauthorized();
 });
 
-it('revisa la clave aunque el correo no exista, para que el tiempo no lo delate', function () {
-    Hash::shouldReceive('make')->once()->andReturn('hash-falso');
-    Hash::shouldReceive('check')->once()->with('x', 'hash-falso')->andReturnFalse();
+it('calcula un solo hash aunque el correo no exista, para que el tiempo no lo delate', function () {
+    Hash::shouldReceive('make')->once()->with('x')->andReturn('hash-falso');
+    Hash::shouldReceive('check')->never();
 
     $this->postJson('/api/v1/auth/login', ['email' => 'nadie@liceo.cl', 'password' => 'x'])->assertUnauthorized();
+});
+
+it('un correo que no es texto se rechaza con 422, no con un error del servidor', function () {
+    $this->postJson('/api/v1/auth/login', ['email' => ['a@b.cl'], 'password' => 'x'])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('email');
 });
 
 it('al iniciar sesión borra los tokens vencidos de esa docente y deja los vigentes', function () {
@@ -112,6 +118,42 @@ it('genera un audio con el token de la docente', function () {
 it('responde 401 en JSON sin token', function () {
     $this->postJson('/api/v1/audio', ['texto' => 'Hola'])->assertUnauthorized();
     $this->post('/api/v1/audio', ['texto' => 'Hola'], ['Accept' => 'text/html'])->assertUnauthorized();
+});
+
+it('una cuenta desactivada deja de servir aunque su token siga vigente', function () {
+    usarMotor();
+    $docente = User::factory()->create();
+    $token = $docente->createToken('panel-docente', expiresAt: now()->addHour())->plainTextToken;
+    $docente->update(['activo' => false]);
+
+    $this->withToken($token)->postJson('/api/v1/audio', ['texto' => 'Hola'])->assertUnauthorized();
+});
+
+it('limita los audios nuevos por minuto', function () {
+    usarMotor();
+    Sanctum::actingAs(User::factory()->create());
+
+    foreach (range(1, 30) as $pagina) {
+        $this->postJson('/api/v1/audio', ['texto' => "Página {$pagina}"])->assertOk();
+    }
+
+    $this->postJson('/api/v1/audio', ['texto' => 'Página 31'])->assertTooManyRequests();
+});
+
+it('reintentar un cuento de más de 30 páginas avanza: los audios ya hechos no gastan el cupo', function () {
+    usarMotor();
+    Sanctum::actingAs(User::factory()->create());
+
+    foreach (range(1, 30) as $pagina) {
+        $this->postJson('/api/v1/audio', ['texto' => "Página {$pagina}"])->assertOk();
+    }
+
+    $this->travel(61)->seconds();
+
+    foreach (range(1, 30) as $pagina) {
+        $this->postJson('/api/v1/audio', ['texto' => "Página {$pagina}"])->assertOk()->assertJsonPath('enCache', true);
+    }
+    $this->postJson('/api/v1/audio', ['texto' => 'Página 31'])->assertOk()->assertJsonPath('enCache', false);
 });
 
 it('no deja generar audios al revisor', function () {
