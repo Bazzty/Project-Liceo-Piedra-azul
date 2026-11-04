@@ -63,6 +63,8 @@ return [
         'clave' => env('OLLAMA_API_KEY'),
         'modelo' => env('OLLAMA_MODEL', 'qwen2.5:3b'),
         'espera' => (int) env('OLLAMA_ESPERA', 90),
+        // Hilos de CPU para el modelo. Vacío = que Ollama elija (valor medido como mejor por defecto).
+        'hilos' => env('OLLAMA_HILOS') ? (int) env('OLLAMA_HILOS') : null,
     ],
 
     'slack' => [

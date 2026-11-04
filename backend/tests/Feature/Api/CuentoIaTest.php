@@ -38,6 +38,32 @@ it('crea el borrador de un cuento a partir de un tema', function () {
         && str_contains($r['messages'][1]['content'], 'El osito va al dentista'));
 });
 
+it('no fija los hilos de CPU salvo que se configuren, y entonces los manda', function () {
+    Sanctum::actingAs(User::factory()->create());
+    ollamaResponde(['titulo' => 'Hola', 'frases' => ['Hola amigo']]);
+
+    $this->postJson('/api/v1/cuentos/generar', peticionDeCuento())->assertOk();
+    Http::assertSent(fn ($r) => ! array_key_exists('num_thread', $r['options']) && $r['options']['num_predict'] === 700);
+
+    config(['services.ollama.hilos' => 6]);
+    $this->postJson('/api/v1/cuentos/generar', peticionDeCuento())->assertOk();
+    Http::assertSent(fn ($r) => ($r['options']['num_thread'] ?? null) === 6);
+});
+
+it('descarta las frases que no tienen letras, como los puntos suspensivos', function () {
+    Sanctum::actingAs(User::factory()->create());
+    ollamaResponde(['titulo' => 'Vacío', 'frases' => ['El gato duerme', '...', '…', ' . . . ', '¡!', 'Mamá sonríe']]);
+
+    $this->postJson('/api/v1/cuentos/generar', peticionDeCuento())->assertOk()->assertJsonPath('frases', ['El gato duerme', 'Mamá sonríe']);
+});
+
+it('avisa si todas las frases son puntos suspensivos', function () {
+    Sanctum::actingAs(User::factory()->create());
+    ollamaResponde(['titulo' => 'Vacío', 'frases' => ['...', '...', '...']]);
+
+    $this->postJson('/api/v1/cuentos/generar', peticionDeCuento())->assertStatus(503);
+});
+
 it('acepta la respuesta envuelta en un bloque de código y recorta lo que sobra', function () {
     Sanctum::actingAs(User::factory()->create());
     ollamaResponde("```json\n".json_encode(['titulo' => 'Mi casa', 'frases' => ['Mi casa es azul', '  ', 'Tengo   un gato', 'Mamá me ama']])."\n```");

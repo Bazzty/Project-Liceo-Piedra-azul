@@ -14,7 +14,7 @@ class OllamaGenerador implements GeneradorDeCuentos
 {
     private const MAX_CARACTERES_FRASE = 120;
 
-    /** @param array{url?: ?string, clave?: ?string, modelo: string, espera: int} $config */
+    /** @param array{url?: ?string, clave?: ?string, modelo: string, espera: int, hilos?: ?int} $config */
     public function __construct(private readonly array $config) {}
 
     public function generar(string $tema, string $nivel, int $paginas, array $palabras = []): CuentoGenerado
@@ -33,7 +33,7 @@ class OllamaGenerador implements GeneradorDeCuentos
                     'format' => 'json',
                     // El modelo queda cargado en memoria entre cuentos: el primero tarda, los siguientes no.
                     'keep_alive' => '30m',
-                    'options' => ['temperature' => 0.5, 'num_predict' => 700],
+                    'options' => $this->opciones(),
                     'messages' => [
                         ['role' => 'system', 'content' => $this->instrucciones($nivel, $paginas)],
                         ['role' => 'user', 'content' => $this->tema($tema, $palabras)],
@@ -56,6 +56,13 @@ class OllamaGenerador implements GeneradorDeCuentos
         $mensaje = "Tema del cuento: {$tema}";
 
         return $palabras === [] ? $mensaje : $mensaje."\nUsa estas palabras en el cuento: ".implode(', ', $palabras).'.';
+    }
+
+    /** Hilos de CPU solo si se configuran (OLLAMA_HILOS): por defecto Ollama elige y repartir mal puede ser más lento. */
+    private function opciones(): array
+    {
+        return ['temperature' => 0.5, 'num_predict' => 700]
+            + (($this->config['hilos'] ?? 0) > 0 ? ['num_thread' => (int) $this->config['hilos']] : []);
     }
 
     private function instrucciones(string $nivel, int $paginas): string
@@ -91,7 +98,8 @@ TXT;
         $frases = collect($json['frases'])
             ->filter(fn ($f) => is_string($f))
             ->map(fn (string $f) => trim((string) preg_replace('/\s+/', ' ', $f)))
-            ->filter(fn (string $f) => $f !== '' && mb_strlen($f) <= self::MAX_CARACTERES_FRASE)
+            // Sin letras no hay frase: el modelo a veces rellena con «...» y eso no debe llegar a la docente.
+            ->filter(fn (string $f) => preg_match('/\p{L}/u', $f) === 1 && mb_strlen($f) <= self::MAX_CARACTERES_FRASE)
             ->take($paginas)
             ->values()
             ->all();
