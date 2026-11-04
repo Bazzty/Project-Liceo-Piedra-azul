@@ -185,6 +185,8 @@ export interface PedidoDeCuento {
   tema: string;
   nivel: 'A' | 'B';
   paginas: number;
+  /** Palabras para practicar (máximo 6). Solo palabras: nunca el nombre ni el id de un niño. */
+  palabras?: string[];
 }
 
 /** Indica si el error es de una petición cancelada a propósito (no es un fallo que mostrar). */

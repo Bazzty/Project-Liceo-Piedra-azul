@@ -1,7 +1,8 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { TarjetaRevision } from '@/features/docente/components/GestionCuentos';
+import { MemoryRouter } from 'react-router-dom';
+import { GestionCuentos, TarjetaRevision } from '@/features/docente/components/GestionCuentos';
 import type { Cuento } from '@/types';
 
 const { actualizarCuento } = vi.hoisted(() => ({ actualizarCuento: vi.fn() }));
@@ -9,8 +10,10 @@ const { actualizarCuento } = vi.hoisted(() => ({ actualizarCuento: vi.fn() }));
 vi.mock('@/api', () => ({
   actualizarCuento,
   eliminarCuento: vi.fn(),
+  crearCuento: vi.fn(),
+  listarPictogramas: vi.fn(async () => []),
   useCuentos: () => [],
-  useNiveles: () => [],
+  useNiveles: () => [{ id: 'nivel-b', codigo: 'D', nombre: 'Cuentos' }],
 }));
 
 const cuento: Cuento = {
@@ -103,5 +106,28 @@ describe('TarjetaRevision', () => {
 
     expect(screen.queryByRole('button', { name: 'Aprobar' })).not.toBeInTheDocument();
     expect(screen.getByText(/Solo el revisor puede aprobar/)).toBeInTheDocument();
+  });
+});
+
+describe('GestionCuentos: palabras desde la ficha del estudiante', () => {
+  it('abre «Crear con IA» con las palabras cargadas', () => {
+    render(
+      <MemoryRouter initialEntries={[{ pathname: '/profesor/cuentos', state: { palabrasParaCuento: ['casa', 'perro'] } }]}>
+        <GestionCuentos />
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByLabelText('Palabras para practicar (opcional)')).toHaveValue('casa, perro');
+  });
+
+  it('sin palabras muestra la lista de cuentos y no el formulario', () => {
+    render(
+      <MemoryRouter initialEntries={['/profesor/cuentos']}>
+        <GestionCuentos />
+      </MemoryRouter>,
+    );
+
+    expect(screen.queryByLabelText('Palabras para practicar (opcional)')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Nuevo cuento/ })).toBeInTheDocument();
   });
 });

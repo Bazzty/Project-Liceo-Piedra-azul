@@ -393,6 +393,62 @@ describe('CuentoForm: crear con IA', () => {
     expect(listarPictogramas).not.toHaveBeenCalled();
   });
 
+  it('manda las palabras para practicar y dice cuáles aparecieron y cuáles no', async () => {
+    generarCuentoConIa.mockResolvedValueOnce({ titulo: 'La casa', descripcion: '', frases: ['Mamá abre la casa', 'El gato duerme'] });
+    renderNuevo();
+    await userEvent.type(screen.getByLabelText('Palabras para practicar (opcional)'), 'casa, mamá, perro');
+
+    await pedirBorrador();
+
+    await screen.findByText(/Borrador creado con IA/);
+    expect(generarCuentoConIa).toHaveBeenCalledWith(
+      { tema: 'un gato', nivel: 'B', paginas: 5, palabras: ['casa', 'mamá', 'perro'] },
+      expect.any(AbortSignal),
+    );
+    const cobertura = screen.getByTestId('cobertura-palabras');
+    expect(cobertura).toHaveTextContent('✓ casa: aparece en el cuento');
+    expect(cobertura).toHaveTextContent('✓ mamá: aparece en el cuento');
+    expect(cobertura).toHaveTextContent('✗ perro: no aparece en el cuento');
+    expect(cobertura).toHaveTextContent('El modelo omitió alguna');
+  });
+
+  it('si la docente agrega la palabra omitida al texto, pasa a aparecer', async () => {
+    generarCuentoConIa.mockResolvedValueOnce({ titulo: 'La casa', descripcion: '', frases: ['Mamá abre la casa'] });
+    renderNuevo();
+    await userEvent.type(screen.getByLabelText('Palabras para practicar (opcional)'), 'perro');
+    await pedirBorrador();
+    await screen.findByText(/Borrador creado con IA/);
+    expect(screen.getByTestId('cobertura-palabras')).toHaveTextContent('✗ perro');
+
+    await userEvent.type(screen.getByLabelText('Texto: una frase por página'), '{Enter}El perro ladra');
+
+    expect(screen.getByTestId('cobertura-palabras')).toHaveTextContent('✓ perro');
+  });
+
+  it('sin palabras no manda el campo ni muestra la lista', async () => {
+    renderNuevo();
+
+    await pedirBorrador();
+
+    await screen.findByText(/Borrador creado con IA/);
+    expect(generarCuentoConIa.mock.calls[0][0]).not.toHaveProperty('palabras');
+    expect(screen.queryByTestId('cobertura-palabras')).not.toBeInTheDocument();
+  });
+
+  it('carga las palabras iniciales y no deja pedir palabras que el servidor rechazaría', async () => {
+    render(<CuentoForm palabrasIniciales={['casa', 'perro']} onGuardado={vi.fn()} onCancelar={vi.fn()} />);
+    const campoPalabras = screen.getByLabelText('Palabras para practicar (opcional)');
+    expect(campoPalabras).toHaveValue('casa, perro');
+    await userEvent.type(screen.getByLabelText('¿De qué trata el cuento?'), 'un gato');
+    expect(screen.getByRole('button', { name: /Crear borrador/ })).toBeEnabled();
+
+    await userEvent.type(campoPalabras, ', ca5a');
+
+    expect(campoPalabras).toBeInvalid();
+    expect(campoPalabras).toHaveAccessibleDescription(/«ca5a» no sirve/);
+    expect(screen.getByRole('button', { name: /Crear borrador/ })).toBeDisabled();
+  });
+
   it('no se ofrece al revisor, que solo valida cuentos', () => {
     useAuthStore.setState({ user: { id: 'rev-1', nombre: 'Revisora', email: 'rev@piedraazul.cl', role: 'revisor' } });
     renderNuevo();

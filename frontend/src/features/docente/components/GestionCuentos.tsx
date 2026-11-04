@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { actualizarCuento, eliminarCuento, useCuentos, useNiveles } from '@/api';
 import { useAuthStore } from '@/shared/store/useAuthStore';
@@ -175,7 +176,10 @@ export const GestionCuentos: React.FC = () => {
   const puedeRevisar = useAuthStore((s) => s.user?.role === 'revisor');
   const [pestana, setPestana] = useState<'cuentos' | 'niveles'>('cuentos');
   const [filtro, setFiltro] = useState<Filtro>('todos');
-  const [formulario, setFormulario] = useState<'nuevo' | Cuento | null>(null);
+  // La ficha de un estudiante puede traer palabras para practicar: se abre el formulario con ellas cargadas
+  const palabrasDeLaFicha = (useLocation().state as { palabrasParaCuento?: string[] } | null)?.palabrasParaCuento;
+  const [palabrasIniciales] = useState(palabrasDeLaFicha);
+  const [formulario, setFormulario] = useState<'nuevo' | Cuento | null>(palabrasDeLaFicha?.length ? 'nuevo' : null);
   const [abierto, setAbierto] = useState<string | null>(null);
 
   if (!cuentos || !niveles) return <p className="text-secondary font-semibold">Cargando cuentos…</p>;
@@ -241,6 +245,7 @@ export const GestionCuentos: React.FC = () => {
           <CuentoForm
             key={formulario === 'nuevo' ? 'nuevo' : formulario.id}
             cuento={formulario === 'nuevo' ? undefined : formulario}
+            palabrasIniciales={formulario === 'nuevo' ? palabrasIniciales : undefined}
             onGuardado={() => setFormulario(null)}
             onCancelar={() => setFormulario(null)}
           />
