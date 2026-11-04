@@ -65,7 +65,7 @@ class AppServiceProvider extends ServiceProvider
                 : Limit::perMinute(30)->by('nuevo|'.$usuario);
         });
 
-        // Cada borrador gasta cuota de la IA.
+        // Cada borrador ocupa el servidor de IA durante varios segundos.
         RateLimiter::for('cuento-ia', fn (Request $request) => Limit::perMinute(10)->by((string) $request->user()?->getKey()));
 
         // Una cuenta desactivada pierde sus tokens vigentes de inmediato, no cuando vencen.

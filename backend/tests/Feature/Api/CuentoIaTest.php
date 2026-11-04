@@ -65,6 +65,7 @@ it('avisa si la IA devuelve algo que no es un cuento', function (string $conteni
     'texto libre' => ['Había una vez un osito'],
     'sin frases' => ['{"titulo":"Vacío","frases":[]}'],
     'sin título' => ['{"frases":["Hola"]}'],
+    'título vacío' => ['{"titulo":"  ","frases":["Hola"]}'],
 ]);
 
 it('avisa si el servidor de IA falla', function () {

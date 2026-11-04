@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { ErrorDeServidor, generarAudio, iniciarSesionEnServidor, olvidarSesionDelServidor } from '@/api/servidor';
+import { ErrorDeServidor, generarAudio, generarCuentoConIa, iniciarSesionEnServidor, olvidarSesionDelServidor } from '@/api/servidor';
 
 const responder = (cuerpo: unknown, estado = 200) =>
   vi.fn().mockResolvedValue(new Response(JSON.stringify(cuerpo), { status: estado, headers: { 'Content-Type': 'application/json' } }));
@@ -22,6 +22,54 @@ describe('servidor', () => {
     expect(url).toBe('/api/v1/audio');
     expect(opciones.headers.Authorization).toBe('Bearer 1|abc');
     expect(JSON.parse(opciones.body)).toEqual({ texto: 'Hola oso' });
+  });
+
+  describe('generarCuentoConIa', () => {
+    const PEDIDO = { tema: 'un gato', nivel: 'B', paginas: 4 } as const;
+    const conSesion = async () => {
+      vi.stubGlobal('fetch', responder({ token: '1|abc' }));
+      await iniciarSesionEnServidor('a@b.cl', 'x');
+    };
+
+    it('manda el pedido con la sesión y devuelve el borrador', async () => {
+      await conSesion();
+      const borrador = { titulo: 'El gato', descripcion: '', frases: ['El gato come'] };
+      const fetchCuento = responder(borrador);
+      vi.stubGlobal('fetch', fetchCuento);
+
+      await expect(generarCuentoConIa(PEDIDO)).resolves.toEqual(borrador);
+
+      const [url, opciones] = fetchCuento.mock.calls[0];
+      expect(url).toBe('/api/v1/cuentos/generar');
+      expect(opciones.headers.Authorization).toBe('Bearer 1|abc');
+      expect(JSON.parse(opciones.body)).toEqual(PEDIDO);
+    });
+
+    it('sin sesión pide ingresar, sin llamar al servidor', async () => {
+      const sinLlamar = vi.fn();
+      vi.stubGlobal('fetch', sinLlamar);
+
+      await expect(generarCuentoConIa(PEDIDO)).rejects.toThrow('Para crear el cuento, vuelve a ingresar');
+      expect(sinLlamar).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      [403, 'Tu cuenta no puede crear el cuento: es solo para docentes.'],
+      [429, 'Se pidieron muchos cuentos seguidos. Espera un minuto y vuelve a intentar.'],
+      [503, 'La IA de cuentos aún no está activada en este servidor.'],
+    ])('explica en español un %i', async (estado, mensaje) => {
+      await conSesion();
+      vi.stubGlobal('fetch', responder({ message: estado === 503 ? mensaje : 'Too Many Attempts.' }, estado));
+
+      await expect(generarCuentoConIa(PEDIDO)).rejects.toMatchObject({ message: mensaje, estado });
+    });
+
+    it('rechaza una respuesta sin frases', async () => {
+      await conSesion();
+      vi.stubGlobal('fetch', responder({ titulo: 'Vacío', frases: [] }));
+
+      await expect(generarCuentoConIa(PEDIDO)).rejects.toMatchObject({ estado: 502 });
+    });
   });
 
   it('al olvidar la sesión revoca el token en el servidor y lo borra aquí', async () => {

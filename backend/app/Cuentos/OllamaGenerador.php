@@ -76,7 +76,7 @@ TXT;
         // A veces el modelo envuelve el JSON en un bloque de código.
         $json = json_decode(trim((string) preg_replace('/^```(?:json)?\s*|\s*```$/i', '', trim($texto))), true);
 
-        if (! is_array($json) || ! is_string($json['titulo'] ?? null) || ! is_array($json['frases'] ?? null)) {
+        if (! is_array($json) || ! is_string($json['titulo'] ?? null) || blank($json['titulo']) || ! is_array($json['frases'] ?? null)) {
             throw CuentoNoGenerado::fallo('la respuesta no tenía el formato esperado');
         }
 

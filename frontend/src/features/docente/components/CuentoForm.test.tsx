@@ -14,7 +14,10 @@ const { actualizarCuento, generarAudio, generarCuentoConIa, listarPictogramas } 
 }));
 
 vi.mock('@/api', () => ({
-  useNiveles: () => [{ id: 'nivel-b', codigo: 'D', nombre: 'Cuentos' }],
+  useNiveles: () => [
+    { id: 'nivel-b', codigo: 'D', nombre: 'Cuentos' },
+    { id: 'nivel-c', codigo: 'C', nombre: 'Palabras' },
+  ],
   listarPictogramas,
   crearCuento: vi.fn(),
   actualizarCuento,
@@ -209,7 +212,14 @@ describe('CuentoForm: crear con IA', () => {
     useAuthStore.setState({ user: { id: 'prof-1', nombre: 'Profesora PIE', email: 'profesora@piedraazul.cl', role: 'docente' } });
     generarCuentoConIa.mockReset();
     generarCuentoConIa.mockResolvedValue(borrador);
+    listarPictogramas.mockReset();
+    listarPictogramas.mockImplementation(async () => []);
   });
+
+  const pedirBorrador = async () => {
+    await userEvent.type(screen.getByLabelText('¿De qué trata el cuento?'), 'un gato');
+    await userEvent.click(screen.getByRole('button', { name: /Crear borrador/ }));
+  };
 
   it('llena título, descripción y páginas con el borrador y deja el cuento editable', async () => {
     renderNuevo();
@@ -230,13 +240,107 @@ describe('CuentoForm: crear con IA', () => {
   it('muestra el motivo si la IA no responde y no toca lo escrito', async () => {
     generarCuentoConIa.mockRejectedValueOnce(new ErrorDeServidor('La IA de cuentos aún no está activada en este servidor.', 503));
     renderNuevo();
+    const confirmar = vi.spyOn(window, 'confirm').mockReturnValue(true);
     await userEvent.type(screen.getByLabelText('Título del cuento'), 'Mi cuento');
-    await userEvent.type(screen.getByLabelText('¿De qué trata el cuento?'), 'un gato');
 
-    await userEvent.click(screen.getByRole('button', { name: /Crear borrador/ }));
+    await pedirBorrador();
 
     expect(await screen.findByText('La IA de cuentos aún no está activada en este servidor.')).toBeInTheDocument();
     expect(screen.getByLabelText('Título del cuento')).toHaveValue('Mi cuento');
+    confirmar.mockRestore();
+  });
+
+  it('pide confirmación aunque solo haya título, porque también se reemplaza', async () => {
+    const confirmar = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    renderNuevo();
+    await userEvent.type(screen.getByLabelText('Título del cuento'), 'Mi cuento');
+
+    await pedirBorrador();
+
+    expect(confirmar).toHaveBeenCalled();
+    expect(generarCuentoConIa).not.toHaveBeenCalled();
+    confirmar.mockRestore();
+  });
+
+  it('en los niveles sin oraciones pide las frases mínimas', async () => {
+    renderNuevo();
+    await userEvent.selectOptions(screen.getByLabelText('Nivel'), 'nivel-c');
+
+    await pedirBorrador();
+
+    await screen.findByText(/Borrador creado con IA/);
+    expect(generarCuentoConIa).toHaveBeenCalledWith({ tema: 'un gato', nivel: 'A', paginas: 5 });
+  });
+
+  it('mientras la IA redacta no se puede editar, sugerir, generar audio ni guardar', async () => {
+    let terminar!: (b: typeof borrador) => void;
+    generarCuentoConIa.mockReturnValueOnce(new Promise((resolver) => (terminar = resolver)));
+    renderNuevo();
+
+    await pedirBorrador();
+
+    expect(screen.getByLabelText('Título del cuento')).toBeDisabled();
+    expect(screen.getByLabelText('Texto: una frase por página')).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Guardar borrador' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Cancelar' })).toBeEnabled();
+
+    terminar(borrador);
+    await screen.findByText(/Borrador creado con IA/);
+    expect(screen.getByLabelText('Título del cuento')).toBeEnabled();
+  });
+
+  it('corregir el borrador mientras se buscan los pictogramas no se pierde', async () => {
+    let terminar!: (lista: []) => void;
+    listarPictogramas.mockReturnValueOnce(new Promise((resolver) => (terminar = resolver)));
+    const onGuardado = vi.fn();
+    actualizarCuento.mockReset();
+    render(<CuentoForm cuento={{ ...cuento, paginas: [] }} onGuardado={onGuardado} onCancelar={vi.fn()} />);
+    const confirmar = vi.spyOn(window, 'confirm').mockReturnValue(true);
+
+    await pedirBorrador();
+    const textoForm = await screen.findByDisplayValue(/El osito va al dentista/);
+    await userEvent.clear(textoForm);
+    await userEvent.type(textoForm, 'Otra frase');
+    terminar([]);
+    await screen.findByText(/Borrador creado con IA/);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Guardar borrador' }));
+
+    const guardado = actualizarCuento.mock.calls[0][1] as Pick<Cuento, 'paginas'>;
+    expect(guardado.paginas.map((p) => p.textoCompleto)).toEqual(['Otra frase']);
+    confirmar.mockRestore();
+  });
+
+  it('avisa las palabras sin pictograma junto con el borrador', async () => {
+    renderNuevo();
+
+    await pedirBorrador();
+
+    expect(await screen.findByText(/Borrador creado con IA.*palabra\(s\) sin pictograma/)).toBeInTheDocument();
+  });
+
+  it('si fallan los pictogramas el borrador queda y los botones se liberan', async () => {
+    listarPictogramas.mockRejectedValueOnce(new Error('sin base local'));
+    renderNuevo();
+
+    await pedirBorrador();
+
+    expect(await screen.findByText(/No se pudieron buscar los pictogramas/)).toBeInTheDocument();
+    expect(screen.getByLabelText('Título del cuento')).toHaveValue('El osito y el dentista');
+    expect(screen.getByRole('button', { name: 'Sugerir pictogramas' })).toBeEnabled();
+  });
+
+  it('al salir del formulario no busca pictogramas para un borrador que ya nadie ve', async () => {
+    let terminar!: (b: typeof borrador) => void;
+    generarCuentoConIa.mockReturnValueOnce(new Promise((resolver) => (terminar = resolver)));
+    const { unmount } = renderNuevo();
+
+    await pedirBorrador();
+    unmount();
+    terminar(borrador);
+    await new Promise((resolver) => setTimeout(resolver));
+
+    expect(listarPictogramas).not.toHaveBeenCalled();
   });
 
   it('pide confirmación antes de reemplazar un texto que ya existe', async () => {
