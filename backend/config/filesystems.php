@@ -38,6 +38,15 @@ return [
             'report' => false,
         ],
 
+        // Audios generados por la API de voz. Viven bajo public/ para que nginx los sirva sin pasar por PHP.
+        'audios' => [
+            'driver' => 'local',
+            'root' => base_path('public/audio-generado'),
+            'url' => '/audio-generado',
+            'visibility' => 'public',
+            'throw' => false,
+        ],
+
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),

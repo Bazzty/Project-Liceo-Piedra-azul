@@ -20,3 +20,6 @@ Thumbs.db
 # Logs
 *.log
 npm-debug.log*
+
+# Audios que genera la API de voz (se regeneran desde el texto)
+/backend/public/audio-generado/

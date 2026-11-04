@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { olvidarSesionDelServidor } from '@/api/servidor';
 
 export type Role = 'docente' | 'estudiante' | null;
 export type SessionType = 'aula' | 'casa' | null;
@@ -90,6 +91,7 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
     });
   },
   logout: () => {
+    olvidarSesionDelServidor();
     set({
       activeStudentId: null,
       supervision: false,

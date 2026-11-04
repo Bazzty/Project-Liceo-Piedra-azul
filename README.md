@@ -111,6 +111,12 @@ Project-Liceo-Piedra-azul/
 
    *Solo el frontend, sin Docker:* `cd frontend && npm install && npm run dev`.
 
+   **Generar el audio de un cuento (API de voz).** El servidor crea un MP3 por página: ElevenLabs si está configurado y, si no responde, Piper (local). Un mismo texto no se genera dos veces.
+   1. En `backend/.env` (nunca en git ni en el chat): `ELEVENLABS_API_KEY=` y `ELEVENLABS_VOICE_ID=`. Sin ellos se usa Piper. `TTS_DRIVER=piper` fuerza solo la voz local.
+   2. Crea la docente de demostración: `docker compose exec --user www-data app php artisan db:seed --class=DocenteDemoSeeder` (su contraseña sale de `DEMO_DOCENTE_CLAVE` en `backend/.env`; si falta, el comando muestra una).
+   3. Para el botón «Usar cuenta de demostración», copia esa contraseña en `frontend/.env.development.local` (`VITE_DEMO_CORREO`, `VITE_DEMO_CLAVE`; ver `frontend/.env.example`). Ese archivo solo lo carga `npm run dev`: en `.env.local` quedaría dentro del build. Sin eso, ingresa escribiendo el correo y la contraseña.
+   4. Panel docente → Cuentos → escribe el texto → **Generar audio** → guarda. El lector del niño lo reproduce.
+
 4. **Probar la PWA y compilación:**
    ```bash
    npm run build
