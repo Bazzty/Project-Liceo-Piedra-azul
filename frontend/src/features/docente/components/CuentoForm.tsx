@@ -325,7 +325,7 @@ export const CuentoForm: React.FC<CuentoFormProps> = ({ nivelId, cuento, onGuard
             <Button
               variant="accent"
               onClick={redactarConIa}
-              disabled={tema.trim().length < 3 || ocupado}
+              disabled={tema.trim().length < 3 || sugiriendo || generando !== null}
               loading={redactando}
             >
               <Wand2 className="w-4 h-4" aria-hidden /> {redactando ? 'Escribiendo el cuento…' : 'Crear borrador'}
@@ -366,7 +366,7 @@ export const CuentoForm: React.FC<CuentoFormProps> = ({ nivelId, cuento, onGuard
         </Button>
         {/* El revisor solo valida cuentos: el servidor le negaría el audio (403) */}
         {!esRevisor && (
-          <Button variant="accent" onClick={crearAudio} disabled={ocupado || paginas.length === 0} loading={generando !== null}>
+          <Button variant="accent" onClick={crearAudio} disabled={sugiriendo || redactando || paginas.length === 0} loading={generando !== null}>
             <AudioLines className="w-4 h-4" aria-hidden />
             {avanceAudio || 'Generar audio'}
           </Button>

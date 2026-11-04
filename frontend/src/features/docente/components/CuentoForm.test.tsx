@@ -280,6 +280,7 @@ describe('CuentoForm: crear con IA', () => {
 
     await pedirBorrador();
 
+    expect(screen.getByRole('button', { name: /Escribiendo el cuento/ })).toHaveFocus();
     expect(screen.getByLabelText('Título del cuento')).toBeDisabled();
     expect(screen.getByLabelText('Texto: una frase por página')).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Guardar borrador' })).toBeDisabled();
