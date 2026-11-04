@@ -113,7 +113,13 @@ interface Accion {
 }
 
 /** Hace una petición con la sesión de la docente. Laravel responde en inglés a un 403 o 429, así que no se muestra tal cual. */
-async function pedirConSesion<T extends object>(ruta: string, cuerpo: object, accion: Accion, esValida: (r: T) => boolean): Promise<T> {
+async function pedirConSesion<T extends object>(
+  ruta: string,
+  cuerpo: object,
+  accion: Accion,
+  esValida: (r: T) => boolean,
+  senal?: AbortSignal,
+): Promise<T> {
   await inicioEnCurso;
   const token = leerToken();
   if (!token) throw new ErrorDeServidor(`Para ${accion.nombre}, vuelve a ingresar con tu cuenta de docente.`, 401);
@@ -124,8 +130,10 @@ async function pedirConSesion<T extends object>(ruta: string, cuerpo: object, ac
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify(cuerpo),
+      signal: senal,
     });
   } catch {
+    if (senal?.aborted) throw new DOMException('Cancelado', 'AbortError');
     throw new ErrorDeServidor('No hay conexión con el servidor.', 0);
   }
 
@@ -146,6 +154,7 @@ async function pedirConSesion<T extends object>(ruta: string, cuerpo: object, ac
 
   // Sin proxy (p. ej. un servidor estático), /api devuelve el index.html con 200: no es una respuesta de la API.
   const datos = (await respuesta.json().catch(() => null)) as T | null;
+  if (senal?.aborted) throw new DOMException('Cancelado', 'AbortError');
   if (!datos || !esValida(datos)) {
     throw new ErrorDeServidor('El servidor no respondió como se esperaba. Revisa que esté encendido.', 502);
   }
@@ -178,8 +187,14 @@ export interface PedidoDeCuento {
   paginas: number;
 }
 
-/** Pide a la IA del servidor un borrador de cuento. Es solo texto: la docente lo revisa antes de guardarlo. */
-export const generarCuentoConIa = (pedido: PedidoDeCuento) =>
+/** Indica si el error es de una petición cancelada a propósito (no es un fallo que mostrar). */
+export const fueCancelada = (e: unknown) => e instanceof DOMException && e.name === 'AbortError';
+
+/**
+ * Pide a la IA del servidor un borrador de cuento. Es solo texto: la docente lo revisa antes de guardarlo.
+ * Con `senal` se puede cancelar: la petición se corta y se lanza un AbortError (ver `fueCancelada`).
+ */
+export const generarCuentoConIa = (pedido: PedidoDeCuento, senal?: AbortSignal) =>
   pedirConSesion<BorradorDeCuento>(
     '/cuentos/generar',
     pedido,
@@ -189,4 +204,5 @@ export const generarCuentoConIa = (pedido: PedidoDeCuento) =>
       demasiado: 'Se pidieron muchos cuentos seguidos. Espera un minuto y vuelve a intentar.',
     },
     (c) => Array.isArray(c.frases) && c.frases.length > 0,
+    senal,
   );

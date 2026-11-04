@@ -282,7 +282,7 @@ export const GestionCuentos: React.FC = () => {
             </table>
             {visibles.length === 0 && <p className="py-6 text-sm text-secondary">No hay cuentos en este estado.</p>}
             <p className="mt-3 text-xs leading-relaxed text-secondary">
-              El audio de cada página se genera con la voz del proyecto al guardar el cuento; mientras tanto la app usa la voz del navegador.
+              El audio no se crea al guardar: se genera con el botón «Generar audio» del formulario. Las páginas sin audio se leen con la voz del navegador.
             </p>
           </Hoja>
 

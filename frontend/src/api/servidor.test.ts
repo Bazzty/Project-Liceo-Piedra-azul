@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { ErrorDeServidor, generarAudio, generarCuentoConIa, iniciarSesionEnServidor, olvidarSesionDelServidor } from '@/api/servidor';
+import { ErrorDeServidor, fueCancelada, generarAudio, generarCuentoConIa, iniciarSesionEnServidor, olvidarSesionDelServidor } from '@/api/servidor';
 
 const responder = (cuerpo: unknown, estado = 200) =>
   vi.fn().mockResolvedValue(new Response(JSON.stringify(cuerpo), { status: estado, headers: { 'Content-Type': 'application/json' } }));
@@ -72,6 +72,29 @@ describe('servidor', () => {
       expect(url).toBe('/api/v1/cuentos/generar');
       expect(opciones.headers.Authorization).toBe('Bearer 1|abc');
       expect(JSON.parse(opciones.body)).toEqual(PEDIDO);
+    });
+
+    it('al cancelar corta la petición y no la trata como un error de conexión', async () => {
+      await conSesion();
+      vi.stubGlobal(
+        'fetch',
+        // Como el fetch real: rechaza al abortarse, o de inmediato si ya estaba abortada
+        vi.fn(
+          (_url: string, opciones: RequestInit) =>
+            new Promise((_ok, fallar) => {
+              if (opciones.signal?.aborted) fallar(new Error('abortado'));
+              opciones.signal?.addEventListener('abort', () => fallar(new Error('abortado')));
+            }),
+        ),
+      );
+      const control = new AbortController();
+
+      const pedido = generarCuentoConIa(PEDIDO, control.signal);
+      control.abort();
+
+      const error = await pedido.catch((e: unknown) => e);
+      expect(fueCancelada(error)).toBe(true);
+      expect(error).not.toBeInstanceOf(ErrorDeServidor);
     });
 
     it('sin sesión pide ingresar, sin llamar al servidor', async () => {

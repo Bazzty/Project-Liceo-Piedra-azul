@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CuentoForm } from '@/features/docente/components/CuentoForm';
@@ -6,8 +6,9 @@ import { ErrorDeServidor } from '@/api/servidor';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import type { Cuento } from '@/types';
 
-const { actualizarCuento, generarAudio, generarCuentoConIa, listarPictogramas } = vi.hoisted(() => ({
+const { actualizarCuento, crearCuento, generarAudio, generarCuentoConIa, listarPictogramas } = vi.hoisted(() => ({
   generarCuentoConIa: vi.fn(),
+  crearCuento: vi.fn(),
   actualizarCuento: vi.fn(),
   generarAudio: vi.fn(),
   listarPictogramas: vi.fn(async () => []),
@@ -19,7 +20,7 @@ vi.mock('@/api', () => ({
     { id: 'nivel-c', codigo: 'C', nombre: 'Palabras' },
   ],
   listarPictogramas,
-  crearCuento: vi.fn(),
+  crearCuento,
   actualizarCuento,
 }));
 vi.mock('@/features/tablero/arasaac', async (original) => ({
@@ -231,7 +232,7 @@ describe('CuentoForm: crear con IA', () => {
     await userEvent.click(screen.getByRole('button', { name: /Crear borrador/ }));
 
     await screen.findByText(/Borrador creado con IA/);
-    expect(generarCuentoConIa).toHaveBeenCalledWith({ tema: 'El osito va al dentista', nivel: 'B', paginas: 5 });
+    expect(generarCuentoConIa).toHaveBeenCalledWith({ tema: 'El osito va al dentista', nivel: 'B', paginas: 5 }, expect.any(AbortSignal));
     expect(screen.getByLabelText('Título del cuento')).toHaveValue('El osito y el dentista');
     expect(screen.getByLabelText('Descripción (opcional)')).toHaveValue('Un osito pierde el miedo.');
     expect(screen.getByLabelText('Texto: una frase por página')).toHaveValue('El osito va al dentista\nAbre la boca grande');
@@ -241,26 +242,75 @@ describe('CuentoForm: crear con IA', () => {
   it('muestra el motivo si la IA no responde y no toca lo escrito', async () => {
     generarCuentoConIa.mockRejectedValueOnce(new ErrorDeServidor('La IA de cuentos aún no está activada en este servidor.', 503));
     renderNuevo();
-    const confirmar = vi.spyOn(window, 'confirm').mockReturnValue(true);
     await userEvent.type(screen.getByLabelText('Título del cuento'), 'Mi cuento');
 
     await pedirBorrador();
 
     expect(await screen.findByText('La IA de cuentos aún no está activada en este servidor.')).toBeInTheDocument();
     expect(screen.getByLabelText('Título del cuento')).toHaveValue('Mi cuento');
-    confirmar.mockRestore();
+    expect(screen.queryByRole('button', { name: 'Recuperar versión anterior' })).not.toBeInTheDocument();
   });
 
-  it('pide confirmación aunque solo haya título, porque también se reemplaza', async () => {
-    const confirmar = vi.spyOn(window, 'confirm').mockReturnValue(false);
+  it('no pide confirmación: guarda lo escrito y permite recuperarlo, aunque solo hubiera título', async () => {
+    const confirmar = vi.spyOn(window, 'confirm');
     renderNuevo();
     await userEvent.type(screen.getByLabelText('Título del cuento'), 'Mi cuento');
 
     await pedirBorrador();
+    await screen.findByText(/Borrador creado con IA/);
+    expect(screen.getByLabelText('Título del cuento')).toHaveValue('El osito y el dentista');
+    await userEvent.click(screen.getByRole('button', { name: 'Recuperar versión anterior' }));
 
-    expect(confirmar).toHaveBeenCalled();
-    expect(generarCuentoConIa).not.toHaveBeenCalled();
+    expect(confirmar).not.toHaveBeenCalled();
+    expect(screen.getByLabelText('Título del cuento')).toHaveValue('Mi cuento');
+    expect(screen.getByLabelText('Texto: una frase por página')).toHaveValue('');
+    expect(screen.queryByRole('button', { name: 'Recuperar versión anterior' })).not.toBeInTheDocument();
     confirmar.mockRestore();
+  });
+
+  it('recuperar la versión anterior devuelve título, descripción, texto y páginas', async () => {
+    render(<CuentoForm cuento={cuento} onGuardado={vi.fn()} onCancelar={vi.fn()} />);
+
+    await pedirBorrador();
+    await screen.findByText(/Borrador creado con IA/);
+    expect(screen.getByLabelText('Título del cuento')).toHaveValue('El osito y el dentista');
+    await userEvent.click(screen.getByRole('button', { name: 'Recuperar versión anterior' }));
+
+    expect(screen.getByLabelText('Título del cuento')).toHaveValue('El oso');
+    expect(screen.getByLabelText('Texto: una frase por página')).toHaveValue('El oso lee\nMamá sonríe');
+    expect(screen.getAllByText(/^Página \d$/)).toHaveLength(2);
+  });
+
+  it('avisa que no se escriban nombres de estudiantes', () => {
+    renderNuevo();
+
+    expect(screen.getByLabelText('¿De qué trata el cuento?')).toHaveAccessibleDescription(/No escribas nombres de estudiantes/);
+  });
+
+  it('mientras redacta avisa que suele tardar menos de un minuto y permite cancelar sin error', async () => {
+    let cancelada = false;
+    generarCuentoConIa.mockImplementationOnce(
+      (_pedido: unknown, senal: AbortSignal) =>
+        new Promise((_ok, fallar) =>
+          senal.addEventListener('abort', () => {
+            cancelada = true;
+            fallar(new DOMException('Cancelado', 'AbortError'));
+          }),
+        ),
+    );
+    renderNuevo();
+    await userEvent.type(screen.getByLabelText('Título del cuento'), 'Mi cuento');
+
+    await pedirBorrador();
+    expect(screen.getByText('Suele tardar menos de un minuto.')).toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent('Suele tardar menos de un minuto');
+    await userEvent.click(screen.getByRole('button', { name: 'Cancelar redacción' }));
+
+    await waitFor(() => expect(screen.getByRole('button', { name: /Crear borrador/ })).toBeEnabled());
+    expect(cancelada).toBe(true);
+    expect(screen.getByRole('alert')).toBeEmptyDOMElement();
+    expect(screen.getByLabelText('Título del cuento')).toHaveValue('Mi cuento');
+    expect(screen.queryByRole('button', { name: 'Recuperar versión anterior' })).not.toBeInTheDocument();
   });
 
   it('en los niveles sin oraciones pide las frases mínimas', async () => {
@@ -270,7 +320,7 @@ describe('CuentoForm: crear con IA', () => {
     await pedirBorrador();
 
     await screen.findByText(/Borrador creado con IA/);
-    expect(generarCuentoConIa).toHaveBeenCalledWith({ tema: 'un gato', nivel: 'A', paginas: 5 });
+    expect(generarCuentoConIa).toHaveBeenCalledWith({ tema: 'un gato', nivel: 'A', paginas: 5 }, expect.any(AbortSignal));
   });
 
   it('mientras la IA redacta no se puede editar, sugerir, generar audio ni guardar', async () => {
@@ -297,7 +347,6 @@ describe('CuentoForm: crear con IA', () => {
     const onGuardado = vi.fn();
     actualizarCuento.mockReset();
     render(<CuentoForm cuento={{ ...cuento, paginas: [] }} onGuardado={onGuardado} onCancelar={vi.fn()} />);
-    const confirmar = vi.spyOn(window, 'confirm').mockReturnValue(true);
 
     await pedirBorrador();
     const textoForm = await screen.findByDisplayValue(/El osito va al dentista/);
@@ -310,7 +359,6 @@ describe('CuentoForm: crear con IA', () => {
 
     const guardado = actualizarCuento.mock.calls[0][1] as Pick<Cuento, 'paginas'>;
     expect(guardado.paginas.map((p) => p.textoCompleto)).toEqual(['Otra frase']);
-    confirmar.mockRestore();
   });
 
   it('avisa las palabras sin pictograma junto con el borrador', async () => {
@@ -345,23 +393,75 @@ describe('CuentoForm: crear con IA', () => {
     expect(listarPictogramas).not.toHaveBeenCalled();
   });
 
-  it('pide confirmación antes de reemplazar un texto que ya existe', async () => {
-    const confirmar = vi.spyOn(window, 'confirm').mockReturnValue(false);
-    render(<CuentoForm cuento={cuento} onGuardado={vi.fn()} onCancelar={vi.fn()} />);
-    await userEvent.type(screen.getByLabelText('¿De qué trata el cuento?'), 'un gato');
-
-    await userEvent.click(screen.getByRole('button', { name: /Crear borrador/ }));
-
-    expect(confirmar).toHaveBeenCalled();
-    expect(generarCuentoConIa).not.toHaveBeenCalled();
-    expect(screen.getByLabelText('Título del cuento')).toHaveValue('El oso');
-    confirmar.mockRestore();
-  });
-
   it('no se ofrece al revisor, que solo valida cuentos', () => {
     useAuthStore.setState({ user: { id: 'rev-1', nombre: 'Revisora', email: 'rev@piedraazul.cl', role: 'revisor' } });
     renderNuevo();
 
     expect(screen.queryByRole('button', { name: /Crear borrador/ })).not.toBeInTheDocument();
+  });
+});
+
+describe('CuentoForm: guardar', () => {
+  beforeEach(() => {
+    useAuthStore.setState({ user: { id: 'prof-1', nombre: 'Profesora PIE', email: 'profesora@piedraazul.cl', role: 'docente' } });
+    crearCuento.mockReset();
+    actualizarCuento.mockReset();
+  });
+
+  const llenarNuevo = async () => {
+    await userEvent.type(screen.getByLabelText('Título del cuento'), 'Mi cuento');
+    await userEvent.type(screen.getByLabelText('Texto: una frase por página'), 'El oso lee');
+  };
+
+  it('un doble clic crea un solo cuento', async () => {
+    let terminar!: () => void;
+    crearCuento.mockReturnValueOnce(new Promise<void>((resolver) => (terminar = resolver)));
+    const onGuardado = vi.fn();
+    render(<CuentoForm onGuardado={onGuardado} onCancelar={vi.fn()} />);
+    await llenarNuevo();
+
+    const enviar = screen.getByRole('button', { name: 'Enviar a revisión' });
+    await userEvent.dblClick(enviar);
+    terminar();
+
+    await waitFor(() => expect(onGuardado).toHaveBeenCalledTimes(1));
+    expect(crearCuento).toHaveBeenCalledTimes(1);
+  });
+
+  it('si falla el guardado muestra el error, conserva el texto y deja volver a intentar', async () => {
+    crearCuento.mockRejectedValueOnce(new Error('base llena'));
+    const onGuardado = vi.fn();
+    render(<CuentoForm onGuardado={onGuardado} onCancelar={vi.fn()} />);
+    await llenarNuevo();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Guardar borrador' }));
+
+    expect(await screen.findByText(/No se pudo guardar el cuento/)).toBeInTheDocument();
+    expect(onGuardado).not.toHaveBeenCalled();
+    expect(screen.getByLabelText('Título del cuento')).toHaveValue('Mi cuento');
+    expect(screen.getByRole('button', { name: 'Guardar borrador' })).toBeEnabled();
+
+    crearCuento.mockResolvedValueOnce(undefined);
+    await userEvent.click(screen.getByRole('button', { name: 'Guardar borrador' }));
+    await waitFor(() => expect(onGuardado).toHaveBeenCalledTimes(1));
+  });
+
+  it('avisa cuántas páginas no tienen audio, sin impedir el envío', async () => {
+    crearCuento.mockResolvedValue(undefined);
+    const onGuardado = vi.fn();
+    const conUnAudio = { ...cuento, paginas: [{ ...cuento.paginas[0], audioPaginaUrl: '/audio/a.mp3' }, cuento.paginas[1]] };
+    render(<CuentoForm cuento={conUnAudio} onGuardado={onGuardado} onCancelar={vi.fn()} />);
+
+    expect(screen.getByText(/1 de 2 páginas no tienen audio/)).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Enviar a revisión' }));
+
+    await waitFor(() => expect(onGuardado).toHaveBeenCalled());
+  });
+
+  it('no avisa de audios cuando todas las páginas lo tienen', () => {
+    const conAudio = { ...cuento, paginas: cuento.paginas.map((p) => ({ ...p, audioPaginaUrl: '/audio/x.mp3' })) };
+    render(<CuentoForm cuento={conAudio} onGuardado={vi.fn()} onCancelar={vi.fn()} />);
+
+    expect(screen.queryByText(/no tienen audio/)).not.toBeInTheDocument();
   });
 });

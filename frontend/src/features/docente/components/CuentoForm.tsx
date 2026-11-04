@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { AudioLines, Sparkles, Trash2, Volume2, Wand2 } from 'lucide-react';
+import { AudioLines, RotateCcw, Sparkles, Trash2, Volume2, Wand2, X } from 'lucide-react';
 import type { Cuento, CuentoPagina, CuentoPalabra } from '@/types';
 import { getArasaacImageUrl, fetchArasaacPictogramId, searchArasaacPictograms, type ArasaacOpcion } from '@/features/tablero/arasaac';
 import { normalizar } from '@/features/docente/components/format';
@@ -7,7 +7,7 @@ import { PictoImg } from '@/features/docente/components/widgets';
 import { Button } from '@/shared/ui';
 import { conAudios, generarAudiosDeCuento } from '@/features/docente/audioCuento';
 import { actualizarCuento, crearCuento, listarPictogramas, useNiveles } from '@/api';
-import { generarCuentoConIa } from '@/api/servidor';
+import { fueCancelada, generarCuentoConIa } from '@/api/servidor';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
 // Niveles que ya leen oraciones (Cuentos e Historias). Los anteriores trabajan sílabas, vocales y palabras: frases mínimas.
@@ -53,6 +53,14 @@ const construirPaginas = (texto: string, previas: CuentoPagina[]): CuentoPagina[
     });
 };
 
+/** Lo que había en el formulario antes de crear un borrador con IA: se puede recuperar. */
+interface VersionAnterior {
+  titulo: string;
+  descripcion: string;
+  texto: string;
+  paginas: CuentoPagina[];
+}
+
 interface CuentoFormProps {
   /** Nivel inicial al crear un cuento (se puede cambiar en el formulario). */
   nivelId?: string;
@@ -79,6 +87,12 @@ export const CuentoForm: React.FC<CuentoFormProps> = ({ nivelId, cuento, onGuard
   // Avance de la generación de audio, en páginas (null = no se está generando)
   const [generando, setGenerando] = useState<{ hechas: number; total: number } | null>(null);
   const generacion = useRef<AbortController | null>(null);
+  // Pedido de borrador a la IA en curso (se puede cancelar)
+  const redaccion = useRef<AbortController | null>(null);
+  const [anterior, setAnterior] = useState<VersionAnterior | null>(null);
+  // Guardado en curso: el ref bloquea el doble clic antes de que React alcance a deshabilitar los botones
+  const [guardando, setGuardando] = useState(false);
+  const guardandoRef = useRef(false);
   const [error, setError] = useState('');
   // Palabra que se está editando: "pagina-indice"
   const [editando, setEditando] = useState<{ p: number; w: number } | null>(null);
@@ -86,7 +100,13 @@ export const CuentoForm: React.FC<CuentoFormProps> = ({ nivelId, cuento, onGuard
   const [buscando, setBuscando] = useState(false);
 
   // Al salir del formulario se dejan de pedir audios: nadie los usaría y cada uno gasta cuota.
-  useEffect(() => () => generacion.current?.abort(), []);
+  useEffect(
+    () => () => {
+      generacion.current?.abort();
+      redaccion.current?.abort();
+    },
+    [],
+  );
 
   const cambiarTexto = (nuevo: string) => {
     setTexto(nuevo);
@@ -152,19 +172,21 @@ export const CuentoForm: React.FC<CuentoFormProps> = ({ nivelId, cuento, onGuard
   const redactarConIa = async () => {
     setError('');
     setMensaje('');
+    // Lo escrito no se pierde: queda guardado para «Recuperar versión anterior» en vez de pedir confirmación.
     const hayContenido = [titulo, descripcion, texto].some((campo) => campo.trim());
-    if (hayContenido && !window.confirm('Esto reemplaza el título, la descripción y el texto actuales. ¿Continuar?')) return;
+    const respaldo: VersionAnterior = { titulo, descripcion, texto, paginas };
 
     const control = new AbortController();
-    generacion.current = control;
+    redaccion.current = control;
     setRedactando(true);
     let nuevas: CuentoPagina[];
     try {
       const codigo = niveles?.find((n) => n.id === nivel)?.codigo ?? '';
       // La API tiene dos largos de frase: 'A' las mínimas y 'B' las oraciones. No son los códigos de nivel de la app.
       const largo = NIVELES_CON_ORACIONES.includes(codigo) ? 'B' : 'A';
-      const borrador = await generarCuentoConIa({ tema: tema.trim(), nivel: largo, paginas: numPaginas });
+      const borrador = await generarCuentoConIa({ tema: tema.trim(), nivel: largo, paginas: numPaginas }, control.signal);
       if (control.signal.aborted) return;
+      if (hayContenido) setAnterior(respaldo);
       const nuevoTexto = borrador.frases.join('\n');
       nuevas = construirPaginas(nuevoTexto, []);
       setTitulo(borrador.titulo);
@@ -173,7 +195,8 @@ export const CuentoForm: React.FC<CuentoFormProps> = ({ nivelId, cuento, onGuard
       setPaginas(nuevas);
       setEditando(null);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'No se pudo crear el cuento.');
+      // Cancelar a propósito no es un error: el formulario queda como estaba.
+      if (!fueCancelada(e) && !control.signal.aborted) setError(e instanceof Error ? e.message : 'No se pudo crear el cuento.');
       return;
     } finally {
       setRedactando(false);
@@ -187,6 +210,19 @@ export const CuentoForm: React.FC<CuentoFormProps> = ({ nivelId, cuento, onGuard
     } catch {
       setMensaje(`${listo} No se pudieron buscar los pictogramas: usa «Sugerir pictogramas».`);
     }
+  };
+
+  const cancelarRedaccion = () => redaccion.current?.abort();
+
+  const recuperarAnterior = () => {
+    if (!anterior) return;
+    setTitulo(anterior.titulo);
+    setDescripcion(anterior.descripcion);
+    setTexto(anterior.texto);
+    setPaginas(anterior.paginas);
+    setEditando(null);
+    setAnterior(null);
+    setMensaje('Volviste a la versión anterior del cuento.');
   };
 
   const abrirEditor = async (p: number, w: number) => {
@@ -239,6 +275,7 @@ export const CuentoForm: React.FC<CuentoFormProps> = ({ nivelId, cuento, onGuard
   };
 
   const guardar = async (estado: Cuento['estado']) => {
+    if (guardandoRef.current) return;
     setError('');
     if (!titulo.trim()) return setError('El cuento necesita un título.');
     if (paginas.length === 0) return setError('Escribe al menos una frase.');
@@ -253,20 +290,30 @@ export const CuentoForm: React.FC<CuentoFormProps> = ({ nivelId, cuento, onGuard
       // Al volver a enviarlo, el comentario anterior del revisor ya no aplica
       ...(estado === 'en_revision' ? { comentarioRevision: undefined } : {}),
     };
-    if (cuento?.id) {
-      await actualizarCuento(cuento.id, datos);
-    } else {
-      await crearCuento({
-        ...datos,
-        id: `cuento-${crypto.randomUUID()}`,
-        fechaCreacion: new Date().toISOString(),
-      });
+    guardandoRef.current = true;
+    setGuardando(true);
+    try {
+      if (cuento?.id) {
+        await actualizarCuento(cuento.id, datos);
+      } else {
+        await crearCuento({
+          ...datos,
+          id: `cuento-${crypto.randomUUID()}`,
+          fechaCreacion: new Date().toISOString(),
+        });
+      }
+    } catch {
+      setError('No se pudo guardar el cuento. Tu texto sigue aquí: intenta de nuevo.');
+      guardandoRef.current = false;
+      setGuardando(false);
+      return;
     }
     onGuardado();
   };
 
   // Estas tareas escriben sobre las páginas: mientras una corre, las demás y el guardado esperan.
-  const ocupado = sugiriendo || redactando || generando !== null;
+  const ocupado = sugiriendo || redactando || generando !== null || guardando;
+  const sinAudio = paginas.filter((p) => !p.audioPaginaUrl).length;
   const avanceAudio = generando && `Generando audio ${Math.min(generando.hechas + 1, generando.total)} de ${generando.total}…`;
 
   const campo = 'w-full bg-app border border-borderCustom rounded-control px-4 py-3 text-sm font-bold text-primary outline-none focus:border-brand';
@@ -301,16 +348,23 @@ export const CuentoForm: React.FC<CuentoFormProps> = ({ nivelId, cuento, onGuard
           <h4 id="crear-con-ia" className="font-display text-lg font-semibold text-primary">
             Crear con IA
           </h4>
-          <label className="flex flex-col gap-1.5">
-            <span className="text-sm font-bold text-primary">¿De qué trata el cuento?</span>
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="tema-ia" className="text-sm font-bold text-primary">
+              ¿De qué trata el cuento?
+            </label>
             <input
+              id="tema-ia"
               className={campo}
               value={tema}
               maxLength={200}
               placeholder="Por ejemplo: el osito va al dentista"
+              aria-describedby="aviso-tema"
               onChange={(e) => setTema(e.target.value)}
             />
-          </label>
+            <span id="aviso-tema" className="text-xs font-semibold text-secondary">
+              No escribas nombres de estudiantes ni datos personales: el tema se envía al servidor de IA.
+            </span>
+          </div>
           <div className="flex flex-wrap items-end gap-3">
             <label className="flex flex-col gap-1.5">
               <span className="text-sm font-bold text-primary">Páginas</span>
@@ -330,7 +384,18 @@ export const CuentoForm: React.FC<CuentoFormProps> = ({ nivelId, cuento, onGuard
             >
               <Wand2 className="w-4 h-4" aria-hidden /> {redactando ? 'Escribiendo el cuento…' : 'Crear borrador'}
             </Button>
+            {redactando && (
+              <Button variant="ghost" onClick={cancelarRedaccion}>
+                <X className="w-4 h-4" aria-hidden /> Cancelar redacción
+              </Button>
+            )}
+            {anterior && !redactando && (
+              <Button variant="secondary" onClick={recuperarAnterior}>
+                <RotateCcw className="w-4 h-4" aria-hidden /> Recuperar versión anterior
+              </Button>
+            )}
           </div>
+          {redactando && <p className="text-xs font-semibold text-secondary">Suele tardar menos de un minuto.</p>}
           <p className="text-xs font-semibold text-secondary">
             La IA escribe un borrador según el nivel elegido. Siempre se revisa y se edita antes de enviarlo: nada llega a los niños sin
             tu aprobación.
@@ -379,6 +444,7 @@ export const CuentoForm: React.FC<CuentoFormProps> = ({ nivelId, cuento, onGuard
       </p>
       <div role="status" className="empty:absolute">
         {avanceAudio && <span className="sr-only">{avanceAudio}</span>}
+        {redactando && <span className="sr-only">Escribiendo el cuento. Suele tardar menos de un minuto.</span>}
         {mensaje && <p className="text-sm font-bold text-statusOk">{mensaje}</p>}
       </div>
 
@@ -451,9 +517,18 @@ export const CuentoForm: React.FC<CuentoFormProps> = ({ nivelId, cuento, onGuard
         </div>
       ))}
 
+      {paginas.length > 0 && sinAudio > 0 && (
+        <p className="text-xs font-semibold text-statusWarn">
+          {sinAudio === paginas.length
+            ? 'Ninguna página tiene audio todavía.'
+            : `${sinAudio} de ${paginas.length} páginas no tienen audio.`}{' '}
+          Puedes enviarlo igual: en esas páginas los niños oirán la voz del navegador.
+        </p>
+      )}
+
       <div className="flex flex-wrap gap-3">
         {/* Mientras algo escribe sobre las páginas no se guarda: el cuento quedaría a medias */}
-        <Button onClick={() => guardar(esRevisor ? 'publicado' : 'en_revision')} disabled={ocupado}>
+        <Button onClick={() => guardar(esRevisor ? 'publicado' : 'en_revision')} disabled={ocupado} loading={guardando}>
           {esRevisor ? 'Validar y publicar' : 'Enviar a revisión'}
         </Button>
         <Button variant="secondary" onClick={() => guardar('borrador')} disabled={ocupado}>
