@@ -361,6 +361,24 @@ describe('CuentoForm: crear con IA', () => {
     expect(guardado.paginas.map((p) => p.textoCompleto)).toEqual(['Otra frase']);
   });
 
+  it('avisa si la IA escribió menos páginas de las pedidas', async () => {
+    renderNuevo();
+
+    await pedirBorrador();
+
+    expect(await screen.findByText(/Pediste 5 páginas y la IA escribió 2: completa las que falten/)).toBeInTheDocument();
+  });
+
+  it('no avisa de páginas faltantes si llegaron todas', async () => {
+    generarCuentoConIa.mockResolvedValueOnce({ ...borrador, frases: ['Uno a', 'Dos b', 'Tres c', 'Cuatro d', 'Cinco e'] });
+    renderNuevo();
+
+    await pedirBorrador();
+
+    await screen.findByText(/Borrador creado con IA/);
+    expect(screen.queryByText(/Pediste/)).not.toBeInTheDocument();
+  });
+
   it('avisa las palabras sin pictograma junto con el borrador', async () => {
     renderNuevo();
 

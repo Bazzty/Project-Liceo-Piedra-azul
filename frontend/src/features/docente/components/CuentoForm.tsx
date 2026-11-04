@@ -188,6 +188,7 @@ export const CuentoForm: React.FC<CuentoFormProps> = ({ nivelId, cuento, palabra
     redaccion.current = control;
     setRedactando(true);
     let nuevas: CuentoPagina[];
+    let faltan = '';
     try {
       const codigo = niveles?.find((n) => n.id === nivel)?.codigo ?? '';
       // La API tiene dos largos de frase: 'A' las mínimas y 'B' las oraciones. No son los códigos de nivel de la app.
@@ -199,6 +200,8 @@ export const CuentoForm: React.FC<CuentoFormProps> = ({ nivelId, cuento, palabra
       setPedidas(palabras);
       const nuevoTexto = borrador.frases.join('\n');
       nuevas = construirPaginas(nuevoTexto, []);
+      // Un modelo pequeño a veces escribe menos frases de las pedidas: se avisa para que la docente complete el cuento.
+      if (nuevas.length < numPaginas) faltan = `Pediste ${numPaginas} páginas y la IA escribió ${nuevas.length}: completa las que falten.`;
       setTitulo(borrador.titulo);
       setDescripcion(borrador.descripcion);
       setTexto(nuevoTexto);
@@ -213,7 +216,7 @@ export const CuentoForm: React.FC<CuentoFormProps> = ({ nivelId, cuento, palabra
     }
 
     // Los pictogramas se buscan solos: así el borrador queda listo para leerlo y revisarlo.
-    const listo = 'Borrador creado con IA. Léelo con calma, corrige lo que haga falta y luego genera el audio.';
+    const listo = `Borrador creado con IA. ${faltan ? `${faltan} ` : ''}Léelo con calma, corrige lo que haga falta y luego genera el audio.`;
     try {
       const aviso = await buscarPictogramas(nuevas);
       setMensaje(aviso ? `${listo} ${aviso}` : listo);
