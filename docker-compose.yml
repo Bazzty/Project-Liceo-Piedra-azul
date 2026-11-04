@@ -98,6 +98,21 @@ services:
       - ./frontend:/app
       - vite_node_modules:/app/node_modules
 
+  # IA que redacta los borradores de cuentos (modelo abierto, sin costo por uso). Opcional: `docker compose --profile ia up -d`.
+  # Con CPU alcanza un modelo de 3B (~2 GB de RAM). Primera vez: `docker exec liceo-ollama ollama pull qwen2.5:3b`.
+  ollama:
+    container_name: liceo-ollama
+    image: ollama/ollama:0.12.6
+    profiles: ["ia"]
+    restart: unless-stopped
+    environment:
+      # Un cuento a la vez: dos modelos cargados a la vez en CPU harían lento a ambos.
+      OLLAMA_NUM_PARALLEL: 1
+      OLLAMA_MAX_LOADED_MODELS: 1
+    volumes:
+      - ollama_models:/root/.ollama
+
 volumes:
   db_data:
+  ollama_models:
   vite_node_modules:

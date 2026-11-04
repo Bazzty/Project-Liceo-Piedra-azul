@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\V1\AudioController;
 use App\Http\Controllers\Api\V1\AutenticacionController;
+use App\Http\Controllers\Api\V1\CuentoController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -13,6 +14,7 @@ Route::prefix('v1')->group(function () {
             return $request->user();
         });
         Route::post('/auth/logout', [AutenticacionController::class, 'logout']);
+        Route::post('/cuentos/generar', [CuentoController::class, 'generar'])->middleware('throttle:cuento-ia');
         Route::post('/audio', [AudioController::class, 'store'])->middleware('throttle:audio');
     });
 });

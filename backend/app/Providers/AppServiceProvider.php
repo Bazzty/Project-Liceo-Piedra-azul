@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Cuentos\GeneradorDeCuentos;
+use App\Cuentos\OllamaGenerador;
 use App\Models\User;
 use App\Voz\ElevenLabsProvider;
 use App\Voz\PiperProvider;
@@ -31,6 +33,8 @@ class AppServiceProvider extends ServiceProvider
 
             return new ServicioDeAudio(new ElevenLabsProvider(config('services.elevenlabs')), $piper, Storage::disk('audios'));
         });
+
+        $this->app->bind(GeneradorDeCuentos::class, fn () => new OllamaGenerador(config('services.ollama')));
     }
 
     /**
@@ -61,6 +65,9 @@ class AppServiceProvider extends ServiceProvider
                 ? Limit::perMinute(300)->by('existente|'.$usuario)
                 : Limit::perMinute(30)->by('nuevo|'.$usuario);
         });
+
+        // Cada borrador gasta cuota de la IA.
+        RateLimiter::for('cuento-ia', fn (Request $request) => Limit::perMinute(10)->by((string) $request->user()?->getKey()));
 
         // Una cuenta desactivada pierde sus tokens vigentes de inmediato, no cuando vencen.
         Sanctum::authenticateAccessTokensUsing(
