@@ -44,7 +44,7 @@ const Globo: React.FC<GloboProps> = ({ orden, estilo, icono, titulo, clave, onCl
             sonarToque();
             onClick();
           }}
-          className={`group relative overflow-hidden w-[27vw] h-[27vw] max-w-[9.5rem] max-h-[9.5rem] sm:max-w-none sm:max-h-none sm:w-[min(13rem,24vh)] sm:h-[min(13rem,24vh)] sm:portrait:w-[min(27vw,19rem)] sm:portrait:h-[min(27vw,19rem)] lg:w-[min(16rem,27vh)] lg:h-[min(16rem,27vh)] rounded-full flex flex-col items-center justify-center gap-1 sm:gap-2 shadow-card cursor-pointer transition-transform hover:scale-110 active:scale-95 ${fondo}`}
+          className={`group relative overflow-hidden w-[27vw] h-[27vw] max-w-[9.5rem] max-h-[9.5rem] sm:max-w-none sm:max-h-none sm:w-[min(13rem,24vh)] sm:h-[min(13rem,24vh)] sm:portrait:w-[min(24vw,19rem)] sm:portrait:h-[min(24vw,19rem)] lg:w-[min(16rem,22vh)] lg:h-[min(16rem,22vh)] rounded-full flex flex-col items-center justify-center gap-1 sm:gap-2 shadow-card cursor-pointer transition-transform hover:scale-110 active:scale-95 ${fondo}`}
         >
           <span className="absolute top-[11%] left-[17%] w-[26%] h-[15%] rounded-full bg-white/35 -rotate-[35deg]" aria-hidden />
           <span className="group-hover:animate-girar [&>svg]:w-9 [&>svg]:h-9 sm:[&>svg]:w-16 sm:[&>svg]:h-16 lg:[&>svg]:w-24 lg:[&>svg]:h-24" aria-hidden>
@@ -172,7 +172,7 @@ export const VistaPrincipal: React.FC = () => {
 
   return (
     <LayoutEstudiante fondo="jardin" centro={<AgendaVisual onElegir={irAPaso} />}>
-      <main className="relative flex-1 w-full max-w-6xl mx-auto px-3 sm:px-6 pt-4 sm:pt-6 pb-6 flex flex-col items-center justify-between sm:portrait:justify-center sm:portrait:gap-[7vh] gap-4">
+      <main className="relative flex-1 w-full max-w-6xl mx-auto px-3 sm:px-6 pt-4 sm:pt-6 pb-6 flex flex-col items-center justify-between sm:portrait:justify-center sm:portrait:gap-[4vh] gap-4">
         <h1 className="sr-only">Menú de {nombre}</h1>
 
         <div className="flex items-start justify-center gap-3 sm:gap-10 lg:gap-16 w-full">
