@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Http;
 /** Voz principal del proyecto. La clave vive solo en el servidor (.env), nunca en el navegador. */
 class ElevenLabsProvider implements TtsProvider
 {
-    /** @param array{clave?: ?string, voz?: ?string, modelo: string, estabilidad: float, similitud: float, velocidad: float} $config */
+    /** @param array{clave?: ?string, voz?: ?string, modelo: string, idioma?: ?string, estabilidad: float, similitud: float, velocidad: float} $config */
     public function __construct(private readonly array $config) {}
 
     public function nombre(): string
@@ -22,6 +22,7 @@ class ElevenLabsProvider implements TtsProvider
             'elevenlabs',
             $this->config['voz'] ?? '',
             $this->config['modelo'],
+            $this->config['idioma'] ?? '',
             $this->config['estabilidad'],
             $this->config['similitud'],
             $this->config['velocidad'],
@@ -41,6 +42,7 @@ class ElevenLabsProvider implements TtsProvider
                 ->post('https://api.elevenlabs.io/v1/text-to-speech/'.rawurlencode($this->config['voz']).'?output_format=mp3_44100_128', [
                     'text' => $texto,
                     'model_id' => $this->config['modelo'],
+                    ...(filled($this->config['idioma'] ?? null) ? ['language_code' => $this->config['idioma']] : []),
                     'voice_settings' => [
                         'stability' => $this->config['estabilidad'],
                         'similarity_boost' => $this->config['similitud'],

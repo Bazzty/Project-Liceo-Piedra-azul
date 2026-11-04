@@ -47,7 +47,9 @@ return [
     'elevenlabs' => [
         'clave' => env('ELEVENLABS_API_KEY'),
         'voz' => env('ELEVENLABS_VOICE_ID'),
-        'modelo' => env('ELEVENLABS_MODEL', 'eleven_multilingual_v2'),
+        'modelo' => env('ELEVENLABS_MODEL', 'eleven_turbo_v2_5'),
+        // Se envía siempre: sin esto una palabra suelta puede leerse como inglés. Solo lo aceptan los modelos turbo, flash y v3.
+        'idioma' => env('ELEVENLABS_IDIOMA', 'es'),
         'estabilidad' => (float) env('VOZ_ESTABILIDAD', 0.3),
         'similitud' => (float) env('VOZ_SIMILITUD', 1),
         'velocidad' => (float) env('VOZ_VELOCIDAD', 1),
