@@ -7,7 +7,7 @@ use Illuminate\Validation\Rule;
 
 class GenerarCuentoRequest extends FormRequest
 {
-    /** Solo quien crea contenido gasta cuota de la IA; el revisor solo valida cuentos. */
+    /** Solo quien crea contenido ocupa el servidor de IA; el revisor solo valida cuentos. */
     public function authorize(): bool
     {
         return in_array($this->user()?->rol, ['docente', 'admin'], true);

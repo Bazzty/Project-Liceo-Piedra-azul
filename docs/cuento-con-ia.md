@@ -8,7 +8,8 @@ La docente escribe de qué trata el cuento y el servidor redacta un **borrador**
 
 - Modelo abierto, **sin costo por uso** y sin mandar datos a un tercero: el tema es lo único que viaja, y va a tu propio servidor.
 - La respuesta se valida: JSON con título y frases, sin frases vacías ni de más de 120 caracteres, y no más de las páginas pedidas.
-- El prompt fija el nivel (A: 2 a 4 palabras por frase; B: 4 a 8), tono tranquilo, sin miedo ni violencia, sin nombres reales, y que ignore instrucciones escondidas en el tema.
+- El prompt fija el largo de las frases (`nivel` A de la API: 2 a 4 palabras; B: 4 a 8), tono tranquilo, sin miedo ni violencia, sin nombres reales, y que ignore instrucciones escondidas en el tema.
+- Ese `nivel` no es el código de la app: Cuentos e Historias (D y E) piden frases de 4 a 8 palabras; los demás niveles, las mínimas.
 - Sin `OLLAMA_URL`, el botón responde «La IA de cuentos aún no está activada» y el resto de la app sigue igual.
 
 ## Activarlo

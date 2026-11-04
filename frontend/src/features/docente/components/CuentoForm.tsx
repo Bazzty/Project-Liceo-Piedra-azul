@@ -10,6 +10,9 @@ import { actualizarCuento, crearCuento, listarPictogramas, useNiveles } from '@/
 import { generarCuentoConIa } from '@/api/servidor';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
+// Niveles que ya leen oraciones (Cuentos e Historias). Los anteriores trabajan sílabas, vocales y palabras: frases mínimas.
+const NIVELES_CON_ORACIONES = ['D', 'E'];
+
 // Palabras funcionales que NO reciben pictograma sugerido (igual que en los cuentos del seed).
 // El docente igualmente puede agregarles uno a mano.
 const SIN_PICTOGRAMA = ['un', 'una', 'el', 'la', 'los', 'las', 'me', 'mi', 'te', 'tu', 'de', 'y', 'en', 'a'];
@@ -99,72 +102,90 @@ export const CuentoForm: React.FC<CuentoFormProps> = ({ nivelId, cuento, onGuard
     );
   };
 
-  /** Sugiere pictogramas: primero el catálogo local (funciona offline), luego ARASAAC (requiere internet). */
-  const sugerirPictogramas = () => buscarPictogramas(paginas);
-
+  /**
+   * Busca pictogramas: primero el catálogo local (funciona offline), luego ARASAAC (requiere internet).
+   * Devuelve un aviso si faltaron. Solo completa las palabras que sigan sin pictograma: la búsqueda toma
+   * tiempo y la docente puede estar corrigiendo el texto mientras tanto.
+   */
   const buscarPictogramas = async (base: CuentoPagina[]) => {
     setSugiriendo(true);
     setMensaje('');
-    const locales = await listarPictogramas();
-    const catalogo = new Map(locales.map((p) => [normalizar(p.palabra), p.imagenUrl]));
-    const cache = new Map<string, string | undefined>();
-    let sinInternet = 0;
+    try {
+      const locales = await listarPictogramas();
+      const catalogo = new Map(locales.map((p) => [normalizar(p.palabra), p.imagenUrl]));
+      const encontrados = new Map<string, string | undefined>();
+      let sinInternet = 0;
 
-    const buscar = async (palabra: string) => {
-      const clave = normalizar(palabra);
-      if (cache.has(clave)) return cache.get(clave);
-      let url = catalogo.get(clave);
-      if (!url) {
-        const id = await fetchArasaacPictogramId(palabra);
-        if (id) url = getArasaacImageUrl(id);
-        else sinInternet += 1;
+      for (const w of base.flatMap((pg) => pg.palabras)) {
+        const clave = normalizar(w.texto);
+        if (w.pictogramaUrl || SIN_PICTOGRAMA.includes(clave) || encontrados.has(clave)) continue;
+        let url = catalogo.get(clave);
+        if (!url) {
+          const id = await fetchArasaacPictogramId(w.texto);
+          if (id) url = getArasaacImageUrl(id);
+          else sinInternet += 1;
+        }
+        encontrados.set(clave, url);
       }
-      cache.set(clave, url);
-      return url;
-    };
 
-    const nuevas: CuentoPagina[] = [];
-    for (const pg of base) {
-      const palabras: CuentoPalabra[] = [];
-      for (const w of pg.palabras) {
-        if (w.pictogramaUrl || SIN_PICTOGRAMA.includes(normalizar(w.texto))) palabras.push(w);
-        else palabras.push({ ...w, pictogramaUrl: await buscar(w.texto) });
-      }
-      nuevas.push({ ...pg, palabras });
+      setPaginas((prev) =>
+        prev.map((pg) => ({
+          ...pg,
+          palabras: pg.palabras.map((w) => (w.pictogramaUrl ? w : { ...w, pictogramaUrl: encontrados.get(normalizar(w.texto)) })),
+        })),
+      );
+      return sinInternet > 0 ? `${sinInternet} palabra(s) sin pictograma (sin coincidencia o sin internet). Puedes agregarlas a mano.` : '';
+    } finally {
+      setSugiriendo(false);
     }
-    setPaginas(nuevas);
-    setSugiriendo(false);
-    setMensaje(
-      sinInternet > 0
-        ? `${sinInternet} palabra(s) sin pictograma (sin coincidencia o sin internet). Puedes agregarlas a mano.`
-        : 'Pictogramas sugeridos. Toca una palabra para cambiar su pictograma.',
-    );
+  };
+
+  const sugerirPictogramas = async () => {
+    try {
+      setMensaje((await buscarPictogramas(paginas)) || 'Pictogramas sugeridos. Toca una palabra para cambiar su pictograma.');
+    } catch {
+      setError('No se pudieron buscar los pictogramas. Intenta de nuevo.');
+    }
   };
 
   /** Pide un borrador a la IA del servidor. Queda como texto editable: la docente lo revisa antes de guardarlo. */
   const redactarConIa = async () => {
     setError('');
     setMensaje('');
-    if (texto.trim() && !window.confirm('Esto reemplaza el título y el texto actuales. ¿Continuar?')) return;
+    const hayContenido = [titulo, descripcion, texto].some((campo) => campo.trim());
+    if (hayContenido && !window.confirm('Esto reemplaza el título, la descripción y el texto actuales. ¿Continuar?')) return;
+
+    const control = new AbortController();
+    generacion.current = control;
     setRedactando(true);
+    let nuevas: CuentoPagina[];
     try {
-      const codigo = niveles?.find((n) => n.id === nivel)?.codigo;
-      const borrador = await generarCuentoConIa({ tema: tema.trim(), nivel: codigo === 'A' ? 'A' : 'B', paginas: numPaginas });
+      const codigo = niveles?.find((n) => n.id === nivel)?.codigo ?? '';
+      // La API tiene dos largos de frase: 'A' las mínimas y 'B' las oraciones. No son los códigos de nivel de la app.
+      const largo = NIVELES_CON_ORACIONES.includes(codigo) ? 'B' : 'A';
+      const borrador = await generarCuentoConIa({ tema: tema.trim(), nivel: largo, paginas: numPaginas });
+      if (control.signal.aborted) return;
       const nuevoTexto = borrador.frases.join('\n');
-      const nuevas = construirPaginas(nuevoTexto, []);
+      nuevas = construirPaginas(nuevoTexto, []);
       setTitulo(borrador.titulo);
       setDescripcion(borrador.descripcion);
       setTexto(nuevoTexto);
       setPaginas(nuevas);
       setEditando(null);
-      setRedactando(false);
-      // Los pictogramas se buscan solos: así el borrador queda listo para leerlo y revisarlo.
-      await buscarPictogramas(nuevas);
-      setMensaje('Borrador creado con IA. Léelo con calma, corrige lo que haga falta y luego genera el audio.');
     } catch (e) {
       setError(e instanceof Error ? e.message : 'No se pudo crear el cuento.');
+      return;
     } finally {
       setRedactando(false);
+    }
+
+    // Los pictogramas se buscan solos: así el borrador queda listo para leerlo y revisarlo.
+    const listo = 'Borrador creado con IA. Léelo con calma, corrige lo que haga falta y luego genera el audio.';
+    try {
+      const aviso = await buscarPictogramas(nuevas);
+      setMensaje(aviso ? `${listo} ${aviso}` : listo);
+    } catch {
+      setMensaje(`${listo} No se pudieron buscar los pictogramas: usa «Sugerir pictogramas».`);
     }
   };
 
@@ -244,6 +265,8 @@ export const CuentoForm: React.FC<CuentoFormProps> = ({ nivelId, cuento, onGuard
     onGuardado();
   };
 
+  // Estas tareas escriben sobre las páginas: mientras una corre, las demás y el guardado esperan.
+  const ocupado = sugiriendo || redactando || generando !== null;
   const avanceAudio = generando && `Generando audio ${Math.min(generando.hechas + 1, generando.total)} de ${generando.total}…`;
 
   const campo = 'w-full bg-app border border-borderCustom rounded-control px-4 py-3 text-sm font-bold text-primary outline-none focus:border-brand';
@@ -302,7 +325,7 @@ export const CuentoForm: React.FC<CuentoFormProps> = ({ nivelId, cuento, onGuard
             <Button
               variant="accent"
               onClick={redactarConIa}
-              disabled={tema.trim().length < 3 || sugiriendo || generando !== null}
+              disabled={tema.trim().length < 3 || ocupado}
               loading={redactando}
             >
               <Wand2 className="w-4 h-4" aria-hidden /> {redactando ? 'Escribiendo el cuento…' : 'Crear borrador'}
@@ -317,24 +340,24 @@ export const CuentoForm: React.FC<CuentoFormProps> = ({ nivelId, cuento, onGuard
 
       <label className="flex flex-col gap-1.5">
         <span className="text-sm font-bold text-primary">Título del cuento</span>
-        <input className={campo} value={titulo} onChange={(e) => setTitulo(e.target.value)} />
+        <input className={campo} value={titulo} disabled={redactando} onChange={(e) => setTitulo(e.target.value)} />
       </label>
 
       <label className="flex flex-col gap-1.5">
         <span className="text-sm font-bold text-primary">Descripción (opcional)</span>
-        <input className={campo} value={descripcion} onChange={(e) => setDescripcion(e.target.value)} />
+        <input className={campo} value={descripcion} disabled={redactando} onChange={(e) => setDescripcion(e.target.value)} />
       </label>
 
       <label className="flex flex-col gap-1.5">
         <span className="text-sm font-bold text-primary">Texto: una frase por página</span>
-        <textarea className={`${campo} min-h-28`} value={texto} onChange={(e) => cambiarTexto(e.target.value)} />
+        <textarea className={`${campo} min-h-28`} value={texto} disabled={redactando} onChange={(e) => cambiarTexto(e.target.value)} />
       </label>
 
       <div className="flex flex-wrap items-center gap-3">
         <Button
           variant="secondary"
           onClick={sugerirPictogramas}
-          disabled={sugiriendo || generando !== null || paginas.length === 0}
+          disabled={ocupado || paginas.length === 0}
         >
           <Sparkles className="w-4 h-4" /> {sugiriendo ? 'Buscando…' : 'Sugerir pictogramas'}
         </Button>
@@ -343,7 +366,7 @@ export const CuentoForm: React.FC<CuentoFormProps> = ({ nivelId, cuento, onGuard
         </Button>
         {/* El revisor solo valida cuentos: el servidor le negaría el audio (403) */}
         {!esRevisor && (
-          <Button variant="accent" onClick={crearAudio} disabled={sugiriendo || paginas.length === 0} loading={generando !== null}>
+          <Button variant="accent" onClick={crearAudio} disabled={ocupado || paginas.length === 0} loading={generando !== null}>
             <AudioLines className="w-4 h-4" aria-hidden />
             {avanceAudio || 'Generar audio'}
           </Button>
@@ -429,11 +452,11 @@ export const CuentoForm: React.FC<CuentoFormProps> = ({ nivelId, cuento, onGuard
       ))}
 
       <div className="flex flex-wrap gap-3">
-        {/* Mientras se genera el audio no se guarda: el cuento quedaría sin las páginas que faltan */}
-        <Button onClick={() => guardar(esRevisor ? 'publicado' : 'en_revision')} disabled={generando !== null}>
+        {/* Mientras algo escribe sobre las páginas no se guarda: el cuento quedaría a medias */}
+        <Button onClick={() => guardar(esRevisor ? 'publicado' : 'en_revision')} disabled={ocupado}>
           {esRevisor ? 'Validar y publicar' : 'Enviar a revisión'}
         </Button>
-        <Button variant="secondary" onClick={() => guardar('borrador')} disabled={generando !== null}>
+        <Button variant="secondary" onClick={() => guardar('borrador')} disabled={ocupado}>
           Guardar borrador
         </Button>
         <Button variant="ghost" onClick={onCancelar}>
