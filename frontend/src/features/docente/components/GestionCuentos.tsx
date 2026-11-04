@@ -29,7 +29,7 @@ const LISTA_REVISION = [
 ];
 
 /** Un cuento enviado a revisión: el revisor lo aprueba o lo devuelve con un comentario. */
-const TarjetaRevision: React.FC<{ cuento: Cuento; puedeRevisar: boolean; abierta: boolean; onAbrir: () => void }> = ({
+export const TarjetaRevision: React.FC<{ cuento: Cuento; puedeRevisar: boolean; abierta: boolean; onAbrir: () => void }> = ({
   cuento,
   puedeRevisar,
   abierta,
@@ -37,7 +37,10 @@ const TarjetaRevision: React.FC<{ cuento: Cuento; puedeRevisar: boolean; abierta
 }) => {
   const [marcas, setMarcas] = useState<boolean[]>(LISTA_REVISION.map(() => false));
   const [comentario, setComentario] = useState('');
-  const primera = cuento.paginas[0]?.textoCompleto;
+  // Qué botón está guardando (null = ninguno) y el error si no se pudo
+  const [resolviendo, setResolviendo] = useState<'aprobar' | 'devolver' | null>(null);
+  const [error, setError] = useState('');
+  const listaCompleta = marcas.every(Boolean);
 
   if (!abierta) {
     return (
@@ -54,12 +57,19 @@ const TarjetaRevision: React.FC<{ cuento: Cuento; puedeRevisar: boolean; abierta
   }
 
   const resolver = async (aprobar: boolean) => {
-    if (!cuento.id) return;
-    await actualizarCuento(cuento.id, {
-      estado: aprobar ? 'publicado' : 'borrador',
-      comentarioRevision: aprobar ? undefined : comentario.trim() || 'Revisar y volver a enviar.',
-      fechaCambio: new Date().toISOString(),
-    });
+    if (!cuento.id || resolviendo || (aprobar && !listaCompleta)) return;
+    setError('');
+    setResolviendo(aprobar ? 'aprobar' : 'devolver');
+    try {
+      await actualizarCuento(cuento.id, {
+        estado: aprobar ? 'publicado' : 'borrador',
+        comentarioRevision: aprobar ? undefined : comentario.trim() || 'Revisar y volver a enviar.',
+        fechaCambio: new Date().toISOString(),
+      });
+    } catch {
+      setError(`No se pudo ${aprobar ? 'aprobar' : 'devolver'} el cuento. Intenta de nuevo.`);
+      setResolviendo(null);
+    }
   };
 
   return (
@@ -72,12 +82,30 @@ const TarjetaRevision: React.FC<{ cuento: Cuento; puedeRevisar: boolean; abierta
         </p>
       </div>
 
-      {primera && (
-        <div className="rounded-control bg-app border border-borderCustom px-3 py-2.5 text-sm leading-relaxed">
-          <p className="text-[0.7rem] font-semibold uppercase tracking-[0.05em] text-secondary mb-1">Página 1</p>
-          {primera}
-        </div>
-      )}
+      {/* El revisor ve y escucha todo el cuento antes de aprobarlo, tal como lo verán los niños */}
+      <ol className="flex flex-col gap-2 list-none p-0 m-0" aria-label="Páginas del cuento">
+        {cuento.paginas.map((pagina) => (
+          <li key={pagina.numeroPagina} className="rounded-control bg-app border border-borderCustom px-3 py-2.5 flex flex-col gap-2">
+            <p className="text-[0.7rem] font-semibold uppercase tracking-[0.05em] text-secondary">Página {pagina.numeroPagina}</p>
+            <div className="flex flex-wrap gap-2">
+              {pagina.palabras.map((w, i) => (
+                <span key={i} className="flex flex-col items-center gap-1 w-16">
+                  <PictoImg src={w.pictogramaUrl} alt={w.texto} className="w-12 h-12" />
+                  <span className="text-xs font-bold text-primary text-center break-words max-w-full">{w.texto}</span>
+                </span>
+              ))}
+            </div>
+            <p className="text-sm leading-relaxed">{pagina.textoCompleto}</p>
+            {pagina.audioPaginaUrl ? (
+              // Es la lectura en voz alta del texto que se muestra justo arriba: ese texto es su transcripción
+              // eslint-disable-next-line jsx-a11y/media-has-caption
+              <audio controls preload="none" src={pagina.audioPaginaUrl} aria-label={`Audio de la página ${pagina.numeroPagina}`} className="w-full" />
+            ) : (
+              <p className="text-xs font-semibold text-statusWarn">Esta página no tiene audio: se leerá con la voz del navegador.</p>
+            )}
+          </li>
+        ))}
+      </ol>
 
       <fieldset className="border-0 p-0 m-0 flex flex-col gap-1.5">
         <legend className="mb-1 text-xs font-semibold text-secondary">Lista de revisión</legend>
@@ -107,14 +135,30 @@ const TarjetaRevision: React.FC<{ cuento: Cuento; puedeRevisar: boolean; abierta
       </label>
 
       {puedeRevisar ? (
-        <div className="flex gap-2">
-          <Button variant="secondary" fullWidth onClick={() => resolver(false)}>
-            Devolver
-          </Button>
-          <Button fullWidth onClick={() => resolver(true)}>
-            Aprobar
-          </Button>
-        </div>
+        <>
+          <div role="alert" className="empty:absolute">
+            {error && <p className="rounded-control bg-statusDanger-bg px-3 py-2 text-sm font-bold text-statusDanger">{error}</p>}
+          </div>
+          {!listaCompleta && (
+            <p id={`pendiente-${cuento.id}`} className="text-xs font-semibold text-secondary">
+              Para aprobar, marca los tres puntos de la lista de revisión.
+            </p>
+          )}
+          <div className="flex gap-2">
+            <Button variant="secondary" fullWidth onClick={() => resolver(false)} disabled={resolviendo !== null} loading={resolviendo === 'devolver'}>
+              Devolver
+            </Button>
+            <Button
+              fullWidth
+              onClick={() => resolver(true)}
+              disabled={!listaCompleta || resolviendo !== null}
+              aria-describedby={listaCompleta ? undefined : `pendiente-${cuento.id}`}
+              loading={resolviendo === 'aprobar'}
+            >
+              Aprobar
+            </Button>
+          </div>
+        </>
       ) : (
         <p className="rounded-control bg-statusInfo-bg px-3 py-2 text-xs font-semibold text-statusInfo">
           Solo el revisor puede aprobar o devolver. Ingresa como Revisor para probarlo.
