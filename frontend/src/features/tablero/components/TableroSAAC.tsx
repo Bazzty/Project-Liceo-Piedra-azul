@@ -1,9 +1,9 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, Delete, HandHelping, MousePointerClick, Volume2 } from 'lucide-react';
 import type { Pictograma } from '@/types';
 import { crearRegistro, usePictogramas } from '@/api';
 import { useAuthStore } from '@/shared/store/useAuthStore';
-import { franjaDe, ordenarTablero } from '@/features/tablero/categoriasTablero';
+import { usePalabrasDelTablero } from '@/features/tablero/usePalabrasDelTablero';
 import { resolverYGuardarPictograma } from '@/features/tablero/arasaac';
 import { useTableroStore } from '@/shared/store/useTableroStore';
 import { audioDeTexto } from '@/shared/audio/audioDeTexto';
@@ -46,9 +46,8 @@ const Dibujo: React.FC<{ pic: Pictograma; className: string }> = ({ pic, classNa
 };
 
 /** Una tecla: tarjeta blanca con el dibujo grande y una franja fina del color de su categoría. */
-const Tecla: React.FC<{ pic: Pictograma; alTocar: (pic: Pictograma) => void }> = ({ pic, alTocar }) => {
+const Tecla: React.FC<{ pic: Pictograma; franja: string; alTocar: (pic: Pictograma) => void }> = ({ pic, franja, alTocar }) => {
   const [pulsada, setPulsada] = useState(false);
-  const franja = franjaDe(pic.categoria).split(' ')[0];
   return (
     <button
       type="button"
@@ -91,7 +90,7 @@ export const TableroSAAC: React.FC<{ onCerrar: () => void }> = ({ onCerrar }) =>
     return () => window.removeEventListener('keydown', alTeclear);
   }, [onCerrar]);
 
-  const palabras = useMemo(() => ordenarTablero(todos ?? []), [todos]);
+  const palabras = usePalabrasDelTablero(activeStudentId);
   const ayuda = todos?.find((p) => p.id === 'pic-ayuda');
 
   const registrar = (pics: Pictograma[], extra = '') => {
@@ -221,8 +220,8 @@ export const TableroSAAC: React.FC<{ onCerrar: () => void }> = ({ onCerrar }) =>
 
       <div className="flex-1 overflow-y-auto px-3 sm:px-6 py-4">
         <div className="grid grid-cols-[repeat(auto-fill,minmax(7.5rem,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(9rem,1fr))] gap-3 sm:gap-4 max-w-6xl mx-auto">
-          {palabras.map((pic) => (
-            <Tecla key={pic.id ?? pic.palabra} pic={pic} alTocar={tocarTecla} />
+          {(palabras ?? []).map(({ celda, pic, franja }) => (
+            <Tecla key={celda.id} pic={pic} franja={franja} alTocar={tocarTecla} />
           ))}
         </div>
       </div>

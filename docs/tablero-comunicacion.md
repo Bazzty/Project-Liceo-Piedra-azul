@@ -1,7 +1,7 @@
 # Tablero de comunicación editable (estilo Asterics Grid)
 
 **Historia Jira:** PLPA-109 «Mejorar el tablero de comunicaciones con referencia a características de Asterics Grid».
-**Estado:** análisis y decisiones cerradas; implementación en curso, empezando por T1. **No se crearán subtareas en Jira**: el trabajo avanza según las tareas T1–T8 de este documento y **todos los commits usan `PLPA-109`**.
+**Estado:** análisis y decisiones cerradas; implementación en curso: **T1 y T2 hechas**. **No se crearán subtareas en Jira**: el trabajo avanza según las tareas T1–T8 de este documento y **todos los commits usan `PLPA-109`**.
 **Origen:** pedido del cliente (la profesora): que el tablero se parezca a los de Asterics Grid, que ella pueda editar lo que ve cada niño y que exista un teclado para escribir.
 
 ## Cómo está hoy (antes del cambio)
@@ -23,11 +23,11 @@
 | # | Decisión |
 |---|---|
 | 1 | Los tableros se guardan **primero en el navegador (IndexedDB)**, pero el modelo se diseña para pasarlo después al backend (PostgreSQL) sin rehacerlo. |
-| 2 | **Copia por niño**: al asignar una plantilla, el niño recibe su propia copia. Un cambio posterior en la plantilla general no le llega. Botón «restablecer a la plantilla». |
+| 2 | **Copia por niño al editar por primera vez**: mientras la profesora no toque nada, el niño usa la plantilla general y recibe sus mejoras; desde su primera edición tiene una copia propia que ya no cambia sola. Botón «restablecer a la plantilla». |
 | 3 | El niño ve **un tablero principal activo**; el resto se alcanza por celdas-carpeta. |
 | 4 | **Un nivel de carpetas**: tablero principal + carpetas (ver [Carpetas](#carpetas)). |
 | 5 | Cada celda lleva pictograma y palabra, **texto hablado distinto del mostrado**, **categoría y color propios** y **foto real**. |
-| 6 | El profesor puede **crear categorías propias** (nombre y color). Deja de existir la lista cerrada de 6. |
+| 6 | El profesor puede **crear categorías propias** (nombre y color). Deja de existir la lista cerrada de 6. El color se elige de una **paleta de 6** sacada de los temas (azul, verde, naranja, amarillo, rojo, celeste), para conservar el contraste y el bajo estímulo. |
 
 ### Editor del profesor
 | # | Decisión |
@@ -82,11 +82,13 @@ TABLERO PRINCIPAL                      AL TOCAR «Comida»
 - Sacar del código la lista de palabras, el orden y las categorías: la plantilla general pasa a ser **datos**, una plantilla más.
 - Unificar el encabezado: hoy hay un `Header` que casi nadie usa y botones HABLAR sueltos en cada vista.
 - Cada palabra nueva se guarda como **pictograma real** (origen `arasaac` o `propio`), para no romper el seguimiento, que usa `pictogramaIds`.
-- Modelo propuesto (a añadir también a `docs/modelo-datos.md` cuando se implemente):
-  - `tableros`: id, nombre, `es_plantilla`, `estudiante_id` (nulo si es plantilla), `copiado_de` (nulo), `es_principal`.
-  - `tablero_celdas`: id, tablero_id, orden, tipo (`palabra`, `carpeta`), pictograma_id (nulo en carpeta), texto_mostrado, texto_hablado, categoria_id, `destino_tablero_id` (solo carpeta), `es_nucleo`.
-  - `categorias_pictograma` deja de ser fija: nombre, color y orden editables.
-- **Dexie:** subir la versión de la base y escribir su test de migración (como el de las sílabas en `migraciones.test.ts`). Los alumnos existentes reciben la plantilla general al migrar.
+- **Modelo (T2, hecho)** en Dexie v4, con tipos en `frontend/src/types/index.ts`:
+  - `tableros`: id, nombre, `esPlantilla`, `alumnoId` (si es copia de un niño), `copiadoDe`, `principal` y **sus celdas dentro del mismo registro**, en orden. Es lo más simple para copiar, reordenar y guardar de una vez; al pasar al backend (T8) se normaliza en una tabla `tablero_celdas` (id, tablero_id, orden, tipo, pictograma_id, texto_mostrado, texto_hablado, categoria_id, destino_tablero_id, es_nucleo).
+  - Celda: `tipo` (`palabra` o `carpeta`), `pictogramaId`, `textoMostrado`, `textoHablado`, `categoriaId`, `destinoTableroId` (solo carpeta) y `esNucleo`.
+  - `categorias`: id, nombre, color (de la paleta) y orden, editables.
+  - La plantilla general (`plantilla-general` y una carpeta por categoría) se construye con `construirPlantillaGeneral` y se carga al iniciar si falta (`mocks/tableros.ts`). Cada palabra queda en un solo lugar: las 8 núcleo en el principal y el resto en su carpeta.
+  - Un niño usa su tablero propio si existe y, si no, la plantilla general (`api/tableros.ts`). La copia propia se crea al editar por primera vez (T4).
+- **Dexie:** v4 solo agrega las tablas; no migra datos porque la plantilla se siembra al iniciar. Cubierto por `db/esquema.test.ts` y `features/tablero/plantillaGeneral.test.ts`. Mientras llega T3, el tablero del niño sigue siendo una sola grilla: se muestran las palabras del principal y luego las de cada carpeta (`aplanarTablero`).
 - **Accesibilidad:** el tablero es un `role="dialog"`; el editor debe usarse solo con teclado; todo pictograma o imagen lleva texto alternativo; no depender solo del color para distinguir carpetas.
 
 ## Tareas propuestas
@@ -95,8 +97,8 @@ Todas dentro de **PLPA-109**, sin subtareas en Jira: las ramas y los commits usa
 
 | # | Tarea | Qué incluye | Depende de |
 |---|---|---|---|
-| T1 | **Botón global y estado del tablero** | Un solo botón en el encabezado visible en niño y docente; frase y estado de apertura en un store; quitar los botones sueltos. | — |
-| T2 | **Modelo de datos y plantilla general como datos** | Tablas de tableros, celdas y categorías abiertas; migración de Dexie con test; plantilla general (con carpetas) cargada desde datos; el tablero lee de ahí. | — |
+| T1 ✅ | **Botón global y estado del tablero** | Un solo botón en el encabezado visible en niño y docente; frase y estado de apertura en un store; quitar los botones sueltos. | — |
+| T2 ✅ | **Modelo de datos y plantilla general como datos** | Tablas de tableros, celdas y categorías abiertas; migración de Dexie con test; plantilla general (con carpetas) cargada desde datos; el tablero lee de ahí. | — |
 | T3 | **Tablero del niño con carpetas** | Celdas-carpeta, volver siempre visible, fila de palabras núcleo, regreso automático, nombre hablado de la carpeta. | T2 |
 | T4 | **Editor del profesor** | Sección en el panel docente: crear/duplicar/editar/eliminar tableros y carpetas, celdas, categorías propias, reordenar (arrastrar y botones), asignar a cada niño, restablecer. | T2 |
 | T5 | **Selector de pictogramas** | Escribir la palabra y elegir de ARASAAC o subir foto; descarga para uso sin internet; crédito de ARASAAC. | T4 |

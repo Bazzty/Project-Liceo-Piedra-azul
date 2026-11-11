@@ -6,3 +6,4 @@ export * from './niveles';
 export * from './pictogramas';
 export * from './progresos';
 export * from './registros';
+export * from './tableros';

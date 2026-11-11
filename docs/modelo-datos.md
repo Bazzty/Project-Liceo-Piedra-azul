@@ -57,8 +57,10 @@ erDiagram
 | `pagina_segmentos` | id, pagina_id, orden, texto, pictograma_id (nulo) | Palabra o frase con su pictograma (RF-07). |
 | `actividades` | id, titulo, tipo (`silaba`, `palabra`), nivel_id, estado, autor_id, deleted_at | Nivel A. |
 | `actividad_items` | id, actividad_id, orden, texto, pictograma_id (nulo), audio_path | Un MP3 por ítem. |
-| `categorias_pictograma` | id, nombre, orden | Necesidades, emociones, personas, acciones, objetos. |
+| `categorias_pictograma` | id, nombre, color (`aprender`, `hablar`, `colores`, `logros`, `alerta`, `info`), orden | Necesidades, emociones, personas, acciones, objetos y básicas de inicio; la docente puede crear más (PLPA-109). |
 | `pictogramas` | id, palabra, categoria_id, origen (`arasaac`, `propio`), arasaac_id (nulo), imagen_path, alt_text, subido_por (nulo), activo | alt_text obligatorio (RNF-03). Propios en WebP sin EXIF. |
+| `tableros` | id, nombre, es_plantilla, estudiante_id (nulo si es plantilla), copiado_de (nulo), es_principal | Tablero de comunicación (PLPA-109). Un niño usa su tablero propio y, si no tiene, la plantilla general. La copia propia nace en la primera edición. |
+| `tablero_celdas` | id, tablero_id, orden, tipo (`palabra`, `carpeta`), pictograma_id (nulo), texto_mostrado, texto_hablado (nulo), categoria_id, destino_tablero_id (nulo, solo carpeta), es_nucleo | Las palabras núcleo se ven siempre. Hoy, en el navegador, las celdas van dentro del registro del tablero; aquí se normalizan. |
 
 ### Seguimiento y calidad
 

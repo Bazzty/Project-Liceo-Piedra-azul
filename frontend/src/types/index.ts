@@ -45,6 +45,50 @@ export interface Pictograma {
 	esFotoReal: boolean;
 }
 
+// 3b. Tablero de comunicación editable (estilo Asterics Grid)
+/** Colores que puede elegir el profesor: salen de los temas, así conservan el contraste y el bajo estímulo. */
+export type ColorTablero = 'aprender' | 'hablar' | 'colores' | 'logros' | 'alerta' | 'info';
+
+export interface CategoriaTablero {
+	id: string;
+	nombre: string;
+	color: ColorTablero;
+	orden: number;
+}
+
+export type TipoCelda = 'palabra' | 'carpeta';
+
+/** Una celda dice una palabra o abre otro tablero (carpeta). */
+export interface CeldaTablero {
+	id: string;
+	tipo: TipoCelda;
+	/** Pictograma de la palabra (en una carpeta, dibujo opcional). */
+	pictogramaId?: string;
+	textoMostrado: string;
+	/** Lo que se dice si es distinto de lo que se muestra («Agua» → «Quiero agua»). */
+	textoHablado?: string;
+	categoriaId: string;
+	/** Solo carpetas: el tablero que abre. */
+	destinoTableroId?: string;
+	/** Palabra núcleo: se ve siempre, también dentro de las carpetas. */
+	esNucleo?: boolean;
+}
+
+/**
+ * Un tablero con sus celdas en orden. La plantilla general (`esPlantilla`) la trae la app; un niño usa
+ * esa mientras la docente no edite, y desde su primera edición tiene copia propia (`alumnoId`, `copiadoDe`).
+ */
+export interface Tablero {
+	id: string;
+	nombre: string;
+	esPlantilla: boolean;
+	alumnoId?: string;
+	copiadoDe?: string;
+	/** Tablero de entrada; los demás se alcanzan por carpetas. */
+	principal: boolean;
+	celdas: CeldaTablero[];
+}
+
 // 4. Estructura de Lectura Dual (Palabra + Pictograma + Audio)
 export interface Silaba {
 	texto: string;
