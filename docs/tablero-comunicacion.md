@@ -1,7 +1,7 @@
 # Tablero de comunicación editable (estilo Asterics Grid)
 
 **Historia Jira:** PLPA-109 «Mejorar el tablero de comunicaciones con referencia a características de Asterics Grid».
-**Estado:** análisis y decisiones cerradas; implementación en curso: **T1 a T7 hechas** (queda T8). **No se crearán subtareas en Jira**: el trabajo avanza según las tareas T1–T8 de este documento y **todos los commits usan `PLPA-109`**.
+**Estado:** análisis y decisiones cerradas; implementación en curso: **T1 a T7 hechas; T8 solo en esquema**. **No se crearán subtareas en Jira**: el trabajo avanza según las tareas T1–T8 de este documento y **todos los commits usan `PLPA-109`**.
 **Origen:** pedido del cliente (la profesora): que el tablero se parezca a los de Asterics Grid, que ella pueda editar lo que ve cada niño y que exista un teclado para escribir.
 
 ## Cómo está hoy (antes del cambio)
@@ -118,6 +118,8 @@ TABLERO PRINCIPAL                      AL TOCAR «Comida»
   - **Atribución de ARASAAC (licencia CC BY-NC-SA):** se muestra el componente `Creditos` **junto a los dibujos de ARASAAC del selector y al pie de la página del editor**, además del login que ya lo tenía.
   - `esDelCatalogoBase` deja fuera `arasaac-*` y `foto-*` al restablecer la plantilla de fábrica.
 - **Audio de las palabras nuevas (T6, hecho):** cada celda guarda `audioUrl` y `audioTexto` (el texto para el que se generó); si la docente cambia lo que dice, el audio deja de valer solo (`audioDeCeldas.ts`). Al **guardar una palabra o carpeta** sin grabación en la app, el editor pide el audio al servidor (`POST /api/v1/audio`, la misma ruta de los cuentos) y lo guarda en la celda. Si falla (sin sesión con el servidor, sin internet), la celda se guarda igual y suena con la voz del navegador; un aviso lo explica. El botón **«Generar audios que faltan (N)»** reintenta todo lo pendiente, incluidos los **nombres de las carpetas**. El tablero del niño usa ese audio (también al tocar una carpeta). El formulario avisa «no escribas nombres de niños» porque el texto sale a un servicio de voz.
+- **Servidor (T8, solo el esquema):** se crearon las migraciones de `tableros`, `tablero_celdas` y el color de las categorías, con reglas en la propia base y pruebas (`TablerosTest`); detalle en [modelo-datos.md](modelo-datos.md#tablero-de-comunicación-plpa-109). Se eligieron **tablas normalizadas**, como pedía el modelo, porque `estudiantes` y `pictogramas` ya existen en el servidor.
+  - **⚠ No está conectado con la app:** no hay modelos ni API de tableros, y la app sigue guardando todo en el navegador. Conectarlo exige antes sincronizar estudiantes y pictogramas, subir las fotos propias, y que los niños inicien sesión contra la API. El esquema puede necesitar ajustes entonces.
 - **Accesibilidad:** cada acción tiene un único control con nombre propio («Mover «agua» antes», «Quitar «agua»»…); el arrastre tiene su alternativa con botones; los avisos van en una región `aria-live`. «Probar el tablero» abre el tablero real.
 - **Accesibilidad:** el tablero es un `role="dialog"`; el editor debe usarse solo con teclado; todo pictograma o imagen lleva texto alternativo; no depender solo del color para distinguir carpetas.
 
@@ -134,13 +136,14 @@ Todas dentro de **PLPA-109**, sin subtareas en Jira: las ramas y los commits usa
 | T5 ✅ | **Selector de pictogramas** | Escribir la palabra y elegir de ARASAAC o subir foto; descarga para uso sin internet; crédito de ARASAAC. | T4 |
 | T6 ✅ | **Audio de palabras nuevas** | Generar el audio al guardar (`/audio`) con respaldo a la voz del navegador, sin datos de niños. | T4 |
 | T7 ✅ | **Teclado** | Botón dentro del tablero; teclado QWERTY simple; sonido de cada letra; Enter dice lo escrito; mezcla con pictogramas; registro sin el texto. | T1 |
-| T8 | **Sincronizar con el backend** | API y tablas en PostgreSQL para pasar los tableros del navegador al servidor. Posterior; se decide cuando se retome la conexión backend-frontend (PLPA-64). | T2 |
+| T8 (solo esquema ✅) | **Sincronizar con el backend** | API y tablas en PostgreSQL para pasar los tableros del navegador al servidor. Posterior; se decide cuando se retome la conexión backend-frontend (PLPA-64). | T2 |
 
 Orden sugerido (T1 a T4 ya hechas): **T1 y T2** primero (no dependen entre sí), luego T3, T4 y T7; después T5 y T6; T8 al final.
 
 ## Pendientes
 
 - **⚠ Audios con dos voces distintas (por corregir):** los nombres de las carpetas y los sonidos de las consonantes del teclado (26 audios) se generaron con una voz predeterminada de ElevenLabs, **distinta a la del osito** que usa el resto de la app. Detalle, lista de archivos y cómo unificarlas en [audios-interfaz.md](audios-interfaz.md#-advertencia-hay-dos-voces-mezcladas-por-corregir). Además, **nadie ha escuchado esos 26 audios**: hay que revisar la pronunciación.
+- **T8, conexión con el servidor (pendiente):** ver el aviso del párrafo «Servidor (T8…)»: sincronizar estudiantes y pictogramas, fotos propias, inicio de sesión de los niños y la API de tableros. No hay un ticket para esa conexión; conviene crearlo.
 - Conseguir **capturas o un tablero de ejemplo de Asterics Grid** del cliente para ajustar el diseño visual.
 - **Sonidos de las letras del teclado (generados, por revisar):** el 2026-11-11 se generaron los de las 21 consonantes que faltaban con `npm run audios:pendientes` (ya hechos: no hace falta volver a correrlo). Ver la advertencia de arriba sobre la voz y la pronunciación. Los textos fonéticos usados están en `frontend/scripts/audios-pendientes.mjs`.
 - **Estado de la clave de ElevenLabs:** la clave y el id de voz están en `backend/.env` y `frontend/.env.local` (ignorados por git). La clave ya tiene el permiso `text_to_speech`, pero el plan gratuito no permite voces de la biblioteca (402), por eso se usa una voz predeterminada. La clave se compartió por chat: conviene **rotarla**.
