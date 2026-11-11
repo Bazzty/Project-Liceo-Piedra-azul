@@ -34,6 +34,7 @@ import {
 } from '@/features/tablero/gestionTableros';
 import { CATEGORIAS_INICIALES, construirPlantillaGeneral, esDelCatalogoBase, ID_PLANTILLA_GENERAL } from '@/features/tablero/plantillaGeneral';
 import { useConjuntoEditable } from '@/features/tablero/useConjuntoEditable';
+import { Creditos } from '@/shared/components/Creditos';
 import { useTableroStore } from '@/shared/store/useTableroStore';
 import { Button } from '@/shared/ui';
 import type { CategoriaTablero, CeldaTablero } from '@/types';
@@ -359,6 +360,8 @@ export const EditorTablero: React.FC = () => {
           </nav>
         </div>
       </Hoja>
+
+      <Creditos className="text-xs text-secondary" />
 
       {dialogo?.tipo === 'plantilla-nueva' && (
         <DialogoPlantilla

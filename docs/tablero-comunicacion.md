@@ -1,7 +1,7 @@
 # Tablero de comunicación editable (estilo Asterics Grid)
 
 **Historia Jira:** PLPA-109 «Mejorar el tablero de comunicaciones con referencia a características de Asterics Grid».
-**Estado:** análisis y decisiones cerradas; implementación en curso: **T1 a T4 y T7 hechas**. **No se crearán subtareas en Jira**: el trabajo avanza según las tareas T1–T8 de este documento y **todos los commits usan `PLPA-109`**.
+**Estado:** análisis y decisiones cerradas; implementación en curso: **T1 a T5 y T7 hechas**. **No se crearán subtareas en Jira**: el trabajo avanza según las tareas T1–T8 de este documento y **todos los commits usan `PLPA-109`**.
 **Origen:** pedido del cliente (la profesora): que el tablero se parezca a los de Asterics Grid, que ella pueda editar lo que ve cada niño y que exista un teclado para escribir.
 
 ## Cómo está hoy (antes del cambio)
@@ -112,6 +112,11 @@ TABLERO PRINCIPAL                      AL TOCAR «Comida»
   - **Espacio** pasa la palabra escrita a la frase y la dice entera (con su grabación si existe, si no con la voz del navegador). **Enter** dice toda la frase, incluida la palabra a medias. **Borrar** quita la última letra y, sin letras, la última palabra de la frase. Si el niño toca un dibujo con una palabra a medias, esa palabra queda antes del dibujo.
   - También se escribe con el teclado del computador mientras está abierto; el espacio no activa el botón que tenga el foco. **Escape** cierra primero el teclado y luego el tablero; la flecha de volver hace lo mismo. Una palabra tiene hasta 20 letras y la frase sigue siendo de 8 palabras.
   - **Privacidad:** lo escrito **no se guarda** en el seguimiento. El registro dice, por ejemplo, `Tablero: «quiero …» (teclado: 1 palabra)`, y los ids de pictograma no incluyen las palabras escritas.
+- **Selector de dibujos completo (T5, hecho):** `SelectorPictograma.tsx` suma lo que faltaba de T4b.
+  - **Foto propia:** botón «Subir una foto» (necesita la palabra escrita antes). La foto se **reduce a 400 px y se guarda como WebP** (`imagenes.ts`), lo que además **elimina sus metadatos** (ubicación, fecha, cámara) y respeta su orientación. Se guarda como pictograma `foto-<id>` con `esFotoReal`. Se rechaza lo que no es imagen y lo que pesa más de 10 MB. El selector advierte «No subas fotos de niños» (datos de menores mínimos). Las fotos ya subidas quedan en **«Mis fotos»** para reutilizarlas.
+  - **Uso sin internet:** al elegir un dibujo de ARASAAC se **baja y se guarda en el navegador** (también WebP de 400 px) y el selector avisa «se verá también sin internet». Si no se pudo bajar, usa la dirección de internet y avisa que solo se verá con conexión. Un dibujo ya guardado se reutiliza sin volver a bajarlo. (No hay un plugin de PWA configurado; esto cubre el caso sin depender de él.)
+  - **Atribución de ARASAAC (licencia CC BY-NC-SA):** se muestra el componente `Creditos` **junto a los dibujos de ARASAAC del selector y al pie de la página del editor**, además del login que ya lo tenía.
+  - `esDelCatalogoBase` deja fuera `arasaac-*` y `foto-*` al restablecer la plantilla de fábrica.
 - **Accesibilidad:** cada acción tiene un único control con nombre propio («Mover «agua» antes», «Quitar «agua»»…); el arrastre tiene su alternativa con botones; los avisos van en una región `aria-live`. «Probar el tablero» abre el tablero real.
 - **Accesibilidad:** el tablero es un `role="dialog"`; el editor debe usarse solo con teclado; todo pictograma o imagen lleva texto alternativo; no depender solo del color para distinguir carpetas.
 
@@ -125,7 +130,7 @@ Todas dentro de **PLPA-109**, sin subtareas en Jira: las ramas y los commits usa
 | T2 ✅ | **Modelo de datos y plantilla general como datos** | Tablas de tableros, celdas y categorías abiertas; migración de Dexie con test; plantilla general (con carpetas) cargada desde datos; el tablero lee de ahí. | — |
 | T3 ✅ | **Tablero del niño con carpetas** | Celdas-carpeta, volver siempre visible, fila de palabras núcleo, regreso automático, nombre hablado de la carpeta. | T2 |
 | T4 ✅ | **Editor del profesor** | Sección en el panel docente: crear/duplicar/editar/eliminar tableros y carpetas, celdas, categorías propias, reordenar (arrastrar y botones), asignar a cada niño, restablecer. | T2 |
-| T5 | **Selector de pictogramas** | Escribir la palabra y elegir de ARASAAC o subir foto; descarga para uso sin internet; crédito de ARASAAC. | T4 |
+| T5 ✅ | **Selector de pictogramas** | Escribir la palabra y elegir de ARASAAC o subir foto; descarga para uso sin internet; crédito de ARASAAC. | T4 |
 | T6 | **Audio de palabras nuevas** | Generar el audio al guardar (`/audio`) con respaldo a la voz del navegador, sin datos de niños. | T4 |
 | T7 ✅ | **Teclado** | Botón dentro del tablero; teclado QWERTY simple; sonido de cada letra; Enter dice lo escrito; mezcla con pictogramas; registro sin el texto. | T1 |
 | T8 | **Sincronizar con el backend** | API y tablas en PostgreSQL para pasar los tableros del navegador al servidor. Posterior; se decide cuando se retome la conexión backend-frontend (PLPA-64). | T2 |
@@ -138,6 +143,7 @@ Orden sugerido (T1 a T4 ya hechas): **T1 y T2** primero (no dependen entre sí),
 
 - Definir **dónde se muestra el crédito de ARASAAC** (punto 9).
 - Conseguir **capturas o un tablero de ejemplo de Asterics Grid** del cliente para ajustar el diseño visual.
+- **Estado de la clave de ElevenLabs (2026-11-11):** la clave y el id de voz ya están configurados en `backend/.env` y `frontend/.env.local` (ambos ignorados por git). **La clave actual no tiene el permiso `text_to_speech`**, así que ElevenLabs responde 401 a cualquier generación. En ElevenLabs → *Developers → API keys* hay que activar **Text to Speech** para esa clave (o crear otra con ese permiso). Mientras tanto, el servidor usa Piper de respaldo y las letras suenan con la voz del navegador. La clave se compartió por chat: conviene **rotarla** una vez corregidos los permisos.
 - **Faltan los sonidos de 21 letras** para el teclado. Ya hay grabación de las vocales (`a e i o u`) y de la **m** (`/m/`, hecha a mano), y de los números 0–9. Faltan en `frontend/public/audio/fonemas/`: `b c d f g h j k l n p q r s t v w x y z` y `enie` (Ñ). Mientras falten, la tecla suena con la **voz del navegador, que dice el nombre de la letra** («be»), no su sonido: es solo un respaldo.
   - **Cómo generarlos:** agregar cada uno al manifiesto (`frontend/scripts/audios.manifest.json`, `archivo: "fonemas/<letra>.mp3"`), correr `npm run audios -- --solo=fonemas` con `ELEVENLABS_API_KEY` y `ELEVENLABS_VOICE_ID` en `frontend/.env.local`, y `npm run audios:indice`. No se agregaron al manifiesto antes porque una prueba exige que cada entrada tenga su archivo.
   - **Ojo pedagógico:** un TTS no dice bien una consonante suelta (`/p/` sale «pe»). Para las que se pueden alargar (`s f l n r j z v`) sirve un texto como «sss», «fff»; para las explosivas (`p t k b d g`) conviene que la profesora decida cómo se enseñan (con una vocal de apoyo, o grabarlas a mano, como la `m`). **Escuchar y revisar cada una** antes de dar el audio por bueno."

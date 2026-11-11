@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { catalogo } from '@/features/tablero/catalogoDePrueba';
 import { EditorTablero } from '@/features/tablero/editor/EditorTablero';
+import { descargarDibujo, reducirImagen } from '@/features/tablero/imagenes';
 import { CATEGORIAS_INICIALES, construirPlantillaGeneral } from '@/features/tablero/plantillaGeneral';
 import type { Pictograma, Tablero } from '@/types';
 
@@ -46,8 +47,11 @@ vi.mock('@/api', async () => {
       categoriasGuardadas.lista = [...mapa.values()].sort((a, b) => (a as unknown as { orden: number }).orden - (b as unknown as { orden: number }).orden);
       avisar();
     },
-    usePictogramas: () => catalogo,
-    guardarPictograma: async (p: unknown) => void guardados.push(p),
+    usePictogramas: () => useReactivo(() => [...catalogo, ...(guardados as typeof catalogo)]),
+    guardarPictograma: async (p: unknown) => {
+      guardados.push(p);
+      avisar();
+    },
     obtenerTablero: async (id: string) => almacen.get(id),
     obtenerTableros: async (ids: string[]) => ids.map((id) => almacen.get(id)).filter(Boolean),
     tablerosDeAlumno: async (alumnoId: string) => [...almacen.values()].filter((t) => (t as Tablero).alumnoId === alumnoId),
@@ -87,6 +91,13 @@ vi.mock('@/features/tablero/useConjuntoEditable', async () => {
   };
 });
 
+// Bajar y reducir imágenes necesita internet y un lienzo: se simula.
+vi.mock('@/features/tablero/imagenes', async (original) => ({
+  ...(await original<typeof import('@/features/tablero/imagenes')>()),
+  descargarDibujo: vi.fn(),
+  reducirImagen: vi.fn(),
+}));
+
 vi.mock('@/features/tablero/arasaac', () => ({
   searchArasaacPictograms: vi.fn(async (palabra: string) => (palabra === 'galleta' ? [{ id: 123, url: 'https://arasaac.test/123.png' }] : [])),
 }));
@@ -109,6 +120,8 @@ beforeEach(() => {
   oyentes.clear();
   guardados.length = 0;
   categoriasGuardadas.lista = structuredClone(CATEGORIAS_INICIALES);
+  vi.mocked(descargarDibujo).mockResolvedValue('data:image/webp;base64,QUJD');
+  vi.mocked(reducirImagen).mockResolvedValue('data:image/webp;base64,Rk9UTw==');
   construirPlantillaGeneral(catalogo).forEach((t) => almacen.set(t.id, structuredClone(t)));
 });
 
@@ -150,7 +163,7 @@ describe('Editor del tablero: agregar', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Agregar palabra' }));
     await userEvent.type(screen.getByLabelText('Palabra'), 'galleta');
     await userEvent.click(await screen.findByRole('button', { name: 'Usar la opción 1 de ARASAAC para «galleta»' }, { timeout: 2000 }));
-    expect(guardados[0]).toMatchObject({ id: 'arasaac-123', palabra: 'galleta', imagenUrl: 'https://arasaac.test/123.png' } satisfies Partial<Pictograma>);
+    expect(guardados[0]).toMatchObject({ id: 'arasaac-123', palabra: 'galleta', imagenUrl: 'data:image/webp;base64,QUJD' } satisfies Partial<Pictograma>);
     await userEvent.click(screen.getByRole('button', { name: 'Agregar' }));
     expect(await within(tablaGrande()).findByRole('button', { name: 'Editar «galleta»' })).toBeInTheDocument();
     expect(general().celdas.at(-1)).toMatchObject({ tipo: 'palabra', pictogramaId: 'arasaac-123', textoMostrado: 'galleta' });
@@ -547,5 +560,104 @@ describe('Editor del tablero: categorías', () => {
     await userEvent.click(within(dialogo).getByRole('button', { name: 'Agregar' }));
     await userEvent.click(await within(dialogo).findByRole('button', { name: 'Quitar la categoría Vacía' }));
     await waitFor(() => expect(categoriasGuardadas.lista).toHaveLength(6));
+  });
+});
+
+describe('Editor del tablero: selector de dibujos', () => {
+  const abrirDialogoDePalabra = async (palabra: string) => {
+    await abrir();
+    await userEvent.click(screen.getByRole('button', { name: 'Agregar palabra' }));
+    if (palabra) await userEvent.type(screen.getByLabelText('Palabra'), palabra);
+  };
+  const entradaDeFoto = () => screen.getByLabelText('Elegir una foto de este equipo');
+  const foto = (nombre = 'liceo.jpg', tipo = 'image/jpeg') => new File(['x'], nombre, { type: tipo });
+  const elegirOpcionDeArasaac = () => screen.findByRole('button', { name: 'Usar la opción 1 de ARASAAC para «galleta»' }, { timeout: 2000 });
+
+  it('un dibujo de ARASAAC se baja y se guarda para verse sin internet, y avisa', async () => {
+    await abrirDialogoDePalabra('galleta');
+    await userEvent.click(await elegirOpcionDeArasaac());
+    expect(descargarDibujo).toHaveBeenCalledWith('https://arasaac.test/123.png');
+    expect(await screen.findByText('Dibujo guardado: se verá también sin internet.')).toBeInTheDocument();
+    expect(guardados[0]).toMatchObject({ id: 'arasaac-123', imagenUrl: 'data:image/webp;base64,QUJD', esFotoReal: false });
+  });
+
+  it('si no se pudo bajar, usa la dirección de internet y avisa que solo se verá con conexión', async () => {
+    vi.mocked(descargarDibujo).mockResolvedValue(null);
+    await abrirDialogoDePalabra('galleta');
+    await userEvent.click(await elegirOpcionDeArasaac());
+    expect(await screen.findByText(/solo con conexión/)).toBeInTheDocument();
+    expect(guardados[0]).toMatchObject({ imagenUrl: 'https://arasaac.test/123.png' });
+  });
+
+  it('un dibujo ya guardado se reutiliza sin volver a bajarlo', async () => {
+    await abrirDialogoDePalabra('galleta');
+    await userEvent.click(await elegirOpcionDeArasaac());
+    await screen.findByText('Dibujo guardado: se verá también sin internet.');
+    await userEvent.click(screen.getByRole('button', { name: 'Usar la opción 1 de ARASAAC para «galleta»' }));
+    expect(descargarDibujo).toHaveBeenCalledTimes(1);
+    expect(guardados).toHaveLength(1);
+  });
+
+  it('muestra la atribución de ARASAAC junto a sus dibujos y al pie de la página', async () => {
+    await abrirDialogoDePalabra('galleta');
+    await elegirOpcionDeArasaac();
+    const creditos = screen.getAllByText(/Pictogramas:/);
+    expect(creditos.length).toBeGreaterThanOrEqual(2);
+    expect(screen.getAllByRole('link', { name: 'ARASAAC' })[0]).toHaveAttribute('href', 'https://arasaac.org');
+  });
+
+  it('sube una foto propia: se reduce, se guarda como pictograma de foto y queda elegida', async () => {
+    await abrirDialogoDePalabra('liceo');
+    const archivo = foto();
+    await userEvent.upload(entradaDeFoto(), archivo);
+    expect(reducirImagen).toHaveBeenCalledWith(archivo);
+    expect(await screen.findByText('Foto guardada.')).toBeInTheDocument();
+    expect(guardados[0]).toMatchObject({ palabra: 'liceo', categoria: 'propias', imagenUrl: 'data:image/webp;base64,Rk9UTw==', esFotoReal: true });
+    expect((guardados[0] as { id: string }).id).toMatch(/^foto-/);
+    await userEvent.click(screen.getByRole('button', { name: 'Agregar' }));
+    expect(await within(tablaGrande()).findByRole('button', { name: 'Editar «liceo»' })).toBeInTheDocument();
+    expect(general().celdas.at(-1)?.pictogramaId).toMatch(/^foto-/);
+  });
+
+  it('sin palabra no se puede subir una foto, y lo explica', async () => {
+    await abrirDialogoDePalabra('');
+    expect(screen.getByRole('button', { name: 'Subir una foto' })).toBeDisabled();
+    expect(screen.getByText('Escribe primero la palabra para poder subir su foto.')).toBeInTheDocument();
+  });
+
+  it('avisa que no se suban fotos de niños', async () => {
+    await abrirDialogoDePalabra('liceo');
+    expect(screen.getByText(/No subas fotos de niños/)).toBeInTheDocument();
+  });
+
+  it('rechaza lo que no es una imagen y las fotos demasiado pesadas, sin guardar nada', async () => {
+    await abrirDialogoDePalabra('liceo');
+    fireEvent.change(entradaDeFoto(), { target: { files: [foto('lista.pdf', 'application/pdf')] } });
+    expect(await screen.findByText(/no es una imagen/)).toBeInTheDocument();
+    const pesada = foto();
+    Object.defineProperty(pesada, 'size', { value: 11 * 1024 * 1024 });
+    fireEvent.change(entradaDeFoto(), { target: { files: [pesada] } });
+    expect(await screen.findByText(/más de 10 MB/)).toBeInTheDocument();
+    expect(reducirImagen).not.toHaveBeenCalled();
+    expect(guardados).toHaveLength(0);
+  });
+
+  it('si la foto no se puede preparar, avisa y no guarda nada', async () => {
+    vi.mocked(reducirImagen).mockRejectedValue(new Error('imagen rota'));
+    await abrirDialogoDePalabra('liceo');
+    await userEvent.upload(entradaDeFoto(), foto());
+    expect(await screen.findByText('No se pudo usar esa foto. Prueba con otra.')).toBeInTheDocument();
+    expect(guardados).toHaveLength(0);
+  });
+
+  it('las fotos ya subidas quedan en «Mis fotos» para volver a usarlas', async () => {
+    await abrirDialogoDePalabra('liceo');
+    await userEvent.upload(entradaDeFoto(), foto());
+    await screen.findByText('Foto guardada.');
+    await userEvent.click(screen.getByRole('button', { name: 'Cancelar' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Agregar palabra' }));
+    const mis = await screen.findByRole('region', { name: 'Mis fotos' });
+    await userEvent.click(within(mis).getByRole('button', { name: 'Usar mi foto de «liceo»' }));
+    expect(screen.getByText('Dibujo elegido para «liceo».')).toBeInTheDocument();
   });
 });
