@@ -5,6 +5,8 @@ import { useAuthStore } from '@/shared/store/useAuthStore';
 /** Una palabra de la frase: el pictograma con el texto que la docente le puso y, si es distinto, lo que se dice. */
 export interface PalabraDeFrase extends Pictograma {
   textoHablado?: string;
+  /** Escrita por el niño con el teclado: es solo texto, sin dibujo. */
+  esTexto?: boolean;
 }
 
 interface TableroState {

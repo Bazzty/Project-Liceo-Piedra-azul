@@ -1,7 +1,7 @@
 # Tablero de comunicación editable (estilo Asterics Grid)
 
 **Historia Jira:** PLPA-109 «Mejorar el tablero de comunicaciones con referencia a características de Asterics Grid».
-**Estado:** análisis y decisiones cerradas; implementación en curso: **T1 a T4 hechas**. **No se crearán subtareas en Jira**: el trabajo avanza según las tareas T1–T8 de este documento y **todos los commits usan `PLPA-109`**.
+**Estado:** análisis y decisiones cerradas; implementación en curso: **T1 a T4 y T7 hechas**. **No se crearán subtareas en Jira**: el trabajo avanza según las tareas T1–T8 de este documento y **todos los commits usan `PLPA-109`**.
 **Origen:** pedido del cliente (la profesora): que el tablero se parezca a los de Asterics Grid, que ella pueda editar lo que ve cada niño y que exista un teclado para escribir.
 
 ## Cómo está hoy (antes del cambio)
@@ -107,6 +107,11 @@ TABLERO PRINCIPAL                      AL TOCAR «Comida»
   - **Restablecer de fábrica** reconstruye la general con el catálogo base (`esDelCatalogoBase` deja fuera los dibujos `arasaac-*` y `foto-*` que la docente agregó, para que no aparezcan sueltos) y recupera las categorías de fábrica si las había borrado.
   - **Categorías** (`DialogoCategorias.tsx`, `edicionCategorias.ts`): crear, renombrar (al salir del campo), cambiar de color (paleta de 6, con nombre del color), ordenar y quitar. **No se puede quitar** una categoría en uso (se indica en cuántas celdas) ni la última.
   - Todo es **deshacible** salvo las categorías, que no son destructivas (lo que está en uso no se borra).
+- **Teclado (T7, hecho):** un botón «Teclado» en la cabecera del tablero (junto a «Ayuda») abre un teclado QWERTY simple en lugar de la grilla; la fila de palabras de siempre y la burbuja se quedan, así dibujos y palabras escritas se mezclan en la misma frase. Lógica en `teclado.ts` (disposición, sonido de cada tecla, traducción del teclado físico), `useEscritura.ts` (lo que se va escribiendo) y `components/TecladoNino.tsx`.
+  - Teclas: los números 0–9, las letras con la Ñ, **Espacio**, **Borrar** y **Enter**. Cada letra suena con **su sonido** (`public/audio/fonemas/<letra>.mp3`; la Ñ es `enie.mp3`) y cada número con su grabación.
+  - **Espacio** pasa la palabra escrita a la frase y la dice entera (con su grabación si existe, si no con la voz del navegador). **Enter** dice toda la frase, incluida la palabra a medias. **Borrar** quita la última letra y, sin letras, la última palabra de la frase. Si el niño toca un dibujo con una palabra a medias, esa palabra queda antes del dibujo.
+  - También se escribe con el teclado del computador mientras está abierto; el espacio no activa el botón que tenga el foco. **Escape** cierra primero el teclado y luego el tablero; la flecha de volver hace lo mismo. Una palabra tiene hasta 20 letras y la frase sigue siendo de 8 palabras.
+  - **Privacidad:** lo escrito **no se guarda** en el seguimiento. El registro dice, por ejemplo, `Tablero: «quiero …» (teclado: 1 palabra)`, y los ids de pictograma no incluyen las palabras escritas.
 - **Accesibilidad:** cada acción tiene un único control con nombre propio («Mover «agua» antes», «Quitar «agua»»…); el arrastre tiene su alternativa con botones; los avisos van en una región `aria-live`. «Probar el tablero» abre el tablero real.
 - **Accesibilidad:** el tablero es un `role="dialog"`; el editor debe usarse solo con teclado; todo pictograma o imagen lleva texto alternativo; no depender solo del color para distinguir carpetas.
 
@@ -122,7 +127,7 @@ Todas dentro de **PLPA-109**, sin subtareas en Jira: las ramas y los commits usa
 | T4 ✅ | **Editor del profesor** | Sección en el panel docente: crear/duplicar/editar/eliminar tableros y carpetas, celdas, categorías propias, reordenar (arrastrar y botones), asignar a cada niño, restablecer. | T2 |
 | T5 | **Selector de pictogramas** | Escribir la palabra y elegir de ARASAAC o subir foto; descarga para uso sin internet; crédito de ARASAAC. | T4 |
 | T6 | **Audio de palabras nuevas** | Generar el audio al guardar (`/audio`) con respaldo a la voz del navegador, sin datos de niños. | T4 |
-| T7 | **Teclado** | Botón dentro del tablero; teclado QWERTY simple; sonido de cada letra; Enter dice lo escrito; mezcla con pictogramas; registro sin el texto. | T1 |
+| T7 ✅ | **Teclado** | Botón dentro del tablero; teclado QWERTY simple; sonido de cada letra; Enter dice lo escrito; mezcla con pictogramas; registro sin el texto. | T1 |
 | T8 | **Sincronizar con el backend** | API y tablas en PostgreSQL para pasar los tableros del navegador al servidor. Posterior; se decide cuando se retome la conexión backend-frontend (PLPA-64). | T2 |
 
 Orden sugerido (T1 a T4 ya hechas): **T1 y T2** primero (no dependen entre sí), luego T3, T4 y T7; después T5 y T6; T8 al final.
@@ -133,4 +138,6 @@ Orden sugerido (T1 a T4 ya hechas): **T1 y T2** primero (no dependen entre sí),
 
 - Definir **dónde se muestra el crédito de ARASAAC** (punto 9).
 - Conseguir **capturas o un tablero de ejemplo de Asterics Grid** del cliente para ajustar el diseño visual.
-- El audio de las letras y números del teclado debe existir como grabación (sonidos de 26 letras + Ñ y dígitos); revisar cuáles ya están en `frontend/scripts/audios.manifest.json` y generar las que falten con ElevenLabs (hace falta `ELEVENLABS_API_KEY` y `ELEVENLABS_VOICE_ID` en `frontend/.env.local`; el script nunca se ha probado con la API real, así que se revisa con `--dry-run` y escuchando el resultado).
+- **Faltan los sonidos de 21 letras** para el teclado. Ya hay grabación de las vocales (`a e i o u`) y de la **m** (`/m/`, hecha a mano), y de los números 0–9. Faltan en `frontend/public/audio/fonemas/`: `b c d f g h j k l n p q r s t v w x y z` y `enie` (Ñ). Mientras falten, la tecla suena con la **voz del navegador, que dice el nombre de la letra** («be»), no su sonido: es solo un respaldo.
+  - **Cómo generarlos:** agregar cada uno al manifiesto (`frontend/scripts/audios.manifest.json`, `archivo: "fonemas/<letra>.mp3"`), correr `npm run audios -- --solo=fonemas` con `ELEVENLABS_API_KEY` y `ELEVENLABS_VOICE_ID` en `frontend/.env.local`, y `npm run audios:indice`. No se agregaron al manifiesto antes porque una prueba exige que cada entrada tenga su archivo.
+  - **Ojo pedagógico:** un TTS no dice bien una consonante suelta (`/p/` sale «pe»). Para las que se pueden alargar (`s f l n r j z v`) sirve un texto como «sss», «fff»; para las explosivas (`p t k b d g`) conviene que la profesora decida cómo se enseñan (con una vocal de apoyo, o grabarlas a mano, como la `m`). **Escuchar y revisar cada una** antes de dar el audio por bueno."

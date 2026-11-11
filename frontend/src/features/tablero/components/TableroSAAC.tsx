@@ -1,8 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ArrowLeft, Delete, FolderOpen, HandHelping, MousePointerClick, Volume2 } from 'lucide-react';
+import { ArrowLeft, Delete, FolderOpen, HandHelping, Keyboard, MousePointerClick, Volume2 } from 'lucide-react';
 import type { CeldaTablero, Pictograma } from '@/types';
 import { crearRegistro, usePictogramas } from '@/api';
 import { useAuthStore } from '@/shared/store/useAuthStore';
+import { TecladoNino } from '@/features/tablero/components/TecladoNino';
+import { teclaDeEvento } from '@/features/tablero/teclado';
+import { useEscritura } from '@/features/tablero/useEscritura';
 import { useTableroDelNino, type CeldaResuelta } from '@/features/tablero/useTableroDelNino';
 import { resolverYGuardarPictograma } from '@/features/tablero/arasaac';
 import { useTableroStore, type PalabraDeFrase } from '@/shared/store/useTableroStore';
@@ -138,12 +141,19 @@ export const TableroSAAC: React.FC<{ onCerrar: () => void }> = ({ onCerrar }) =>
   const [celebra, setCelebra] = useState(false);
   const corte = useRef(0);
   const boca = useBoca(sonando !== null);
+  const [tecladoAbierto, setTecladoAbierto] = useState(false);
+  const escritura = useEscritura({ frase, setFrase, maximo: PALABRAS_POR_FRASE, cortar: () => void (corte.current += 1) });
 
+  // Escape cierra primero el teclado y, si ya está cerrado, el tablero
   useEffect(() => {
-    const alTeclear = (e: KeyboardEvent) => e.key === 'Escape' && onCerrar();
+    const alTeclear = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      if (tecladoAbierto) setTecladoAbierto(false);
+      else onCerrar();
+    };
     window.addEventListener('keydown', alTeclear);
     return () => window.removeEventListener('keydown', alTeclear);
-  }, [onCerrar]);
+  }, [onCerrar, tecladoAbierto]);
 
   const tablero = useTableroDelNino(activeStudentId);
   /** Carpeta abierta (nulo = tablero principal). Se olvida al cerrar el tablero: se entra siempre por el principal. */
@@ -152,15 +162,18 @@ export const TableroSAAC: React.FC<{ onCerrar: () => void }> = ({ onCerrar }) =>
   const vista = carpeta ?? tablero?.principal;
   const ayuda = todos?.find((p) => p.id === 'pic-ayuda');
 
-  const registrar = (pics: Pictograma[], extra = '') => {
+  /** Lo escrito con el teclado no se guarda (puede traer nombres u otros datos): solo cuántas palabras escribió. */
+  const registrar = (pics: PalabraDeFrase[], extra = '') => {
     if (!activeStudentId || supervision || pics.length === 0) return;
+    const escritas = pics.filter((p) => p.esTexto).length;
+    const teclado = escritas > 0 ? ` (teclado: ${escritas} ${escritas === 1 ? 'palabra' : 'palabras'})` : '';
     void crearRegistro({
       alumnoId: activeStudentId,
       tipo: 'tablero',
-      detalle: `Tablero: «${pics.map((p) => p.palabra).join(' ')}»${extra}`,
+      detalle: `Tablero: «${pics.map((p) => (p.esTexto ? '…' : p.palabra)).join(' ')}»${teclado}${extra}`,
       lugar: 'casa',
       fecha: new Date().toISOString(),
-      pictogramaIds: pics.map((p) => p.id ?? '').filter(Boolean),
+      pictogramaIds: pics.filter((p) => !p.esTexto).map((p) => p.id ?? '').filter(Boolean),
     });
   };
 
@@ -180,6 +193,8 @@ export const TableroSAAC: React.FC<{ onCerrar: () => void }> = ({ onCerrar }) =>
 
   const tocarTecla = (pic: PalabraDeFrase) => {
     sonarToque();
+    // Si estaba escribiendo una palabra, queda antes del dibujo: así la frase se lee en el orden en que se armó
+    escritura.cerrarPalabra();
     if (frase.length < PALABRAS_POR_FRASE) setFrase((f) => [...f, pic]);
     corte.current += 1;
     // Cada palabra se dice al tocarla: el niño oye lo que eligió
@@ -199,17 +214,20 @@ export const TableroSAAC: React.FC<{ onCerrar: () => void }> = ({ onCerrar }) =>
   };
 
   /** La flecha de siempre: dentro de una carpeta vuelve al principal; en el principal cierra el tablero. */
-  const volver = () => (carpeta ? setCarpetaId(null) : onCerrar());
+  const volver = () => (tecladoAbierto ? setTecladoAbierto(false) : carpeta ? setCarpetaId(null) : onCerrar());
 
+  /** Dice la frase; si el niño estaba escribiendo una palabra, la incluye. */
   const decirMiFrase = () => {
-    void decir(frase);
-    registrar(frase);
+    const completa = escritura.cerrarPalabra();
+    void decir(completa);
+    registrar(completa);
   };
 
   const pedirAyuda = () => {
     if (!ayuda) return;
     sonarToque();
     corte.current += 1;
+    escritura.limpiar();
     setFrase([ayuda]);
     void decirSecuencia([{ texto: 'Necesito ayuda', audioUrl: audioDeTexto('Necesito ayuda') ?? ayuda.audioUrl }], { alDecir: setSonando });
     registrar([ayuda], ' (botón de ayuda)');
@@ -218,8 +236,34 @@ export const TableroSAAC: React.FC<{ onCerrar: () => void }> = ({ onCerrar }) =>
   const borrarUltima = () => {
     corte.current += 1;
     setSonando(null);
-    setFrase((f) => f.slice(0, -1));
+    // Lo que se estaba escribiendo se borra antes que las palabras ya armadas
+    if (escritura.escribiendo) escritura.limpiar();
+    else setFrase((f) => f.slice(0, -1));
   };
+
+  // Con el teclado abierto, también se escribe con el teclado del computador
+  useEffect(() => {
+    if (!tecladoAbierto) return;
+    const alPulsar = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      const tecla = teclaDeEvento(e.key);
+      if (tecla === null) return;
+      e.preventDefault();
+      if (e.repeat) return;
+      if (tecla === 'espacio') escritura.espacio();
+      else if (tecla === 'borrar') escritura.borrar();
+      else if (tecla === 'enter') decirMiFrase();
+      else escritura.escribir(tecla);
+    };
+    // El espacio activa un botón al soltarlo: se evita para que no pulse la tecla que tenga el foco
+    const alSoltar = (e: KeyboardEvent) => e.key === ' ' && e.preventDefault();
+    window.addEventListener('keydown', alPulsar);
+    window.addEventListener('keyup', alSoltar);
+    return () => {
+      window.removeEventListener('keydown', alPulsar);
+      window.removeEventListener('keyup', alSoltar);
+    };
+  });
 
   return (
     <div role="dialog" aria-modal="true" aria-label="Hablar" className="fixed inset-0 z-50 flex flex-col bg-app text-primary overflow-hidden animate-fadeIn">
@@ -238,17 +282,32 @@ export const TableroSAAC: React.FC<{ onCerrar: () => void }> = ({ onCerrar }) =>
         <p className="sr-only" aria-live="polite">
           {carpeta ? `Carpeta ${carpeta.nombre} abierta` : ''}
         </p>
-        {ayuda && (
+        <div className="flex items-center gap-2 sm:gap-3">
           <button
             type="button"
-            onClick={pedirAyuda}
-            aria-label="Necesito ayuda"
-            className="flex items-center gap-2 h-14 pl-4 pr-5 rounded-full bg-statusDanger text-onStatus cursor-pointer active:scale-90 transition-transform"
+            onClick={() => {
+              sonarToque();
+              setTecladoAbierto((abierto) => !abierto);
+            }}
+            aria-label={tecladoAbierto ? 'Cerrar el teclado' : 'Abrir el teclado para escribir'}
+            aria-pressed={tecladoAbierto}
+            className={`flex items-center gap-2 h-14 pl-4 pr-5 rounded-full border-4 border-borderStrong cursor-pointer active:scale-90 transition-all ${tecladoAbierto ? 'bg-accent text-onAccent ring-4 ring-accent/60' : 'bg-surface text-primary hover:border-brand'}`}
           >
-            <HandHelping className="w-7 h-7" aria-hidden />
-            <span className="text-lg font-black">Ayuda</span>
+            <Keyboard className="w-7 h-7" aria-hidden />
+            <span className="text-lg font-black">Teclado</span>
           </button>
-        )}
+          {ayuda && (
+            <button
+              type="button"
+              onClick={pedirAyuda}
+              aria-label="Necesito ayuda"
+              className="flex items-center gap-2 h-14 pl-4 pr-5 rounded-full bg-statusDanger text-onStatus cursor-pointer active:scale-90 transition-transform"
+            >
+              <HandHelping className="w-7 h-7" aria-hidden />
+              <span className="text-lg font-black">Ayuda</span>
+            </button>
+          )}
+        </div>
       </header>
 
       {/* El osito y su burbuja: ahí aparecen los dibujos que el niño elige */}
@@ -262,30 +321,42 @@ export const TableroSAAC: React.FC<{ onCerrar: () => void }> = ({ onCerrar }) =>
         <div className="relative flex-1 min-w-0 flex items-center gap-3 rounded-[2rem] border-4 border-borderStrong bg-surface p-2 sm:p-3">
           <span className="absolute -left-3 top-1/2 -mt-2.5 w-5 h-5 rotate-45 bg-surface border-l-4 border-b-4 border-borderStrong" aria-hidden />
           <div className="flex-1 min-w-0 flex items-center gap-2 sm:gap-3 overflow-x-auto min-h-20 sm:min-h-24" aria-label="Lo que dice el osito" aria-live="polite">
-            {frase.length === 0 ? (
+            {frase.length === 0 && !escritura.escribiendo ? (
               <MousePointerClick className="mx-auto w-9 h-9 text-borderStrong" aria-hidden />
             ) : (
               frase.map((p, i) => (
                 <span
                   key={`${p.id}-${i}`}
-                  className={`shrink-0 flex flex-col items-center rounded-2xl border-4 px-1.5 pt-1 animate-pop transition-all ${sonando === i ? 'border-brand ring-8 ring-accent/70 scale-110' : 'border-transparent'}`}
+                  className={`shrink-0 flex flex-col items-center justify-center rounded-2xl border-4 px-1.5 pt-1 animate-pop transition-all ${sonando === i ? 'border-brand ring-8 ring-accent/70 scale-110' : 'border-transparent'}`}
                 >
-                  <Dibujo pic={p} className="w-14 h-14 sm:w-20 sm:h-20" />
-                  <span className="text-sm sm:text-base font-black">{p.palabra}</span>
+                  {p.esTexto ? (
+                    <span className="px-2 py-3 text-3xl sm:text-4xl font-black">{p.palabra}</span>
+                  ) : (
+                    <>
+                      <Dibujo pic={p} className="w-14 h-14 sm:w-20 sm:h-20" />
+                      <span className="text-sm sm:text-base font-black">{p.palabra}</span>
+                    </>
+                  )}
                 </span>
               ))
             )}
+            {escritura.escribiendo && (
+              <span className="shrink-0 rounded-2xl border-4 border-dashed border-borderStrong px-3 py-2 text-3xl sm:text-4xl font-black" aria-label={`Escribiendo ${escritura.escribiendo}`}>
+                {escritura.escribiendo}
+                <span className="inline-block w-1 h-8 sm:h-10 ml-1 align-middle bg-brand animate-pulse" aria-hidden />
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            {frase.length > 0 && (
-              <button type="button" onClick={borrarUltima} aria-label="Borrar la última palabra" className="w-12 h-12 rounded-full border-4 border-borderStrong bg-surface flex items-center justify-center cursor-pointer hover:border-brand active:scale-90 transition-all">
+            {(frase.length > 0 || escritura.escribiendo) && (
+              <button type="button" onClick={borrarUltima} aria-label={escritura.escribiendo ? 'Borrar lo que escribí' : 'Borrar la última palabra'} className="w-12 h-12 rounded-full border-4 border-borderStrong bg-surface flex items-center justify-center cursor-pointer hover:border-brand active:scale-90 transition-all">
                 <Delete className="w-6 h-6" aria-hidden />
               </button>
             )}
             <button
               type="button"
               onClick={decirMiFrase}
-              disabled={frase.length === 0}
+              disabled={frase.length === 0 && !escritura.escribiendo}
               aria-label="Que el osito lo diga"
               className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-4 border-borderStrong bg-accent text-onAccent flex items-center justify-center cursor-pointer hover:bg-accent-hover active:scale-90 transition-all disabled:opacity-35 disabled:cursor-not-allowed"
             >
@@ -302,7 +373,12 @@ export const TableroSAAC: React.FC<{ onCerrar: () => void }> = ({ onCerrar }) =>
         </nav>
       )}
 
-      {/* Lo grande es el tablero (principal o carpeta abierta); las carpetas van a su lado, o abajo en pantallas angostas */}
+      {/* Lo grande es el tablero (principal o carpeta abierta) o el teclado; las carpetas van a su lado, o abajo en pantallas angostas */}
+      {tecladoAbierto ? (
+        <div className="flex-1 min-h-0 overflow-y-auto px-3 sm:px-6 py-4">
+          <TecladoNino alTecla={escritura.escribir} alEspacio={escritura.espacio} alBorrar={escritura.borrar} alEnter={decirMiFrase} />
+        </div>
+      ) : (
       <div className="flex-1 min-h-0 flex flex-col sm:flex-row">
         <div key={vista?.id} className="flex-1 min-h-0 overflow-y-auto px-3 sm:px-6 py-4">
           <div className="grid grid-cols-[repeat(auto-fill,minmax(7.5rem,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(9rem,1fr))] gap-3 sm:gap-4">
@@ -328,6 +404,7 @@ export const TableroSAAC: React.FC<{ onCerrar: () => void }> = ({ onCerrar }) =>
           </nav>
         )}
       </div>
+      )}
     </div>
   );
 };

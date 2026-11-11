@@ -2,10 +2,12 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { TableroSAAC } from '@/features/tablero/components/TableroSAAC';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 import { useTableroStore } from '@/shared/store/useTableroStore';
 
-const { decir, estado } = vi.hoisted(() => ({
-  decir: vi.fn(async () => {}),
+const { decir, estado, registro } = vi.hoisted(() => ({
+  decir: vi.fn<(elementos: unknown[]) => Promise<void>>(async () => {}),
+  registro: vi.fn<(datos: unknown) => void>(),
   estado: { volverAlElegir: true, editada: false },
 }));
 
@@ -15,7 +17,7 @@ vi.mock('@/shared/components/LluviaEstrellas', () => ({ LluviaEstrellas: () => n
 // Los mocks se ejecutan antes que los imports de arriba: lo que necesitan se importa dentro de cada uno.
 vi.mock('@/api', async (original) => {
   const { catalogo } = await import('@/features/tablero/catalogoDePrueba');
-  return { ...(await original<typeof import('@/api')>()), usePictogramas: () => catalogo, crearRegistro: vi.fn() };
+  return { ...(await original<typeof import('@/api')>()), usePictogramas: () => catalogo, crearRegistro: registro };
 });
 vi.mock('@/features/tablero/useTableroDelNino', async (original) => {
   const real = await original<typeof import('@/features/tablero/useTableroDelNino')>();
@@ -51,6 +53,7 @@ beforeEach(() => {
   estado.volverAlElegir = true;
   estado.editada = false;
   useTableroStore.setState({ abierto: true, frase: [] });
+  useAuthStore.setState({ activeStudentId: null, supervision: false });
 });
 
 describe('Tablero con carpetas', () => {
@@ -156,5 +159,183 @@ describe('Lo que editó la docente', () => {
     abrir();
     await userEvent.click(screen.getByRole('button', { name: 'quiero' }));
     expect(decir).toHaveBeenLastCalledWith([expect.objectContaining({ texto: 'quiero' })]);
+  });
+});
+
+describe('Teclado', () => {
+  const nombreDeTecla = (c: string) => (c === ' ' ? 'Espacio' : /[0-9]/.test(c) ? `Número ${c}` : `Letra ${c.toUpperCase()}`);
+  const teclear = async (texto: string) => {
+    for (const c of texto) await userEvent.click(screen.getByRole('button', { name: nombreDeTecla(c) }));
+  };
+  const abrirTeclado = async () => {
+    abrir();
+    await userEvent.click(screen.getByRole('button', { name: 'Abrir el teclado para escribir' }));
+  };
+  const frasePalabras = () => useTableroStore.getState().frase.map((p) => ({ palabra: p.palabra, escrita: Boolean(p.esTexto) }));
+  const ultimaVoz = () => decir.mock.calls.at(-1)?.[0];
+
+  it('un botón abre el teclado en lugar del tablero; las palabras de siempre se quedan', async () => {
+    await abrirTeclado();
+    const teclado = screen.getByRole('group', { name: 'Teclado' });
+    expect(within(teclado).getAllByRole('button').length).toBeGreaterThan(37); // 37 teclas + espacio, borrar y enter
+    expect(screen.queryByRole('navigation', { name: 'Carpetas' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'quiero' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Cerrar el teclado' })).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('la flecha de volver cierra primero el teclado y no el tablero', async () => {
+    await abrirTeclado();
+    await userEvent.click(screen.getByRole('button', { name: 'Volver' }));
+    expect(screen.queryByRole('group', { name: 'Teclado' })).toBeNull();
+    expect(cerrar).not.toHaveBeenCalled();
+    expect(screen.getByRole('navigation', { name: 'Carpetas' })).toBeInTheDocument();
+  });
+
+  it('cada letra suena con su sonido y se ve lo que se va escribiendo', async () => {
+    await abrirTeclado();
+    await userEvent.click(screen.getByRole('button', { name: 'Letra M' }));
+    expect(ultimaVoz()).toEqual([{ texto: 'm', audioUrl: '/audio/fonemas/m.mp3' }]);
+    await teclear('a');
+    expect(screen.getByLabelText('Escribiendo ma')).toBeInTheDocument();
+  });
+
+  it('un número suena con su grabación', async () => {
+    await abrirTeclado();
+    await userEvent.click(screen.getByRole('button', { name: 'Número 3' }));
+    expect(ultimaVoz()).toEqual([{ texto: '3', audioUrl: '/audio/textos/tres.mp3' }]);
+  });
+
+  it('con el espacio la palabra pasa a la frase y suena entera', async () => {
+    await abrirTeclado();
+    await teclear('mesa ');
+    expect(frasePalabras()).toEqual([{ palabra: 'mesa', escrita: true }]);
+    expect(ultimaVoz()).toEqual([{ texto: 'mesa', audioUrl: expect.stringMatching(/mesa\.mp3$/) }]);
+    expect(screen.queryByLabelText(/^Escribiendo/)).toBeNull();
+  });
+
+  it('el espacio sin letras no agrega nada', async () => {
+    await abrirTeclado();
+    await teclear(' ');
+    expect(frasePalabras()).toEqual([]);
+  });
+
+  it('se mezclan dibujos y palabras escritas en el orden en que se armaron', async () => {
+    await abrirTeclado();
+    await userEvent.click(screen.getByRole('button', { name: 'quiero' }));
+    await teclear('pan ');
+    await userEvent.click(screen.getByRole('button', { name: 'yo' }));
+    expect(frasePalabras()).toEqual([
+      { palabra: 'quiero', escrita: false },
+      { palabra: 'pan', escrita: true },
+      { palabra: 'yo', escrita: false },
+    ]);
+  });
+
+  it('al tocar un dibujo con una palabra a medias, esa palabra queda antes del dibujo', async () => {
+    await abrirTeclado();
+    await teclear('ab');
+    await userEvent.click(screen.getByRole('button', { name: 'yo' }));
+    expect(frasePalabras()).toEqual([
+      { palabra: 'ab', escrita: true },
+      { palabra: 'yo', escrita: false },
+    ]);
+  });
+
+  it('borrar quita la última letra y, sin letras, la última palabra de la frase', async () => {
+    await abrirTeclado();
+    await teclear('ma');
+    await userEvent.click(screen.getByRole('button', { name: 'Borrar' }));
+    expect(screen.getByLabelText('Escribiendo m')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Borrar' }));
+    expect(screen.queryByLabelText(/^Escribiendo/)).toBeNull();
+    await userEvent.click(screen.getByRole('button', { name: 'quiero' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Borrar' }));
+    expect(frasePalabras()).toEqual([]);
+  });
+
+  it('el botón de borrar de la burbuja borra primero lo que se está escribiendo', async () => {
+    await abrirTeclado();
+    await userEvent.click(screen.getByRole('button', { name: 'quiero' }));
+    await teclear('xy');
+    await userEvent.click(screen.getByRole('button', { name: 'Borrar lo que escribí' }));
+    expect(screen.queryByLabelText(/^Escribiendo/)).toBeNull();
+    expect(frasePalabras()).toEqual([{ palabra: 'quiero', escrita: false }]);
+  });
+
+  it('Enter incluye la palabra a medias y hace que el osito diga toda la frase', async () => {
+    await abrirTeclado();
+    await userEvent.click(screen.getByRole('button', { name: 'quiero' }));
+    await teclear('sol');
+    await userEvent.click(screen.getByRole('button', { name: 'Enter: que el osito diga lo escrito' }));
+    expect(frasePalabras()).toEqual([
+      { palabra: 'quiero', escrita: false },
+      { palabra: 'sol', escrita: true },
+    ]);
+    expect(ultimaVoz()).toEqual([expect.objectContaining({ texto: 'quiero' }), { texto: 'sol', audioUrl: undefined }]);
+  });
+
+  it('también se escribe con el teclado del computador', async () => {
+    await abrirTeclado();
+    await userEvent.keyboard('hola ');
+    expect(frasePalabras()).toEqual([{ palabra: 'hola', escrita: true }]);
+    await userEvent.keyboard('{Backspace}');
+    expect(frasePalabras()).toEqual([]);
+    await userEvent.keyboard('sí');
+    expect(screen.getByLabelText('Escribiendo si')).toBeInTheDocument();
+    await userEvent.keyboard('{Enter}');
+    expect(frasePalabras()).toEqual([{ palabra: 'si', escrita: true }]);
+  });
+
+  it('el espacio del computador no activa el botón que tenga el foco', async () => {
+    await abrirTeclado();
+    await userEvent.keyboard(' ');
+    expect(screen.getByRole('button', { name: 'Cerrar el teclado' })).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('con el teclado cerrado, escribir en el computador no hace nada', async () => {
+    abrir();
+    await userEvent.keyboard('hola ');
+    expect(frasePalabras()).toEqual([]);
+  });
+
+  it('Escape cierra primero el teclado y luego el tablero', async () => {
+    await abrirTeclado();
+    await userEvent.keyboard('{Escape}');
+    expect(screen.queryByRole('group', { name: 'Teclado' })).toBeNull();
+    expect(cerrar).not.toHaveBeenCalled();
+    await userEvent.keyboard('{Escape}');
+    expect(cerrar).toHaveBeenCalledTimes(1);
+  });
+
+  it('una palabra no pasa de 20 letras', async () => {
+    await abrirTeclado();
+    await teclear('a'.repeat(25));
+    expect(screen.getByLabelText(`Escribiendo ${'a'.repeat(20)}`)).toBeInTheDocument();
+  });
+
+  it('la frase no pasa de 8 palabras, escritas o no', async () => {
+    await abrirTeclado();
+    await teclear('a b c d e f g h i ');
+    expect(frasePalabras()).toHaveLength(8);
+  });
+
+  it('lo que el niño escribe no se guarda en el registro: solo cuántas palabras', async () => {
+    useAuthStore.setState({ activeStudentId: 'ana', supervision: false });
+    await abrirTeclado();
+    await userEvent.click(screen.getByRole('button', { name: 'quiero' }));
+    await teclear('secreto ');
+    await userEvent.click(screen.getByRole('button', { name: 'Que el osito lo diga' }));
+    expect(registro).toHaveBeenCalledTimes(1);
+    const guardado = registro.mock.calls[0][0] as { detalle: string; pictogramaIds: string[] };
+    expect(guardado.detalle).toBe('Tablero: «quiero …» (teclado: 1 palabra)');
+    expect(JSON.stringify(guardado)).not.toContain('secreto');
+    expect(guardado.pictogramaIds).toEqual(['pic-quiero']);
+  });
+
+  it('el altavoz de la burbuja funciona con una palabra a medias', async () => {
+    await abrirTeclado();
+    expect(screen.getByRole('button', { name: 'Que el osito lo diga' })).toBeDisabled();
+    await teclear('sol');
+    expect(screen.getByRole('button', { name: 'Que el osito lo diga' })).toBeEnabled();
   });
 });
