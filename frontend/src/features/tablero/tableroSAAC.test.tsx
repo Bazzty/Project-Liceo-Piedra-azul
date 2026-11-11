@@ -25,9 +25,9 @@ vi.mock('@/features/tablero/useTableroDelNino', async (original) => {
   const { CATEGORIAS_INICIALES, construirPlantillaGeneral } = await import('@/features/tablero/plantillaGeneral');
   const { actualizarCelda, armarConjunto, tablerosDelConjunto } = await import('@/features/tablero/edicionTablero');
   const deFabrica = construirPlantillaGeneral(catalogo);
-  // Con `editada`, la docente le cambió a «agua» lo que se muestra y lo que se dice
+  // Con `editada`, la docente le cambió a «agua» lo que se muestra y lo que se dice, y ya tiene su audio generado
   const editada = tablerosDelConjunto(
-    actualizarCelda(armarConjunto(deFabrica[0], deFabrica), 'plantilla-general-necesidades', 'celda-pic-agua', { textoMostrado: 'Agüita', textoHablado: 'Quiero agua' }),
+    actualizarCelda(armarConjunto(deFabrica[0], deFabrica), 'plantilla-general-necesidades', 'celda-pic-agua', { textoMostrado: 'Agüita', textoHablado: 'Quiero agua', audioUrl: '/audio-generado/qa.mp3', audioTexto: 'Quiero agua' }),
   );
   // Se arma una sola vez: el componente la pide en cada render y debe recibir siempre el mismo objeto.
   let armado: ReturnType<typeof real.resolverTableroDelNino> | undefined;
@@ -144,13 +144,13 @@ describe('Tablero con carpetas', () => {
 });
 
 describe('Lo que editó la docente', () => {
-  it('el niño ve el texto editado, y al tocarlo se dice lo que ella escribió, sin la grabación del pictograma', async () => {
+  it('el niño ve el texto editado, y al tocarlo se dice lo que ella escribió con el audio generado, no con la grabación del pictograma', async () => {
     estado.editada = true;
     abrir();
     await userEvent.click(screen.getByRole('button', { name: 'Carpeta Necesidades' }));
     expect(screen.queryByRole('button', { name: 'agua' })).toBeNull();
     await userEvent.click(screen.getByRole('button', { name: 'Agüita' }));
-    expect(decir).toHaveBeenLastCalledWith([{ texto: 'Quiero agua', audioUrl: undefined }]);
+    expect(decir).toHaveBeenLastCalledWith([{ texto: 'Quiero agua', audioUrl: '/audio-generado/qa.mp3' }]);
     expect(useTableroStore.getState().frase[0]).toMatchObject({ palabra: 'Agüita', textoHablado: 'Quiero agua', id: 'pic-agua' });
   });
 

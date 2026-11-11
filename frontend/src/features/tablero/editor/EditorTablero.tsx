@@ -1,7 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { FolderPlus, Play, Plus } from 'lucide-react';
 import { guardarCategorias, guardarTableros, useAlumnos, useCategorias, usePictogramas, useTodosLosTableros } from '@/api';
+import { generarAudio } from '@/api/servidor';
 import { EncabezadoPagina, Hoja } from '@/features/docente/components/Hoja';
+import { necesitaAudio, textoHablado } from '@/features/tablero/audioDeCeldas';
 import { franjaDeColor } from '@/features/tablero/coloresTablero';
 import { usoDeCategorias } from '@/features/tablero/edicionCategorias';
 import {
@@ -78,6 +80,9 @@ export const EditorTablero: React.FC = () => {
   const [tableroId, setTableroId] = useState<string | null>(null);
   const [dialogo, setDialogo] = useState<Dialogo | null>(null);
   const [aviso, setAviso] = useState('');
+  /** Aparte del aviso de lo que se guardó: el audio se genera en segundo plano y puede tardar o fallar. */
+  const [avisoAudio, setAvisoAudio] = useState('');
+  const [generando, setGenerando] = useState(false);
   const [deshacer, setDeshacer] = useState<(() => Promise<void>) | null>(null);
   const arrastre = useRef<Arrastre | null>(null);
   /** El conjunto más reciente: así dos cambios seguidos no parten de una versión vieja. */
@@ -137,6 +142,49 @@ export const EditorTablero: React.FC = () => {
   const colores = useMemo(() => new Map((categorias ?? []).map((c) => [c.id, c.color])), [categorias]);
   const franja = (celda: CeldaTablero) => franjaDeColor(colores.get(celda.categoriaId) ?? 'aprender');
   const dibujo = (celda: CeldaTablero) => pictogramas?.find((p) => p.id === celda.pictogramaId);
+
+  /** Guarda el audio recién generado en la celda, si ella sigue diciendo lo mismo (la docente pudo cambiarla mientras tanto). */
+  const guardarAudio = async (tableroId: string, celdaId: string, texto: string, url: string) => {
+    const antes = ultimo.current;
+    const celda = antes && tablerosDelConjunto(antes).find((t) => t.id === tableroId)?.celdas.find((c) => c.id === celdaId);
+    if (!antes || !celda || textoHablado(celda) !== texto) return;
+    const despues = actualizarCelda(antes, tableroId, celdaId, { audioUrl: url, audioTexto: texto });
+    ultimo.current = despues;
+    await guardarCambio(antes, despues);
+  };
+
+  /**
+   * Genera con la voz del proyecto el audio de lo que dice una celda. Si no se puede (sin sesión con el servidor, sin
+   * internet…), la celda sigue funcionando con la voz del navegador y se le dice a la docente. Devuelve si salió bien.
+   */
+  const generarAudioDe = async (tableroId: string, celda: CeldaTablero): Promise<boolean> => {
+    const texto = textoHablado(celda);
+    setAvisoAudio(`Generando el audio de «${texto}»…`);
+    try {
+      const audio = await generarAudio(texto);
+      await guardarAudio(tableroId, celda.id, texto, audio.url);
+      setAvisoAudio(audio.respaldo ? `Audio de «${texto}» listo, con la voz de respaldo del servidor.` : `Audio de «${texto}» listo.`);
+      return true;
+    } catch (error) {
+      setAvisoAudio(`${error instanceof Error ? error.message : 'No se pudo generar el audio.'} «${texto}» sonará con la voz del navegador.`);
+      return false;
+    }
+  };
+
+  /** Genera el audio de todas las celdas que no lo tienen, una a la vez; se detiene en el primer error para no repetirlo. */
+  const generarFaltantes = async () => {
+    const conjunto = ultimo.current;
+    if (!conjunto || generando) return;
+    setGenerando(true);
+    const pendientes = tablerosDelConjunto(conjunto).flatMap((t) => t.celdas.filter((c) => necesitaAudio(c, dibujo(c))).map((c) => ({ tableroId: t.id, celda: c })));
+    let hechas = 0;
+    for (const { tableroId, celda } of pendientes) {
+      if (!(await generarAudioDe(tableroId, celda))) break;
+      hechas += 1;
+    }
+    if (hechas === pendientes.length && hechas > 0) setAvisoAudio(`${hechas === 1 ? 'Se generó 1 audio' : `Se generaron ${hechas} audios`}.`);
+    setGenerando(false);
+  };
 
   /** Crea una plantilla copiando otra y pasa a editarla. Se puede deshacer: la elimina y vuelve a donde estaba. */
   const crearNueva = async ({ nombre, origenId }: { nombre: string; origenId: string }) => {
@@ -217,6 +265,8 @@ export const EditorTablero: React.FC = () => {
   const idEnEdicion = dialogo?.tipo === 'editar' ? dialogo.celdaId : undefined;
   const celdaEnEdicion = idEnEdicion ? [...conjunto.principal.celdas, ...conjunto.carpetas.flatMap((t) => t.celdas)].find((c) => c.id === idEnEdicion) : undefined;
 
+  const faltanAudios = tablerosDelConjunto(conjunto).reduce((suma, t) => suma + t.celdas.filter((c) => necesitaAudio(c, dibujo(c))).length, 0);
+
   const mover = (tablero: string, lista: CeldaTablero[], celda: CeldaTablero, paso: -1 | 1) =>
     aplicar(`«${celda.textoMostrado}» ${paso < 0 ? 'se movió antes' : 'se movió después'}`, (c) =>
       moverRelativo(c, tablero, celda.id, lista.map((x) => x.id), paso),
@@ -242,15 +292,23 @@ export const EditorTablero: React.FC = () => {
     if (!dialogo) return;
     setDialogo(null);
     if (dialogo.tipo === 'carpeta-nueva') {
-      void aplicar(`Carpeta «${datos.textoMostrado}» agregada`, (c) => agregarCarpeta(c, { nombre: datos.textoMostrado, categoriaId: datos.categoriaId, pictogramaId: datos.pictogramaId }));
+      void aplicar(`Carpeta «${datos.textoMostrado}» agregada`, (c) => agregarCarpeta(c, { nombre: datos.textoMostrado, categoriaId: datos.categoriaId, pictogramaId: datos.pictogramaId })).then(() => {
+        const nueva = ultimo.current?.principal.celdas.at(-1);
+        if (nueva && necesitaAudio(nueva, dibujo(nueva))) void generarAudioDe(ultimo.current?.principal.id ?? '', nueva);
+      });
     } else if (dialogo.tipo === 'palabra-nueva') {
       const { tableroId: enTablero } = dialogo;
       const celda = nuevaCeldaPalabra({ pictogramaId: datos.pictogramaId as string, textoMostrado: datos.textoMostrado, textoHablado: datos.textoHablado, categoriaId: datos.categoriaId, esNucleo: datos.esNucleo });
-      void aplicar(`«${datos.textoMostrado}» agregada`, (c) => agregarCelda(c, enTablero, celda));
+      void aplicar(`«${datos.textoMostrado}» agregada`, (c) => agregarCelda(c, enTablero, celda)).then(() => {
+        if (necesitaAudio(celda, pictogramas?.find((p) => p.id === celda.pictogramaId))) void generarAudioDe(enTablero, celda);
+      });
     } else if (dialogo.tipo === 'editar') {
       const { tableroId: enTablero, celdaId } = dialogo;
       const { esNucleo, ...resto } = datos;
-      void aplicar(`«${datos.textoMostrado}» guardada`, (c) => actualizarCelda(c, enTablero, celdaId, { ...resto, esNucleo: esNucleo || undefined }));
+      void aplicar(`«${datos.textoMostrado}» guardada`, (c) => actualizarCelda(c, enTablero, celdaId, { ...resto, esNucleo: esNucleo || undefined })).then(() => {
+        const editada = ultimo.current && tablerosDelConjunto(ultimo.current).find((t) => t.id === enTablero)?.celdas.find((c) => c.id === celdaId);
+        if (editada && necesitaAudio(editada, dibujo(editada))) void generarAudioDe(enTablero, editada);
+      });
     }
   };
 
@@ -309,10 +367,17 @@ export const EditorTablero: React.FC = () => {
         alRestablecerNino={() => void restablecer()}
         alCategorias={() => setDialogo({ tipo: 'categorias' })}
         alDeshacer={() => void deshacer?.()}
+        faltanAudios={faltanAudios}
+        generandoAudios={generando}
+        alGenerarAudios={() => void generarFaltantes()}
       />
 
       <p role="status" aria-live="polite" className={`text-sm ${aviso ? 'text-secondary' : 'sr-only'}`}>
         {aviso}
+      </p>
+
+      <p role="status" aria-live="polite" className={`text-sm ${avisoAudio ? 'text-secondary' : 'sr-only'}`}>
+        {avisoAudio}
       </p>
 
       <Hoja aria-label="Vista del tablero" className="flex flex-col gap-4">

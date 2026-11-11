@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { catalogo } from '@/features/tablero/catalogoDePrueba';
 import { EditorTablero } from '@/features/tablero/editor/EditorTablero';
+import { generarAudio } from '@/api/servidor';
 import { descargarDibujo, reducirImagen } from '@/features/tablero/imagenes';
 import { CATEGORIAS_INICIALES, construirPlantillaGeneral } from '@/features/tablero/plantillaGeneral';
 import type { Pictograma, Tablero } from '@/types';
@@ -91,6 +92,9 @@ vi.mock('@/features/tablero/useConjuntoEditable', async () => {
   };
 });
 
+// El servidor de voz no está en las pruebas.
+vi.mock('@/api/servidor', () => ({ generarAudio: vi.fn() }));
+
 // Bajar y reducir imágenes necesita internet y un lienzo: se simula.
 vi.mock('@/features/tablero/imagenes', async (original) => ({
   ...(await original<typeof import('@/features/tablero/imagenes')>()),
@@ -120,6 +124,7 @@ beforeEach(() => {
   oyentes.clear();
   guardados.length = 0;
   categoriasGuardadas.lista = structuredClone(CATEGORIAS_INICIALES);
+  vi.mocked(generarAudio).mockResolvedValue({ url: '/audio-generado/x.mp3', voz: 'elevenlabs', enCache: false, respaldo: false });
   vi.mocked(descargarDibujo).mockResolvedValue('data:image/webp;base64,QUJD');
   vi.mocked(reducirImagen).mockResolvedValue('data:image/webp;base64,Rk9UTw==');
   construirPlantillaGeneral(catalogo).forEach((t) => almacen.set(t.id, structuredClone(t)));
@@ -659,5 +664,56 @@ describe('Editor del tablero: selector de dibujos', () => {
     const mis = await screen.findByRole('region', { name: 'Mis fotos' });
     await userEvent.click(within(mis).getByRole('button', { name: 'Usar mi foto de «liceo»' }));
     expect(screen.getByText('Dibujo elegido para «liceo».')).toBeInTheDocument();
+  });
+});
+
+describe('Editor del tablero: audio de las palabras nuevas', () => {
+  const frase = 'Quiero un zapallito';
+  /** Agrega «agua» con dibujo del catálogo pero diciendo algo que no tiene grabación en la app. */
+  const agregarConLoQueDice = async () => {
+    await abrir();
+    await userEvent.click(screen.getByRole('button', { name: 'Agregar palabra' }));
+    await userEvent.type(screen.getByLabelText('Palabra'), 'agua');
+    await userEvent.type(screen.getByLabelText(/Lo que dice el tablero/), frase);
+    await userEvent.click(await screen.findByRole('button', { name: 'Usar el dibujo de «agua»' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Agregar' }));
+  };
+  const celdaAgregada = () => general().celdas.at(-1);
+
+  it('al guardar una palabra nueva genera su audio y lo guarda en la celda', async () => {
+    await agregarConLoQueDice();
+    expect(await screen.findByText(`Audio de «${frase}» listo.`)).toBeInTheDocument();
+    expect(generarAudio).toHaveBeenCalledWith(frase);
+    expect(celdaAgregada()).toMatchObject({ textoMostrado: 'agua', audioUrl: '/audio-generado/x.mp3', audioTexto: frase });
+  });
+
+  it('si el servidor falla, la palabra se guarda igual y se avisa que sonará con la voz del navegador', async () => {
+    vi.mocked(generarAudio).mockRejectedValue(new Error('Para generar audio, vuelve a ingresar con tu cuenta de docente.'));
+    await agregarConLoQueDice();
+    expect(await screen.findByText(/vuelve a ingresar con tu cuenta de docente.*voz del navegador/)).toBeInTheDocument();
+    expect(celdaAgregada()).toMatchObject({ textoMostrado: 'agua' });
+    expect(celdaAgregada()?.audioUrl).toBeUndefined();
+  });
+
+  it('el botón «Generar audios que faltan» reintenta lo que no se pudo y se apaga al terminar', async () => {
+    vi.mocked(generarAudio).mockRejectedValue(new Error('No se pudo generar el audio.'));
+    await agregarConLoQueDice();
+    await screen.findByText(/voz del navegador/);
+    vi.mocked(generarAudio).mockResolvedValue({ url: '/audio-generado/y.mp3', voz: 'piper', enCache: false, respaldo: true });
+    await userEvent.click(screen.getByRole('button', { name: /Generar audios que faltan \(\d+\)/ }));
+    await waitFor(() => expect(celdaAgregada()).toMatchObject({ audioUrl: '/audio-generado/y.mp3', audioTexto: frase }));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Generar audios que faltan (0)' })).toBeDisabled());
+  });
+
+  it('cambiar lo que dice una palabra con audio genera uno nuevo y no usa el viejo', async () => {
+    await agregarConLoQueDice();
+    await screen.findByText(`Audio de «${frase}» listo.`);
+    await userEvent.click(within(tablaGrande()).getByRole('button', { name: 'Editar «agua»' }));
+    const campo = screen.getByLabelText(/Lo que dice el tablero/);
+    await userEvent.clear(campo);
+    await userEvent.type(campo, 'Quiero un zapallo');
+    await userEvent.click(screen.getByRole('button', { name: 'Guardar cambios' }));
+    await waitFor(() => expect(celdaAgregada()).toMatchObject({ audioTexto: 'Quiero un zapallo' }));
+    expect(generarAudio).toHaveBeenLastCalledWith('Quiero un zapallo');
   });
 });

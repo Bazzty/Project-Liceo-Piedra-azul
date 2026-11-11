@@ -69,6 +69,7 @@ export const DialogoCelda: React.FC<Props> = ({ tipo, celda, categorias, pictogr
             <label htmlFor={`${id}-hablado`} className="text-sm font-semibold text-primary">
               Lo que dice el tablero <span className="font-normal text-secondary">(opcional, si es distinto)</span>
             </label>
+            <p className="text-xs text-secondary">El texto se envía a un servicio de voz para generar el audio: no escribas nombres de niños.</p>
             <input id={`${id}-hablado`} value={hablado} onChange={(e) => setHablado(e.target.value)} maxLength={60} placeholder={texto ? `Ej.: Quiero ${texto.toLowerCase()}` : ''} className={CAMPO} />
           </div>
         )}

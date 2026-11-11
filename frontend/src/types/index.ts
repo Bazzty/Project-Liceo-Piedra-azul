@@ -73,6 +73,9 @@ export interface CeldaTablero {
 	destinoTableroId?: string;
 	/** Palabra núcleo: se ve siempre, también dentro de las carpetas. */
 	esNucleo?: boolean;
+	/** Audio generado (voz del proyecto) de lo que dice la celda, y el texto para el que se generó: si el texto cambia, deja de valer. */
+	audioUrl?: string;
+	audioTexto?: string;
 }
 
 /**

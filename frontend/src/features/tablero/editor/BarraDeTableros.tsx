@@ -1,5 +1,5 @@
 import React from 'react';
-import { Copy, Palette, Pencil, Plus, RotateCcw, Trash2, Undo2, Users } from 'lucide-react';
+import { Copy, Palette, Pencil, Plus, RotateCcw, Trash2, Undo2, Users, Volume2 } from 'lucide-react';
 import { ID_PLANTILLA_GENERAL } from '@/features/tablero/plantillaGeneral';
 import type { Destino } from '@/features/tablero/gestionTableros';
 import { Button } from '@/shared/ui';
@@ -24,6 +24,10 @@ interface Props {
   alRestablecerNino: () => void;
   alCategorias: () => void;
   alDeshacer: () => void;
+  /** Cuántas palabras y carpetas de este tablero aún no tienen audio con la voz del proyecto. */
+  faltanAudios: number;
+  generandoAudios: boolean;
+  alGenerarAudios: () => void;
 }
 
 /** Elegir qué tablero se edita y las acciones sobre plantillas, niños y categorías. */
@@ -110,6 +114,9 @@ export const BarraDeTableros: React.FC<Props> = (p) => {
         )}
         <Button variant="secondary" size="sm" onClick={p.alCategorias}>
           <Palette className="w-4 h-4" aria-hidden /> Categorías
+        </Button>
+        <Button variant="secondary" size="sm" onClick={p.alGenerarAudios} disabled={p.faltanAudios === 0 || p.generandoAudios}>
+          <Volume2 className="w-4 h-4" aria-hidden /> {p.generandoAudios ? 'Generando audios…' : `Generar audios que faltan (${p.faltanAudios})`}
         </Button>
         <Button variant="secondary" size="sm" onClick={p.alDeshacer} disabled={!p.hayDeshacer}>
           <Undo2 className="w-4 h-4" aria-hidden /> Deshacer

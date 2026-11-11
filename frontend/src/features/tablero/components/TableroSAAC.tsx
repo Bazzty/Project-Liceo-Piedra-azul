@@ -3,6 +3,7 @@ import { ArrowLeft, Delete, FolderOpen, HandHelping, Keyboard, MousePointerClick
 import type { CeldaTablero, Pictograma } from '@/types';
 import { crearRegistro, usePictogramas } from '@/api';
 import { useAuthStore } from '@/shared/store/useAuthStore';
+import { audioVigente, textoHablado } from '@/features/tablero/audioDeCeldas';
 import { TecladoNino } from '@/features/tablero/components/TecladoNino';
 import { teclaDeEvento } from '@/features/tablero/teclado';
 import { useEscritura } from '@/features/tablero/useEscritura';
@@ -19,14 +20,15 @@ const PALABRAS_POR_FRASE = 8;
 const BOCAS = ['AEI', 'O', 'EE', 'U', 'BMP', 'L', 'AEI'];
 
 /** Se dice lo que la docente pidió; la grabación del pictograma solo sirve si se dice su misma palabra. */
-const aVoz = (p: PalabraDeFrase): ElementoDeVoz => ({ texto: p.textoHablado ?? p.palabra, audioUrl: p.textoHablado ? undefined : p.audioUrl });
+const aVoz = (p: PalabraDeFrase): ElementoDeVoz => ({ texto: p.textoHablado ?? p.palabra, audioUrl: p.audioUrl });
 
 /** La palabra tal como la editó la docente: su texto, lo que dice y su dibujo. Si cambió el texto, la grabación original ya no corresponde. */
 const aPalabra = (celda: CeldaTablero, pic: Pictograma): PalabraDeFrase => ({
   ...pic,
   palabra: celda.textoMostrado,
   ...(celda.textoHablado ? { textoHablado: celda.textoHablado } : {}),
-  audioUrl: celda.textoMostrado.toLowerCase() === pic.palabra.toLowerCase() ? pic.audioUrl : undefined,
+  // Primero el audio generado para lo que dice la celda; si no hay, el del pictograma, que solo vale si dice su misma palabra
+  audioUrl: audioVigente(celda) ?? (!celda.textoHablado && textoHablado(celda).toLowerCase() === pic.palabra.toLowerCase() ? pic.audioUrl : undefined),
 });
 
 /** Boca del osito: se mueve mientras `activa` es verdadero y vuelve a sonreír al terminar. */
@@ -203,14 +205,14 @@ export const TableroSAAC: React.FC<{ onCerrar: () => void }> = ({ onCerrar }) =>
     if (carpeta && tablero?.volverAlElegir) setCarpetaId(null);
   };
 
-  const abrirCarpeta = (id: string, nombre: string) => {
+  const abrirCarpeta = (id: string, nombre: string, audioUrl?: string) => {
     sonarToque();
     corte.current += 1;
     // Tocar la carpeta que ya está abierta vuelve al principal
     if (id === carpetaId) return setCarpetaId(null);
     setCarpetaId(id);
     // Dice su nombre para que el niño sepa dónde está
-    void decirSecuencia([{ texto: nombre, audioUrl: audioDeTexto(nombre) ?? undefined }]);
+    void decirSecuencia([{ texto: nombre, audioUrl: audioUrl ?? audioDeTexto(nombre) }]);
   };
 
   /** La flecha de siempre: dentro de una carpeta vuelve al principal; en el principal cierra el tablero. */
@@ -398,7 +400,7 @@ export const TableroSAAC: React.FC<{ onCerrar: () => void }> = ({ onCerrar }) =>
                 franja={franja}
                 pic={pic}
                 abierta={celda.destinoTableroId === carpetaId}
-                alTocar={() => abrirCarpeta(celda.destinoTableroId as string, celda.textoMostrado)}
+                alTocar={() => abrirCarpeta(celda.destinoTableroId as string, celda.textoMostrado, audioVigente(celda))}
               />
             ))}
           </nav>

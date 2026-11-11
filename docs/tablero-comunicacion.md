@@ -1,7 +1,7 @@
 # Tablero de comunicación editable (estilo Asterics Grid)
 
 **Historia Jira:** PLPA-109 «Mejorar el tablero de comunicaciones con referencia a características de Asterics Grid».
-**Estado:** análisis y decisiones cerradas; implementación en curso: **T1 a T5 y T7 hechas**. **No se crearán subtareas en Jira**: el trabajo avanza según las tareas T1–T8 de este documento y **todos los commits usan `PLPA-109`**.
+**Estado:** análisis y decisiones cerradas; implementación en curso: **T1 a T7 hechas** (queda T8). **No se crearán subtareas en Jira**: el trabajo avanza según las tareas T1–T8 de este documento y **todos los commits usan `PLPA-109`**.
 **Origen:** pedido del cliente (la profesora): que el tablero se parezca a los de Asterics Grid, que ella pueda editar lo que ve cada niño y que exista un teclado para escribir.
 
 ## Cómo está hoy (antes del cambio)
@@ -117,6 +117,7 @@ TABLERO PRINCIPAL                      AL TOCAR «Comida»
   - **Uso sin internet:** al elegir un dibujo de ARASAAC se **baja y se guarda en el navegador** (también WebP de 400 px) y el selector avisa «se verá también sin internet». Si no se pudo bajar, usa la dirección de internet y avisa que solo se verá con conexión. Un dibujo ya guardado se reutiliza sin volver a bajarlo. (No hay un plugin de PWA configurado; esto cubre el caso sin depender de él.)
   - **Atribución de ARASAAC (licencia CC BY-NC-SA):** se muestra el componente `Creditos` **junto a los dibujos de ARASAAC del selector y al pie de la página del editor**, además del login que ya lo tenía.
   - `esDelCatalogoBase` deja fuera `arasaac-*` y `foto-*` al restablecer la plantilla de fábrica.
+- **Audio de las palabras nuevas (T6, hecho):** cada celda guarda `audioUrl` y `audioTexto` (el texto para el que se generó); si la docente cambia lo que dice, el audio deja de valer solo (`audioDeCeldas.ts`). Al **guardar una palabra o carpeta** sin grabación en la app, el editor pide el audio al servidor (`POST /api/v1/audio`, la misma ruta de los cuentos) y lo guarda en la celda. Si falla (sin sesión con el servidor, sin internet), la celda se guarda igual y suena con la voz del navegador; un aviso lo explica. El botón **«Generar audios que faltan (N)»** reintenta todo lo pendiente, incluidos los **nombres de las carpetas**. El tablero del niño usa ese audio (también al tocar una carpeta). El formulario avisa «no escribas nombres de niños» porque el texto sale a un servicio de voz.
 - **Accesibilidad:** cada acción tiene un único control con nombre propio («Mover «agua» antes», «Quitar «agua»»…); el arrastre tiene su alternativa con botones; los avisos van en una región `aria-live`. «Probar el tablero» abre el tablero real.
 - **Accesibilidad:** el tablero es un `role="dialog"`; el editor debe usarse solo con teclado; todo pictograma o imagen lleva texto alternativo; no depender solo del color para distinguir carpetas.
 
@@ -131,7 +132,7 @@ Todas dentro de **PLPA-109**, sin subtareas en Jira: las ramas y los commits usa
 | T3 ✅ | **Tablero del niño con carpetas** | Celdas-carpeta, volver siempre visible, fila de palabras núcleo, regreso automático, nombre hablado de la carpeta. | T2 |
 | T4 ✅ | **Editor del profesor** | Sección en el panel docente: crear/duplicar/editar/eliminar tableros y carpetas, celdas, categorías propias, reordenar (arrastrar y botones), asignar a cada niño, restablecer. | T2 |
 | T5 ✅ | **Selector de pictogramas** | Escribir la palabra y elegir de ARASAAC o subir foto; descarga para uso sin internet; crédito de ARASAAC. | T4 |
-| T6 | **Audio de palabras nuevas** | Generar el audio al guardar (`/audio`) con respaldo a la voz del navegador, sin datos de niños. | T4 |
+| T6 ✅ | **Audio de palabras nuevas** | Generar el audio al guardar (`/audio`) con respaldo a la voz del navegador, sin datos de niños. | T4 |
 | T7 ✅ | **Teclado** | Botón dentro del tablero; teclado QWERTY simple; sonido de cada letra; Enter dice lo escrito; mezcla con pictogramas; registro sin el texto. | T1 |
 | T8 | **Sincronizar con el backend** | API y tablas en PostgreSQL para pasar los tableros del navegador al servidor. Posterior; se decide cuando se retome la conexión backend-frontend (PLPA-64). | T2 |
 
@@ -139,11 +140,7 @@ Orden sugerido (T1 a T4 ya hechas): **T1 y T2** primero (no dependen entre sí),
 
 ## Pendientes
 
-- Los **nombres de las carpetas** (Necesidades, Emociones…) aún no tienen audio grabado: al tocar una carpeta suena la voz del navegador. Agregarlos al manifiesto de audios (`frontend/scripts/audios.manifest.json`) y generarlos con ElevenLabs.
-
-- Definir **dónde se muestra el crédito de ARASAAC** (punto 9).
+- **⚠ Audios con dos voces distintas (por corregir):** los nombres de las carpetas y los sonidos de las consonantes del teclado (26 audios) se generaron con una voz predeterminada de ElevenLabs, **distinta a la del osito** que usa el resto de la app. Detalle, lista de archivos y cómo unificarlas en [audios-interfaz.md](audios-interfaz.md#-advertencia-hay-dos-voces-mezcladas-por-corregir). Además, **nadie ha escuchado esos 26 audios**: hay que revisar la pronunciación.
 - Conseguir **capturas o un tablero de ejemplo de Asterics Grid** del cliente para ajustar el diseño visual.
-- **Estado de la clave de ElevenLabs (2026-11-11):** la clave y el id de voz ya están configurados en `backend/.env` y `frontend/.env.local` (ambos ignorados por git). **La clave actual no tiene el permiso `text_to_speech`**, así que ElevenLabs responde 401 a cualquier generación. En ElevenLabs → *Developers → API keys* hay que activar **Text to Speech** para esa clave (o crear otra con ese permiso). Mientras tanto, el servidor usa Piper de respaldo y las letras suenan con la voz del navegador. La clave se compartió por chat: conviene **rotarla** una vez corregidos los permisos.
-- **Faltan los sonidos de 21 letras** para el teclado. Ya hay grabación de las vocales (`a e i o u`) y de la **m** (`/m/`, hecha a mano), y de los números 0–9. Faltan en `frontend/public/audio/fonemas/`: `b c d f g h j k l n p q r s t v w x y z` y `enie` (Ñ). Mientras falten, la tecla suena con la **voz del navegador, que dice el nombre de la letra** («be»), no su sonido: es solo un respaldo.
-  - **Cómo generarlos:** agregar cada uno al manifiesto (`frontend/scripts/audios.manifest.json`, `archivo: "fonemas/<letra>.mp3"`), correr `npm run audios -- --solo=fonemas` con `ELEVENLABS_API_KEY` y `ELEVENLABS_VOICE_ID` en `frontend/.env.local`, y `npm run audios:indice`. No se agregaron al manifiesto antes porque una prueba exige que cada entrada tenga su archivo.
-  - **Ojo pedagógico:** un TTS no dice bien una consonante suelta (`/p/` sale «pe»). Para las que se pueden alargar (`s f l n r j z v`) sirve un texto como «sss», «fff»; para las explosivas (`p t k b d g`) conviene que la profesora decida cómo se enseñan (con una vocal de apoyo, o grabarlas a mano, como la `m`). **Escuchar y revisar cada una** antes de dar el audio por bueno."
+- **Sonidos de las letras del teclado (generados, por revisar):** el 2026-11-11 se generaron los de las 21 consonantes que faltaban con `npm run audios:pendientes` (ya hechos: no hace falta volver a correrlo). Ver la advertencia de arriba sobre la voz y la pronunciación. Los textos fonéticos usados están en `frontend/scripts/audios-pendientes.mjs`.
+- **Estado de la clave de ElevenLabs:** la clave y el id de voz están en `backend/.env` y `frontend/.env.local` (ignorados por git). La clave ya tiene el permiso `text_to_speech`, pero el plan gratuito no permite voces de la biblioteca (402), por eso se usa una voz predeterminada. La clave se compartió por chat: conviene **rotarla**.
