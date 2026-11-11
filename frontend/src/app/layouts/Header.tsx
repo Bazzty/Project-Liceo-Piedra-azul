@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { MessageSquare, Settings, User as UserIcon, Sparkles } from 'lucide-react';
+import { Settings, User as UserIcon, Sparkles } from 'lucide-react';
 import { Modal } from '@/shared/ui';
-import { TableroSAAC } from '@/features/tablero/components/TableroSAAC';
+import { BotonHablar } from '@/shared/components/BotonHablar';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { useThemeStore, type ThemeId } from '@/shared/store/useThemeStore';
 import { THEMES_CONFIG } from '@/shared/config/themes';
@@ -9,7 +9,6 @@ import { useAlumno } from '@/api';
 
 export const Header: React.FC = () => {
   const [isOptionsOpen, setIsOptionsOpen] = useState(false);
-  const [isHablarOpen, setIsHablarOpen] = useState(false);
 
   const { activeStudentId } = useAuthStore();
   const { currentTheme, setTheme, showCharacterBackground, toggleCharacterBackground } = useThemeStore();
@@ -39,15 +38,7 @@ export const Header: React.FC = () => {
 
         {/* 2. Acciones Principales */}
         <div className="flex items-center gap-2">
-          {/* Botón Destacado "HABLAR" */}
-          <button
-            onClick={() => setIsHablarOpen(true)}
-            aria-label="Hablar: abrir tablero de comunicación aumentativa SAAC"
-            className="flex items-center gap-2 px-4 py-2.5 min-h-12 bg-statusOk hover:opacity-90 text-onStatus font-black rounded-2xl shadow-md transition-all active:scale-95 cursor-pointer text-sm"
-          >
-            <MessageSquare className="w-4 h-4" aria-hidden />
-            <span>HABLAR</span>
-          </button>
+          <BotonHablar />
 
           {/* Opciones de Accesibilidad */}
           <button
@@ -110,9 +101,6 @@ export const Header: React.FC = () => {
 
         </div>
       </Modal>
-
-      {/* Modal del Tablero SAAC */}
-      {isHablarOpen && <TableroSAAC onCerrar={() => setIsHablarOpen(false)} />}
     </>
   );
 };

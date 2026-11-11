@@ -39,10 +39,60 @@ export interface Nivel {
 export interface Pictograma {
 	id?: string;
 	palabra: string;
-	categoria: 'basicas' | 'necesidades' | 'emociones' | 'personas' | 'acciones' | 'objetos';
+	/** Las del catálogo: basicas, necesidades, emociones, personas, acciones u objetos. Abierta porque la docente crea dibujos propios. */
+	categoria: string;
 	imagenUrl: string;
 	audioUrl?: string;
 	esFotoReal: boolean;
+}
+
+// 3b. Tablero de comunicación editable (estilo Asterics Grid)
+/** Colores que puede elegir el profesor: salen de los temas, así conservan el contraste y el bajo estímulo. */
+export type ColorTablero = 'aprender' | 'hablar' | 'colores' | 'logros' | 'alerta' | 'info';
+
+export interface CategoriaTablero {
+	id: string;
+	nombre: string;
+	color: ColorTablero;
+	orden: number;
+}
+
+export type TipoCelda = 'palabra' | 'carpeta';
+
+/** Una celda dice una palabra o abre otro tablero (carpeta). */
+export interface CeldaTablero {
+	id: string;
+	tipo: TipoCelda;
+	/** Pictograma de la palabra (en una carpeta, dibujo opcional). */
+	pictogramaId?: string;
+	textoMostrado: string;
+	/** Lo que se dice si es distinto de lo que se muestra («Agua» → «Quiero agua»). */
+	textoHablado?: string;
+	categoriaId: string;
+	/** Solo carpetas: el tablero que abre. */
+	destinoTableroId?: string;
+	/** Palabra núcleo: se ve siempre, también dentro de las carpetas. */
+	esNucleo?: boolean;
+	/** Audio generado (voz del proyecto) de lo que dice la celda, y el texto para el que se generó: si el texto cambia, deja de valer. */
+	audioUrl?: string;
+	audioTexto?: string;
+}
+
+/**
+ * Un tablero con sus celdas en orden. La plantilla general (`esPlantilla`) la trae la app; un niño usa
+ * esa mientras la docente no edite, y desde su primera edición tiene copia propia (`alumnoId`, `copiadoDe`).
+ */
+export interface Tablero {
+	id: string;
+	nombre: string;
+	esPlantilla: boolean;
+	alumnoId?: string;
+	copiadoDe?: string;
+	/** Tablero de entrada; los demás se alcanzan por carpetas. */
+	principal: boolean;
+	/** En el tablero principal: si al elegir una palabra dentro de una carpeta se vuelve solo al principal. Por defecto, sí. */
+	volverAlElegir?: boolean;
+	celdas: CeldaTablero[];
 }
 
 // 4. Estructura de Lectura Dual (Palabra + Pictograma + Audio)

@@ -20,8 +20,11 @@ import { AdminDashboard } from '@/features/docente/pages/AdminDashboard';
 import { CuentosPage } from '@/features/docente/pages/CuentosPage';
 import { TarjetasPage } from '@/features/docente/pages/TarjetasPage';
 import { EstudiantesPage } from '@/features/docente/pages/EstudiantesPage';
+import { TableroPage } from '@/features/docente/pages/TableroPage';
+import { TableroGlobal } from '@/features/tablero/components/TableroGlobal';
 
 export const App: React.FC = () => (
+  <>
   <Routes>
     {/* Acceso */}
     <Route path={ROUTES.inicio} element={<LoginAlumnoCasaView />} />
@@ -39,6 +42,7 @@ export const App: React.FC = () => (
       <Route path={ROUTES.profesorCurriculo} element={<CurriculoPage />} />
       <Route path={ROUTES.profesorCuentos} element={<CuentosPage />} />
       <Route path={ROUTES.profesorTarjetas} element={<TarjetasPage />} />
+      <Route path={ROUTES.profesorTablero} element={<TableroPage />} />
     </Route>
 
     {/* Aula */}
@@ -57,6 +61,8 @@ export const App: React.FC = () => (
 
     <Route path="*" element={<Navigate to={ROUTES.inicio} replace />} />
   </Routes>
+  <TableroGlobal />
+  </>
 );
 
 export default App;

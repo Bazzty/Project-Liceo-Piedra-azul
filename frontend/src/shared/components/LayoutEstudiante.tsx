@@ -4,6 +4,7 @@ import { useAlumno } from '@/api';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@/app/routes';
 import { useAuthStore } from '@/shared/store/useAuthStore';
+import { BotonHablar } from '@/shared/components/BotonHablar';
 import { AjustesEstudiante } from '@/shared/components/AjustesEstudiante';
 import { AvisoInactividad } from '@/shared/components/AvisoInactividad';
 import { BarridoUnBoton } from '@/shared/components/BarridoUnBoton';
@@ -96,6 +97,7 @@ export const LayoutEstudiante: React.FC<LayoutEstudianteProps> = ({ children, on
         <div className="justify-self-center">{centro}</div>
 
         <div className="flex items-center justify-end gap-2">
+          <BotonHablar />
           <button type="button" className={BOTON_ICONO} onClick={abrirCalma}>
             <Leaf className="w-5 h-5" aria-hidden />
             <span className="hidden md:inline">Calma</span>

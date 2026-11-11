@@ -5,6 +5,7 @@ import type { Pictograma } from '@/types';
 export const listarPictogramas = () => db.pictogramas.toArray();
 export const listarPictogramasPorCategoria = (categoria: Pictograma['categoria']) =>
   db.pictogramas.where('categoria').equals(categoria).toArray();
+export const guardarPictograma = (pictograma: Pictograma) => db.pictogramas.put(pictograma);
 export const buscarPictogramaPorPalabra = (palabra: string) =>
   db.pictogramas.where('palabra').equalsIgnoreCase(palabra).first();
 

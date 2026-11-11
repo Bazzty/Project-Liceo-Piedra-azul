@@ -2,7 +2,25 @@
 
 La app busca primero una **grabación** (la voz suave del proyecto) y solo usa la voz del navegador si el archivo aún no existe. Cada frase tiene una clave (`frontend/src/shared/config/audiosInterfaz.ts`) y un archivo en `frontend/public/audio/interfaz/`.
 
-## Estado actual: una sola voz, la del osito
+## ⚠ ADVERTENCIA: hay dos voces mezcladas (por corregir)
+
+**Los audios de la app NO suenan todos con la misma voz.** Se debe corregir antes de usarla con niños.
+
+- **Voz del osito** (id `WOY6pnQ1WCg0mrOZ54lM`): es una voz de la *biblioteca* de ElevenLabs. Con el plan gratuito la API responde **402 `paid_plan_required`**, así que no se pueden generar audios nuevos con ella.
+- **Voz usada para lo nuevo** (id `hpp4J3VqNfWAUOO0d1Us`, predeterminada, sí disponible en el plan gratuito): se generaron con ella, el 2026-11-11, **26 audios** que antes no existían:
+  - Sonidos de las consonantes del teclado, en `frontend/public/audio/fonemas/`: `b c d f g h j k l n p q r s t v w x y z` y `enie` (Ñ).
+  - Nombres de las carpetas de la plantilla general, en `frontend/public/audio/textos/`: `necesidades`, `emociones`, `personas`, `acciones`, `objetos`.
+- **Además**, todo audio que la docente genere desde el editor del tablero (palabras nuevas y el botón «Generar audios que faltan») o desde el formulario de cuentos usa la voz que esté en `backend/.env`, hoy la segunda.
+
+**Qué se nota:** al tocar una letra o una carpeta suena una voz distinta a la del resto de la app (vocales, sílabas, números, palabras, interfaz y personaje).
+
+**Cómo corregirlo** (elegir una):
+1. **Volver a la voz del osito:** pasar a un plan de pago de ElevenLabs (o conseguir que esa voz esté en «Mis voces»), poner su id en `frontend/.env.local` y `backend/.env` y regenerar los 26 con `npm run audios -- --forzar --solo=fonemas` y `--solo=textos` (ojo: `--solo=textos` y `--solo=fonemas` regeneran **toda** la carpeta, también audios que ya eran del osito; es lo que se quiere: todos con la misma voz).
+2. **Unificar todo con la voz nueva:** `npm run audios -- --forzar` regenera los 334 audios del manifiesto (≈3.700 caracteres) y **reemplaza la voz del osito**. Conviene tener todo comiteado antes, para poder volver atrás.
+
+**Además, revisar la pronunciación de los 26 audios nuevos** (nadie los escuchó aún): un TTS no dice bien una consonante suelta. Las alargadas se pidieron como «sss», «fff», «lll»…; las explosivas, con una e breve («pe», «te»); `h` dice «hache» (no tiene sonido) y `w` dice «gu». Los textos están en `frontend/scripts/audios-pendientes.mjs`. Para regenerar solo una letra: se corrige su texto allí, se borra su archivo (`frontend/public/audio/fonemas/<letra>.mp3`) y se corre `npm run audios`, que genera únicamente los que faltan.
+
+## Estado original: una sola voz, la del osito (ver la advertencia de arriba)
 
 Los audios de `frontend/scripts/audios.manifest.json` (interfaz, cuentos, pictogramas, palabras y fonemas) se generan con la **voz del osito** (ElevenLabs, voz masculina joven y alegre), con el modelo `eleven_turbo_v2_5` y `language_code: es`. Sin forzar el idioma, una palabra suelta puede leerse como inglés («Lana»); el modelo `eleven_multilingual_v2` no admite ese parámetro, por eso se usa turbo. La API del servidor envía los mismos ajustes.
 
