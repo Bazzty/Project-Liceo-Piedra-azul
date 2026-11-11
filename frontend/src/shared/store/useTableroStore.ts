@@ -2,13 +2,18 @@ import { create } from 'zustand';
 import type { Pictograma } from '@/types';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
+/** Una palabra de la frase: el pictograma con el texto que la docente le puso y, si es distinto, lo que se dice. */
+export interface PalabraDeFrase extends Pictograma {
+  textoHablado?: string;
+}
+
 interface TableroState {
   abierto: boolean;
   /** Lo que el niño va armando. Vive aquí (no en el componente) para no perderse al cerrar el tablero o cambiar de página. */
-  frase: Pictograma[];
+  frase: PalabraDeFrase[];
   abrir: () => void;
   cerrar: () => void;
-  setFrase: (frase: Pictograma[] | ((anterior: Pictograma[]) => Pictograma[])) => void;
+  setFrase: (frase: PalabraDeFrase[] | ((anterior: PalabraDeFrase[]) => PalabraDeFrase[])) => void;
 }
 
 export const useTableroStore = create<TableroState>()((set) => ({

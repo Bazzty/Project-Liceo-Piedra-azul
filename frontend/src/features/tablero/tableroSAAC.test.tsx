@@ -6,7 +6,7 @@ import { useTableroStore } from '@/shared/store/useTableroStore';
 
 const { decir, estado } = vi.hoisted(() => ({
   decir: vi.fn(async () => {}),
-  estado: { volverAlElegir: true },
+  estado: { volverAlElegir: true, editada: false },
 }));
 
 vi.mock('@/shared/audio/decirSecuencia', () => ({ decirSecuencia: decir }));
@@ -21,13 +21,20 @@ vi.mock('@/features/tablero/useTableroDelNino', async (original) => {
   const real = await original<typeof import('@/features/tablero/useTableroDelNino')>();
   const { catalogo } = await import('@/features/tablero/catalogoDePrueba');
   const { CATEGORIAS_INICIALES, construirPlantillaGeneral } = await import('@/features/tablero/plantillaGeneral');
-  const plantilla = construirPlantillaGeneral(catalogo);
+  const { actualizarCelda, armarConjunto, tablerosDelConjunto } = await import('@/features/tablero/edicionTablero');
+  const deFabrica = construirPlantillaGeneral(catalogo);
+  // Con `editada`, la docente le cambió a «agua» lo que se muestra y lo que se dice
+  const editada = tablerosDelConjunto(
+    actualizarCelda(armarConjunto(deFabrica[0], deFabrica), 'plantilla-general-necesidades', 'celda-pic-agua', { textoMostrado: 'Agüita', textoHablado: 'Quiero agua' }),
+  );
   // Se arma una sola vez: el componente la pide en cada render y debe recibir siempre el mismo objeto.
   let armado: ReturnType<typeof real.resolverTableroDelNino> | undefined;
-  let armadoCon: boolean | undefined;
+  let armadoCon: string | undefined;
   const useTableroDelNino = () => {
-    if (!armado || armadoCon !== estado.volverAlElegir) {
-      armadoCon = estado.volverAlElegir;
+    const clave = `${estado.volverAlElegir}-${estado.editada}`;
+    if (!armado || armadoCon !== clave) {
+      armadoCon = clave;
+      const plantilla = estado.editada ? editada : deFabrica;
       armado = real.resolverTableroDelNino({ ...plantilla[0], volverAlElegir: estado.volverAlElegir }, plantilla, catalogo, CATEGORIAS_INICIALES);
     }
     return armado;
@@ -42,6 +49,7 @@ const frase = () => useTableroStore.getState().frase.map((p) => p.palabra);
 beforeEach(() => {
   vi.clearAllMocks();
   estado.volverAlElegir = true;
+  estado.editada = false;
   useTableroStore.setState({ abierto: true, frase: [] });
 });
 
@@ -129,5 +137,24 @@ describe('Tablero con carpetas', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Carpeta Necesidades' }));
     await userEvent.click(screen.getByRole('button', { name: 'Volver al tablero principal' }));
     expect(frase()).toEqual(['quiero']);
+  });
+});
+
+describe('Lo que editó la docente', () => {
+  it('el niño ve el texto editado, y al tocarlo se dice lo que ella escribió, sin la grabación del pictograma', async () => {
+    estado.editada = true;
+    abrir();
+    await userEvent.click(screen.getByRole('button', { name: 'Carpeta Necesidades' }));
+    expect(screen.queryByRole('button', { name: 'agua' })).toBeNull();
+    await userEvent.click(screen.getByRole('button', { name: 'Agüita' }));
+    expect(decir).toHaveBeenLastCalledWith([{ texto: 'Quiero agua', audioUrl: undefined }]);
+    expect(useTableroStore.getState().frase[0]).toMatchObject({ palabra: 'Agüita', textoHablado: 'Quiero agua', id: 'pic-agua' });
+  });
+
+  it('una palabra que no se editó conserva su grabación', async () => {
+    estado.editada = true;
+    abrir();
+    await userEvent.click(screen.getByRole('button', { name: 'quiero' }));
+    expect(decir).toHaveBeenLastCalledWith([expect.objectContaining({ texto: 'quiero' })]);
   });
 });

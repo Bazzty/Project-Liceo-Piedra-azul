@@ -9,6 +9,7 @@ import {
   duplicarConjunto,
   idsDelConjunto,
   moverCelda,
+  moverRelativo,
   moverUno,
   nuevaCeldaPalabra,
   pasarCelda,
@@ -192,6 +193,28 @@ describe('reordenar', () => {
     expect(c.principal.celdas).toHaveLength(base().principal.celdas.length);
     expect(c.principal.celdas[0].id).toBe('carpeta-objetos');
     expect(new Set(c.principal.celdas.map((x) => x.id)).size).toBe(c.principal.celdas.length);
+  });
+
+  it('moverRelativo cambia de lugar con la vecina visible y respeta las que no se ven', () => {
+    const c = base();
+    // En el principal: núcleo (8), «hola» y luego las 5 carpetas. Las que se ven en la grilla son solo las palabras.
+    const orden = (x: ReturnType<typeof base>) => x.principal.celdas.map((y) => y.id);
+    const celdas = c.principal.celdas;
+    const palabra = (id: string) => nuevaCeldaPalabra({ pictogramaId: id, textoMostrado: id, categoriaId: 'objetos' });
+    const a = { ...palabra('a'), id: 'a' };
+    const b = { ...palabra('b'), id: 'b' };
+    // grilla: a, [carpeta oculta a la vista], b → bajar «a» debe dejarla después de «b», no entre medio de lo oculto
+    const mezcla = { ...c, principal: { ...c.principal, celdas: [a, celdas[celdas.length - 1], b] } };
+    expect(orden(moverRelativo(mezcla, 'plantilla-general', 'a', ['a', 'b'], 1))).toEqual([celdas[celdas.length - 1].id, 'b', 'a']);
+    expect(orden(moverRelativo(mezcla, 'plantilla-general', 'b', ['a', 'b'], -1))).toEqual(['b', 'a', celdas[celdas.length - 1].id]);
+  });
+
+  it('moverRelativo no hace nada en los extremos ni con ids que no existen', () => {
+    const c = base();
+    const ids = c.carpetas[0].celdas.map((x) => x.id);
+    expect(moverRelativo(c, 'plantilla-general-necesidades', ids[0], ids, -1)).toBe(c);
+    expect(moverRelativo(c, 'plantilla-general-necesidades', ids[1], ids, 1)).toBe(c);
+    expect(moverRelativo(c, 'plantilla-general-necesidades', 'no-existe', ids, 1)).toBe(c);
   });
 
   it('pasarCelda lleva una palabra a otro tablero', () => {

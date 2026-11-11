@@ -39,7 +39,8 @@ export interface Nivel {
 export interface Pictograma {
 	id?: string;
 	palabra: string;
-	categoria: 'basicas' | 'necesidades' | 'emociones' | 'personas' | 'acciones' | 'objetos';
+	/** Las del catálogo: basicas, necesidades, emociones, personas, acciones u objetos. Abierta porque la docente crea dibujos propios. */
+	categoria: string;
 	imagenUrl: string;
 	audioUrl?: string;
 	esFotoReal: boolean;

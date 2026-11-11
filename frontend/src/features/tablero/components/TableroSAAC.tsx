@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, Delete, FolderOpen, HandHelping, MousePointerClick, Volume2 } from 'lucide-react';
-import type { Pictograma } from '@/types';
+import type { CeldaTablero, Pictograma } from '@/types';
 import { crearRegistro, usePictogramas } from '@/api';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { useTableroDelNino, type CeldaResuelta } from '@/features/tablero/useTableroDelNino';
 import { resolverYGuardarPictograma } from '@/features/tablero/arasaac';
-import { useTableroStore } from '@/shared/store/useTableroStore';
+import { useTableroStore, type PalabraDeFrase } from '@/shared/store/useTableroStore';
 import { audioDeTexto } from '@/shared/audio/audioDeTexto';
 import { decirSecuencia, type ElementoDeVoz } from '@/shared/audio/decirSecuencia';
 import { sonarAcierto, sonarToque } from '@/shared/audio/sonidos';
@@ -15,7 +15,16 @@ import { OsoCabeza } from '@/shared/components/OsoCabeza';
 const PALABRAS_POR_FRASE = 8;
 const BOCAS = ['AEI', 'O', 'EE', 'U', 'BMP', 'L', 'AEI'];
 
-const aVoz = (p: Pictograma): ElementoDeVoz => ({ texto: p.palabra, audioUrl: p.audioUrl });
+/** Se dice lo que la docente pidió; la grabación del pictograma solo sirve si se dice su misma palabra. */
+const aVoz = (p: PalabraDeFrase): ElementoDeVoz => ({ texto: p.textoHablado ?? p.palabra, audioUrl: p.textoHablado ? undefined : p.audioUrl });
+
+/** La palabra tal como la editó la docente: su texto, lo que dice y su dibujo. Si cambió el texto, la grabación original ya no corresponde. */
+const aPalabra = (celda: CeldaTablero, pic: Pictograma): PalabraDeFrase => ({
+  ...pic,
+  palabra: celda.textoMostrado,
+  ...(celda.textoHablado ? { textoHablado: celda.textoHablado } : {}),
+  audioUrl: celda.textoMostrado.toLowerCase() === pic.palabra.toLowerCase() ? pic.audioUrl : undefined,
+});
 
 /** Boca del osito: se mueve mientras `activa` es verdadero y vuelve a sonreír al terminar. */
 const useBoca = (activa: boolean) => {
@@ -75,7 +84,7 @@ const Carpeta: React.FC<{ nombre: string; franja: string; pic?: Pictograma; abie
 );
 
 /** Una tecla: tarjeta blanca con el dibujo grande y una franja fina del color de su categoría. */
-const Tecla: React.FC<{ pic: Pictograma; franja: string; alTocar: (pic: Pictograma) => void }> = ({ pic, franja, alTocar }) => {
+const Tecla: React.FC<{ celda: CeldaTablero; pic: Pictograma; franja: string; alTocar: (palabra: PalabraDeFrase) => void }> = ({ celda, pic, franja, alTocar }) => {
   const [pulsada, setPulsada] = useState(false);
   return (
     <button
@@ -83,33 +92,33 @@ const Tecla: React.FC<{ pic: Pictograma; franja: string; alTocar: (pic: Pictogra
       onClick={() => {
         setPulsada(true);
         setTimeout(() => setPulsada(false), 400);
-        alTocar(pic);
+        alTocar(aPalabra(celda, pic));
       }}
-      aria-label={pic.palabra}
+      aria-label={celda.textoMostrado}
       className={`flex flex-col items-center overflow-hidden rounded-3xl border-4 border-borderStrong bg-surface shadow-card cursor-pointer transition-transform hover:border-brand active:scale-90 ${pulsada ? 'animate-pop' : ''}`}
     >
       <span className={`h-2.5 w-full ${franja}`} aria-hidden />
       <span className="flex items-center justify-center p-3">
         <Dibujo pic={pic} className="w-24 h-24 sm:w-28 sm:h-28 lg:w-32 lg:h-32" />
       </span>
-      <span className="pb-3 text-xl sm:text-2xl font-black leading-tight truncate max-w-full px-2">{pic.palabra}</span>
+      <span className="pb-3 text-xl sm:text-2xl font-black leading-tight truncate max-w-full px-2">{celda.textoMostrado}</span>
     </button>
   );
 };
 
 /** Palabra núcleo: más chica que las demás para que la fila fija no le quite lugar a la grilla. */
-const TeclaNucleo: React.FC<{ pic: Pictograma; franja: string; alTocar: (pic: Pictograma) => void }> = ({ pic, franja, alTocar }) => (
+const TeclaNucleo: React.FC<{ celda: CeldaTablero; pic: Pictograma; franja: string; alTocar: (palabra: PalabraDeFrase) => void }> = ({ celda, pic, franja, alTocar }) => (
   <button
     type="button"
-    onClick={() => alTocar(pic)}
-    aria-label={pic.palabra}
+    onClick={() => alTocar(aPalabra(celda, pic))}
+    aria-label={celda.textoMostrado}
     className="shrink-0 flex flex-col items-center overflow-hidden rounded-2xl border-4 border-borderStrong bg-surface cursor-pointer transition-transform hover:border-brand active:scale-90"
   >
     <span className={`h-2 w-full ${franja}`} aria-hidden />
     <span className="p-1.5">
       <Dibujo pic={pic} className="w-14 h-14 sm:w-16 sm:h-16" />
     </span>
-    <span className="pb-1.5 text-sm sm:text-base font-black leading-tight px-2">{pic.palabra}</span>
+    <span className="pb-1.5 text-sm sm:text-base font-black leading-tight px-2">{celda.textoMostrado}</span>
   </button>
 );
 
@@ -156,7 +165,7 @@ export const TableroSAAC: React.FC<{ onCerrar: () => void }> = ({ onCerrar }) =>
   };
 
   /** El osito dice la frase, palabra por palabra, y al final se celebra. */
-  const decir = async (pics: Pictograma[]) => {
+  const decir = async (pics: PalabraDeFrase[]) => {
     if (pics.length === 0) return;
     corte.current += 1;
     const mio = corte.current;
@@ -169,7 +178,7 @@ export const TableroSAAC: React.FC<{ onCerrar: () => void }> = ({ onCerrar }) =>
     }
   };
 
-  const tocarTecla = (pic: Pictograma) => {
+  const tocarTecla = (pic: PalabraDeFrase) => {
     sonarToque();
     if (frase.length < PALABRAS_POR_FRASE) setFrase((f) => [...f, pic]);
     corte.current += 1;
@@ -289,7 +298,7 @@ export const TableroSAAC: React.FC<{ onCerrar: () => void }> = ({ onCerrar }) =>
       {/* Palabras núcleo: siempre a la vista, también dentro de las carpetas */}
       {tablero && tablero.nucleo.length > 0 && (
         <nav aria-label="Palabras que siempre están" className="flex items-center gap-2 sm:gap-3 overflow-x-auto px-3 sm:px-6 py-3 border-b-4 border-borderCustom">
-          {tablero.nucleo.map(({ celda, pic, franja }) => pic && <TeclaNucleo key={celda.id} pic={pic} franja={franja} alTocar={tocarTecla} />)}
+          {tablero.nucleo.map(({ celda, pic, franja }) => pic && <TeclaNucleo key={celda.id} celda={celda} pic={pic} franja={franja} alTocar={tocarTecla} />)}
         </nav>
       )}
 
@@ -297,7 +306,7 @@ export const TableroSAAC: React.FC<{ onCerrar: () => void }> = ({ onCerrar }) =>
       <div className="flex-1 min-h-0 flex flex-col sm:flex-row">
         <div key={vista?.id} className="flex-1 min-h-0 overflow-y-auto px-3 sm:px-6 py-4">
           <div className="grid grid-cols-[repeat(auto-fill,minmax(7.5rem,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(9rem,1fr))] gap-3 sm:gap-4">
-            {(vista?.celdas ?? []).map(({ celda, pic, franja }: CeldaResuelta) => pic && <Tecla key={celda.id} pic={pic} franja={franja} alTocar={tocarTecla} />)}
+            {(vista?.celdas ?? []).map(({ celda, pic, franja }: CeldaResuelta) => pic && <Tecla key={celda.id} celda={celda} pic={pic} franja={franja} alTocar={tocarTecla} />)}
           </div>
         </div>
 

@@ -12,6 +12,7 @@ export const ROUTES = {
   profesorInforme: (alumnoId: string) => `/profesor/informe/${alumnoId}`,
   profesorTarjetas: '/profesor/tarjetas',
   profesorAula: '/profesor/aula',
+  profesorTablero: '/profesor/tablero',
 
   aulaEspera: '/aula/espera',
   aulaAlumnos: '/aula/alumnos',

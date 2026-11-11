@@ -5,10 +5,9 @@ import { ROUTES } from '@/app/routes';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { BotonHablar } from '@/shared/components/BotonHablar';
 import { MarcaPiedra } from '@/features/docente/components/MarcaPiedra';
-import { useTableroStore } from '@/shared/store/useTableroStore';
 import { useThemeStore } from '@/shared/store/useThemeStore';
 
-export type AdminSection = 'dashboard' | 'alumnos' | 'actividades' | 'curriculo' | 'cuentos' | 'tarjetas' | 'aula';
+export type AdminSection = 'dashboard' | 'alumnos' | 'actividades' | 'curriculo' | 'cuentos' | 'tarjetas' | 'aula' | 'tablero';
 
 const NAV_ITEMS: { id: AdminSection; icono: LucideIcon; etiqueta: string; ruta: string }[] = [
   { id: 'dashboard', icono: LayoutGrid, etiqueta: 'Resumen', ruta: ROUTES.profesorPanel },
@@ -18,6 +17,7 @@ const NAV_ITEMS: { id: AdminSection; icono: LucideIcon; etiqueta: string; ruta: 
   { id: 'cuentos', icono: BookOpen, etiqueta: 'Cuentos', ruta: ROUTES.profesorCuentos },
   { id: 'tarjetas', icono: CreditCard, etiqueta: 'Tarjetas de acceso', ruta: ROUTES.profesorTarjetas },
   { id: 'aula', icono: Gauge, etiqueta: 'Control de aula', ruta: ROUTES.profesorAula },
+  { id: 'tablero', icono: MessageSquare, etiqueta: 'Tablero de comunicaciones', ruta: ROUTES.profesorTablero },
 ];
 
 interface AdminLayoutProps {
@@ -30,7 +30,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activeSectio
   const [menuAbierto, setMenuAbierto] = useState(false);
   const { user, logout, terminarSupervision } = useAuthStore();
   const navigate = useNavigate();
-  const abrirTablero = useTableroStore((s) => s.abrir);
 
   // Paleta sobria del panel docente; devuelve la del alumno al salir.
   useEffect(() => {
@@ -107,18 +106,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activeSectio
                 </button>
               );
             })}
-            <button
-              type="button"
-              onClick={() => {
-                setMenuAbierto(false);
-                abrirTablero();
-              }}
-              aria-haspopup="dialog"
-              className="relative w-full min-h-12 flex items-center gap-3 px-3 py-2.5 rounded-lg text-left cursor-pointer transition-colors text-rail-text hover:bg-black/5"
-            >
-              <MessageSquare className="w-[1.125rem] h-[1.125rem] shrink-0 text-rail-muted" aria-hidden />
-              <span className="text-[0.9375rem]">Tablero de comunicaciones</span>
-            </button>
           </nav>
         </div>
 

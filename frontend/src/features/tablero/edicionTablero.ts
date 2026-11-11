@@ -142,6 +142,18 @@ export function moverUno(c: Conjunto, tableroId: string, celdaId: string, paso: 
   return desde < 0 ? c : moverCelda(c, tableroId, celdaId, desde + paso);
 }
 
+/**
+ * Mueve una celda un lugar entre las que se ven juntas (por ejemplo, las palabras de la grilla sin las núcleo ni las
+ * carpetas). `visibles` son los ids de esas celdas en su orden. Respeta a las que no se ven: solo cambia de lugar con su vecina.
+ */
+export function moverRelativo(c: Conjunto, tableroId: string, celdaId: string, visibles: string[], paso: -1 | 1): Conjunto {
+  const posicion = visibles.indexOf(celdaId);
+  const vecina = visibles[posicion + paso];
+  const celdas = buscar(c, tableroId)?.celdas ?? [];
+  const destino = celdas.findIndex((x) => x.id === vecina);
+  return posicion < 0 || !vecina || destino < 0 ? c : moverCelda(c, tableroId, celdaId, destino);
+}
+
 /** Pasa una palabra de un tablero a otro (por ejemplo, del principal a una carpeta). Las carpetas no se mueven a otra carpeta. */
 export function pasarCelda(c: Conjunto, desdeId: string, celdaId: string, haciaId: string, indice?: number): Conjunto {
   const celda = buscar(c, desdeId)?.celdas.find((x) => x.id === celdaId);
