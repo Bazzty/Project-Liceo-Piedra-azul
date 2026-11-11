@@ -18,6 +18,15 @@ export const PALABRAS_NUCLEO = ['pic-yo', 'pic-quiero', 'pic-mas', 'pic-si', 'pi
 /** Carpetas de la plantilla general, en este orden. */
 const CARPETAS = ['necesidades', 'emociones', 'personas', 'acciones', 'objetos'];
 
+/** Dibujo de cada carpeta de la plantilla (del catálogo que ya viene en la app): el niño la reconoce sin leer. */
+export const IMAGEN_CARPETA: Record<string, string> = {
+  necesidades: 'pic-agua',
+  emociones: 'pic-feliz',
+  personas: 'pic-mama',
+  acciones: 'pic-jugar',
+  objetos: 'pic-libro',
+};
+
 export const idCarpetaGeneral = (categoriaId: string) => `${ID_PLANTILLA_GENERAL}-${categoriaId}`;
 
 type ConId = Pictograma & { id: string };
@@ -51,9 +60,11 @@ export function construirPlantillaGeneral(catalogo: Pictograma[]): Tablero[] {
     if (palabras.length === 0) continue;
     const nombre = CATEGORIAS_INICIALES.find((c) => c.id === categoriaId)?.nombre ?? categoriaId;
     carpetas.push({ id: idCarpetaGeneral(categoriaId), nombre, esPlantilla: true, principal: false, celdas: palabras });
+    const imagen = conId.find((p) => p.id === IMAGEN_CARPETA[categoriaId])?.id;
     celdasCarpeta.push({
       id: `carpeta-${categoriaId}`,
       tipo: 'carpeta',
+      ...(imagen ? { pictogramaId: imagen } : {}),
       textoMostrado: nombre,
       categoriaId,
       destinoTableroId: idCarpetaGeneral(categoriaId),
@@ -71,4 +82,20 @@ export function construirPlantillaGeneral(catalogo: Pictograma[]): Tablero[] {
     celdas: [...nucleo.map((p) => celdaDePalabra(p, true)), ...sueltas, ...celdasCarpeta],
   };
   return [principal, ...carpetas];
+}
+
+/**
+ * Pone su dibujo a las carpetas de la plantilla que aún no lo tienen (las que se guardaron antes de que existieran).
+ * Solo rellena lo que falta: la imagen que la docente haya elegido no se toca. Devuelve el mismo tablero si no hay nada que hacer.
+ */
+export function conImagenesDeCarpeta(principal: Tablero, catalogo: Pictograma[]): Tablero {
+  let cambio = false;
+  const celdas = principal.celdas.map((celda) => {
+    const categoriaId = celda.id.startsWith('carpeta-') ? celda.id.slice('carpeta-'.length) : '';
+    const imagen = IMAGEN_CARPETA[categoriaId];
+    if (celda.tipo !== 'carpeta' || celda.pictogramaId || !imagen || !catalogo.some((p) => p.id === imagen)) return celda;
+    cambio = true;
+    return { ...celda, pictogramaId: imagen };
+  });
+  return cambio ? { ...principal, celdas } : principal;
 }

@@ -1,7 +1,7 @@
 # Tablero de comunicación editable (estilo Asterics Grid)
 
 **Historia Jira:** PLPA-109 «Mejorar el tablero de comunicaciones con referencia a características de Asterics Grid».
-**Estado:** análisis y decisiones cerradas; implementación en curso: **T1 y T2 hechas**. **No se crearán subtareas en Jira**: el trabajo avanza según las tareas T1–T8 de este documento y **todos los commits usan `PLPA-109`**.
+**Estado:** análisis y decisiones cerradas; implementación en curso: **T1, T2 y T3 hechas**. **No se crearán subtareas en Jira**: el trabajo avanza según las tareas T1–T8 de este documento y **todos los commits usan `PLPA-109`**.
 **Origen:** pedido del cliente (la profesora): que el tablero se parezca a los de Asterics Grid, que ella pueda editar lo que ve cada niño y que exista un teclado para escribir.
 
 ## Cómo está hoy (antes del cambio)
@@ -88,7 +88,9 @@ TABLERO PRINCIPAL                      AL TOCAR «Comida»
   - `categorias`: id, nombre, color (de la paleta) y orden, editables.
   - La plantilla general (`plantilla-general` y una carpeta por categoría) se construye con `construirPlantillaGeneral` y se carga al iniciar si falta (`mocks/tableros.ts`). Cada palabra queda en un solo lugar: las 8 núcleo en el principal y el resto en su carpeta.
   - Un niño usa su tablero propio si existe y, si no, la plantilla general (`api/tableros.ts`). La copia propia se crea al editar por primera vez (T4).
-- **Dexie:** v4 solo agrega las tablas; no migra datos porque la plantilla se siembra al iniciar. Cubierto por `db/esquema.test.ts` y `features/tablero/plantillaGeneral.test.ts`. Mientras llega T3, el tablero del niño sigue siendo una sola grilla: se muestran las palabras del principal y luego las de cada carpeta (`aplanarTablero`).
+- **Dexie:** v4 solo agrega las tablas; no migra datos porque la plantilla se siembra al iniciar. Cubierto por `db/esquema.test.ts` y `features/tablero/plantillaGeneral.test.ts`. 
+- **Carpetas en el tablero del niño (T3, hecho):** el tablero principal ocupa casi todo el ancho y las **carpetas van en una columna fija a la derecha**, una debajo de la otra (en pantallas angostas, menos de 640 px, pasan a una **franja abajo**). La columna sigue visible con una carpeta abierta: la abierta se marca (borde grueso, aro y `aria-pressed`) y se puede pasar a otra directamente; tocar la abierta vuelve al principal. Encima va la **fila de palabras núcleo**, siempre a la vista, y debajo el área grande: las palabras del principal o las de la carpeta abierta. Cada carpeta lleva un **dibujo que representa su categoría** dentro del ícono (pestaña y borde punteado), más su nombre; al tocarla dice el nombre. La flecha de siempre vuelve al principal desde una carpeta y, en el principal, cierra el tablero. Al elegir una palabra dentro de una carpeta se vuelve sola al principal (`Tablero.volverAlElegir`, por defecto sí; el editor de T4 lo cambia). La frase se conserva al navegar. Un solo nivel. La lógica está en `useTableroDelNino.ts` y se prueba en `useTableroDelNino.test.ts`, `plantillaGeneral.test.ts` y `tableroSAAC.test.tsx`.
+- **Dibujos de las carpetas de la plantilla** (del catálogo que ya viene, sin internet): Necesidades → agua, Emociones → feliz, Personas → mamá, Acciones → jugar, Objetos → libro. La docente los cambiará con el selector de T5. Si el navegador ya tenía la plantilla guardada sin dibujos, `sembrarTableros` los rellena sin pisar lo que ella haya elegido (`conImagenesDeCarpeta`).
 - **Accesibilidad:** el tablero es un `role="dialog"`; el editor debe usarse solo con teclado; todo pictograma o imagen lleva texto alternativo; no depender solo del color para distinguir carpetas.
 
 ## Tareas propuestas
@@ -99,7 +101,7 @@ Todas dentro de **PLPA-109**, sin subtareas en Jira: las ramas y los commits usa
 |---|---|---|---|
 | T1 ✅ | **Botón global y estado del tablero** | Un solo botón en el encabezado visible en niño y docente; frase y estado de apertura en un store; quitar los botones sueltos. | — |
 | T2 ✅ | **Modelo de datos y plantilla general como datos** | Tablas de tableros, celdas y categorías abiertas; migración de Dexie con test; plantilla general (con carpetas) cargada desde datos; el tablero lee de ahí. | — |
-| T3 | **Tablero del niño con carpetas** | Celdas-carpeta, volver siempre visible, fila de palabras núcleo, regreso automático, nombre hablado de la carpeta. | T2 |
+| T3 ✅ | **Tablero del niño con carpetas** | Celdas-carpeta, volver siempre visible, fila de palabras núcleo, regreso automático, nombre hablado de la carpeta. | T2 |
 | T4 | **Editor del profesor** | Sección en el panel docente: crear/duplicar/editar/eliminar tableros y carpetas, celdas, categorías propias, reordenar (arrastrar y botones), asignar a cada niño, restablecer. | T2 |
 | T5 | **Selector de pictogramas** | Escribir la palabra y elegir de ARASAAC o subir foto; descarga para uso sin internet; crédito de ARASAAC. | T4 |
 | T6 | **Audio de palabras nuevas** | Generar el audio al guardar (`/audio`) con respaldo a la voz del navegador, sin datos de niños. | T4 |
@@ -109,6 +111,8 @@ Todas dentro de **PLPA-109**, sin subtareas en Jira: las ramas y los commits usa
 Orden sugerido: **T1 y T2** primero (no dependen entre sí), luego T3, T4 y T7; después T5 y T6; T8 al final.
 
 ## Pendientes
+
+- Los **nombres de las carpetas** (Necesidades, Emociones…) aún no tienen audio grabado: al tocar una carpeta suena la voz del navegador. Agregarlos al manifiesto de audios (`frontend/scripts/audios.manifest.json`) y generarlos con ElevenLabs.
 
 - Definir **dónde se muestra el crédito de ARASAAC** (punto 9).
 - Conseguir **capturas o un tablero de ejemplo de Asterics Grid** del cliente para ajustar el diseño visual.

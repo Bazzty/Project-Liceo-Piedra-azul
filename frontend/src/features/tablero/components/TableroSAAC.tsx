@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ArrowLeft, Delete, HandHelping, MousePointerClick, Volume2 } from 'lucide-react';
+import { ArrowLeft, Delete, FolderOpen, HandHelping, MousePointerClick, Volume2 } from 'lucide-react';
 import type { Pictograma } from '@/types';
 import { crearRegistro, usePictogramas } from '@/api';
 import { useAuthStore } from '@/shared/store/useAuthStore';
-import { usePalabrasDelTablero } from '@/features/tablero/usePalabrasDelTablero';
+import { useTableroDelNino, type CeldaResuelta } from '@/features/tablero/useTableroDelNino';
 import { resolverYGuardarPictograma } from '@/features/tablero/arasaac';
 import { useTableroStore } from '@/shared/store/useTableroStore';
 import { audioDeTexto } from '@/shared/audio/audioDeTexto';
@@ -45,6 +45,35 @@ const Dibujo: React.FC<{ pic: Pictograma; className: string }> = ({ pic, classNa
   );
 };
 
+/**
+ * Una carpeta: pestaña, borde punteado y, dentro, un dibujo que representa la categoría. Así el niño la reconoce
+ * sin leer ni depender del color. La abierta se marca con borde grueso y aro, no solo con color.
+ */
+const Carpeta: React.FC<{ nombre: string; franja: string; pic?: Pictograma; abierta: boolean; alTocar: () => void }> = ({ nombre, franja, pic, abierta, alTocar }) => (
+  <button
+    type="button"
+    onClick={alTocar}
+    aria-label={`Carpeta ${nombre}`}
+    aria-pressed={abierta}
+    className={`relative mt-3 shrink-0 w-28 sm:w-full flex flex-col items-center rounded-2xl rounded-tl-none border-4 shadow-card cursor-pointer transition-all active:scale-95 ${
+      abierta ? 'border-brand bg-surface ring-4 ring-accent/70' : 'border-dashed border-borderStrong bg-app hover:border-brand'
+    }`}
+  >
+    <span className={`absolute -top-3.5 -left-1 h-4 w-14 rounded-t-xl border-4 border-b-0 border-borderStrong ${franja}`} aria-hidden />
+    <span className="flex items-center justify-center p-2 pt-4">
+      {pic ? (
+        <Dibujo pic={pic} className="w-14 h-14 sm:w-16 sm:h-16 lg:w-20 lg:h-20" />
+      ) : (
+        <FolderOpen className="w-14 h-14 sm:w-16 sm:h-16 lg:w-20 lg:h-20 text-secondary" strokeWidth={1.5} aria-hidden />
+      )}
+    </span>
+    <span className="flex items-center gap-1 pb-2 px-1 max-w-full text-base sm:text-lg font-black leading-tight">
+      <FolderOpen className="w-4 h-4 shrink-0" aria-hidden />
+      <span className="truncate">{nombre}</span>
+    </span>
+  </button>
+);
+
 /** Una tecla: tarjeta blanca con el dibujo grande y una franja fina del color de su categoría. */
 const Tecla: React.FC<{ pic: Pictograma; franja: string; alTocar: (pic: Pictograma) => void }> = ({ pic, franja, alTocar }) => {
   const [pulsada, setPulsada] = useState(false);
@@ -68,10 +97,27 @@ const Tecla: React.FC<{ pic: Pictograma; franja: string; alTocar: (pic: Pictogra
   );
 };
 
+/** Palabra núcleo: más chica que las demás para que la fila fija no le quite lugar a la grilla. */
+const TeclaNucleo: React.FC<{ pic: Pictograma; franja: string; alTocar: (pic: Pictograma) => void }> = ({ pic, franja, alTocar }) => (
+  <button
+    type="button"
+    onClick={() => alTocar(pic)}
+    aria-label={pic.palabra}
+    className="shrink-0 flex flex-col items-center overflow-hidden rounded-2xl border-4 border-borderStrong bg-surface cursor-pointer transition-transform hover:border-brand active:scale-90"
+  >
+    <span className={`h-2 w-full ${franja}`} aria-hidden />
+    <span className="p-1.5">
+      <Dibujo pic={pic} className="w-14 h-14 sm:w-16 sm:h-16" />
+    </span>
+    <span className="pb-1.5 text-sm sm:text-base font-black leading-tight px-2">{pic.palabra}</span>
+  </button>
+);
+
 /**
- * Hablar: el osito dice lo que el niño arma, palabra por palabra. Un solo tablero, sin pestañas ni menús: el
- * osito y su burbuja arriba (ahí aparecen los dibujos que se tocan) y todas las palabras abajo, con las más
- * usadas primero. Sin texto que leer.
+ * Hablar: el osito dice lo que el niño arma, palabra por palabra. Arriba, el osito y su burbuja (ahí aparecen
+ * los dibujos que se tocan); debajo, las palabras núcleo, siempre a la vista; y abajo el tablero: palabras y
+ * carpetas. Una carpeta abre otro tablero y, al elegir una palabra, se vuelve sola al principal. La frase se
+ * conserva al navegar. Sin texto que leer.
  */
 export const TableroSAAC: React.FC<{ onCerrar: () => void }> = ({ onCerrar }) => {
   const activeStudentId = useAuthStore((s) => s.activeStudentId);
@@ -90,7 +136,11 @@ export const TableroSAAC: React.FC<{ onCerrar: () => void }> = ({ onCerrar }) =>
     return () => window.removeEventListener('keydown', alTeclear);
   }, [onCerrar]);
 
-  const palabras = usePalabrasDelTablero(activeStudentId);
+  const tablero = useTableroDelNino(activeStudentId);
+  /** Carpeta abierta (nulo = tablero principal). Se olvida al cerrar el tablero: se entra siempre por el principal. */
+  const [carpetaId, setCarpetaId] = useState<string | null>(null);
+  const carpeta = carpetaId ? tablero?.carpetas.get(carpetaId) : undefined;
+  const vista = carpeta ?? tablero?.principal;
   const ayuda = todos?.find((p) => p.id === 'pic-ayuda');
 
   const registrar = (pics: Pictograma[], extra = '') => {
@@ -125,7 +175,22 @@ export const TableroSAAC: React.FC<{ onCerrar: () => void }> = ({ onCerrar }) =>
     corte.current += 1;
     // Cada palabra se dice al tocarla: el niño oye lo que eligió
     void decirSecuencia([aVoz(pic)]);
+    // Elegida la palabra, se vuelve sola al principal (la docente puede desactivarlo)
+    if (carpeta && tablero?.volverAlElegir) setCarpetaId(null);
   };
+
+  const abrirCarpeta = (id: string, nombre: string) => {
+    sonarToque();
+    corte.current += 1;
+    // Tocar la carpeta que ya está abierta vuelve al principal
+    if (id === carpetaId) return setCarpetaId(null);
+    setCarpetaId(id);
+    // Dice su nombre para que el niño sepa dónde está
+    void decirSecuencia([{ texto: nombre, audioUrl: audioDeTexto(nombre) ?? undefined }]);
+  };
+
+  /** La flecha de siempre: dentro de una carpeta vuelve al principal; en el principal cierra el tablero. */
+  const volver = () => (carpeta ? setCarpetaId(null) : onCerrar());
 
   const decirMiFrase = () => {
     void decir(frase);
@@ -154,13 +219,16 @@ export const TableroSAAC: React.FC<{ onCerrar: () => void }> = ({ onCerrar }) =>
       <header className="flex items-center justify-between gap-3 px-3 sm:px-6 py-2 sm:py-3">
         <button
           type="button"
-          onClick={onCerrar}
-          aria-label="Volver"
+          onClick={volver}
+          aria-label={carpeta ? 'Volver al tablero principal' : 'Volver'}
           className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-accent text-onAccent border-4 border-borderStrong flex items-center justify-center cursor-pointer hover:bg-accent-hover active:scale-90 transition-all"
         >
           <ArrowLeft className="w-8 h-8" strokeWidth={2.5} aria-hidden />
         </button>
         <h1 className="sr-only">Hablar</h1>
+        <p className="sr-only" aria-live="polite">
+          {carpeta ? `Carpeta ${carpeta.nombre} abierta` : ''}
+        </p>
         {ayuda && (
           <button
             type="button"
@@ -218,12 +286,38 @@ export const TableroSAAC: React.FC<{ onCerrar: () => void }> = ({ onCerrar }) =>
         </div>
       </section>
 
-      <div className="flex-1 overflow-y-auto px-3 sm:px-6 py-4">
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(7.5rem,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(9rem,1fr))] gap-3 sm:gap-4 max-w-6xl mx-auto">
-          {(palabras ?? []).map(({ celda, pic, franja }) => (
-            <Tecla key={celda.id} pic={pic} franja={franja} alTocar={tocarTecla} />
-          ))}
+      {/* Palabras núcleo: siempre a la vista, también dentro de las carpetas */}
+      {tablero && tablero.nucleo.length > 0 && (
+        <nav aria-label="Palabras que siempre están" className="flex items-center gap-2 sm:gap-3 overflow-x-auto px-3 sm:px-6 py-3 border-b-4 border-borderCustom">
+          {tablero.nucleo.map(({ celda, pic, franja }) => pic && <TeclaNucleo key={celda.id} pic={pic} franja={franja} alTocar={tocarTecla} />)}
+        </nav>
+      )}
+
+      {/* Lo grande es el tablero (principal o carpeta abierta); las carpetas van a su lado, o abajo en pantallas angostas */}
+      <div className="flex-1 min-h-0 flex flex-col sm:flex-row">
+        <div key={vista?.id} className="flex-1 min-h-0 overflow-y-auto px-3 sm:px-6 py-4">
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(7.5rem,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(9rem,1fr))] gap-3 sm:gap-4">
+            {(vista?.celdas ?? []).map(({ celda, pic, franja }: CeldaResuelta) => pic && <Tecla key={celda.id} pic={pic} franja={franja} alTocar={tocarTecla} />)}
+          </div>
         </div>
+
+        {tablero && tablero.listaCarpetas.length > 0 && (
+          <nav
+            aria-label="Carpetas"
+            className="shrink-0 flex flex-row sm:flex-col gap-3 overflow-x-auto sm:overflow-x-hidden sm:overflow-y-auto px-3 pb-3 pt-2 border-t-4 sm:border-t-0 sm:border-l-4 border-borderCustom sm:w-40 lg:w-48 sm:px-3 sm:py-4"
+          >
+            {tablero.listaCarpetas.map(({ celda, pic, franja }) => (
+              <Carpeta
+                key={celda.id}
+                nombre={celda.textoMostrado}
+                franja={franja}
+                pic={pic}
+                abierta={celda.destinoTableroId === carpetaId}
+                alTocar={() => abrirCarpeta(celda.destinoTableroId as string, celda.textoMostrado)}
+              />
+            ))}
+          </nav>
+        )}
       </div>
     </div>
   );

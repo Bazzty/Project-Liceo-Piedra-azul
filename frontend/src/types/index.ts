@@ -86,6 +86,8 @@ export interface Tablero {
 	copiadoDe?: string;
 	/** Tablero de entrada; los demás se alcanzan por carpetas. */
 	principal: boolean;
+	/** En el tablero principal: si al elegir una palabra dentro de una carpeta se vuelve solo al principal. Por defecto, sí. */
+	volverAlElegir?: boolean;
 	celdas: CeldaTablero[];
 }
 

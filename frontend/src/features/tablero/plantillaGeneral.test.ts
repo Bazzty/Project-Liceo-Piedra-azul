@@ -1,44 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { aplanarTablero } from '@/features/tablero/aplanarTablero';
 import { COLORES_TABLERO } from '@/features/tablero/coloresTablero';
 import {
   CATEGORIAS_INICIALES,
+  conImagenesDeCarpeta,
   construirPlantillaGeneral,
+  IMAGEN_CARPETA,
   ID_PLANTILLA_GENERAL,
   PALABRAS_NUCLEO,
 } from '@/features/tablero/plantillaGeneral';
-import type { Pictograma, Tablero } from '@/types';
-
-const pic = (id: string, palabra: string, categoria: Pictograma['categoria']): Pictograma => ({
-  id: `pic-${id}`,
-  palabra,
-  categoria,
-  imagenUrl: `/pictogramas/arasaac/${id}.png`,
-  esFotoReal: false,
-});
-
-/** Un catálogo con una o más palabras de cada categoría, las 8 núcleo y alguna «básica» que no es núcleo. */
-const catalogo: Pictograma[] = [
-  pic('ayuda', 'ayuda', 'necesidades'),
-  pic('agua', 'agua', 'necesidades'),
-  pic('comer', 'comer', 'necesidades'),
-  pic('feliz', 'feliz', 'emociones'),
-  pic('triste', 'triste', 'emociones'),
-  pic('yo', 'yo', 'personas'),
-  pic('mama', 'mamá', 'personas'),
-  pic('amigo', 'amigo', 'personas'),
-  pic('quiero', 'quiero', 'acciones'),
-  pic('jugar', 'jugar', 'acciones'),
-  pic('abrazar', 'abrazo', 'acciones'),
-  pic('libro', 'libro', 'objetos'),
-  pic('azul', 'azul', 'objetos'),
-  pic('mas', 'más', 'basicas'),
-  pic('si', 'sí', 'basicas'),
-  pic('no', 'no', 'basicas'),
-  pic('terminado', 'terminado', 'basicas'),
-  pic('gracias', 'gracias', 'basicas'),
-  pic('hola', 'hola', 'basicas'),
-];
+import { catalogo } from '@/features/tablero/catalogoDePrueba';
 
 describe('construirPlantillaGeneral', () => {
   const tableros = construirPlantillaGeneral(catalogo);
@@ -105,37 +75,35 @@ describe('construirPlantillaGeneral', () => {
   });
 });
 
-describe('aplanarTablero', () => {
-  const tableros = construirPlantillaGeneral(catalogo);
+describe('dibujo de las carpetas', () => {
+  const principal = construirPlantillaGeneral(catalogo)[0];
+  const carpetas = principal.celdas.filter((c) => c.tipo === 'carpeta');
 
-  it('devuelve primero el núcleo y luego las carpetas, como el tablero de una sola grilla de antes', () => {
-    const palabras = aplanarTablero(tableros[0], tableros).map((c) => c.textoMostrado);
-    expect(palabras).toEqual([
-      'yo', 'quiero', 'más', 'sí', 'no', 'terminado', 'gracias', 'ayuda',
-      'hola',
-      'agua', 'comer',
-      'feliz', 'triste',
-      'amigo', 'mamá',
-      'abrazo', 'jugar',
-      'azul', 'libro',
-    ]);
+  it('cada carpeta trae el dibujo de su categoría, tomado del catálogo', () => {
+    expect(carpetas.map((c) => c.pictogramaId)).toEqual(Object.values(IMAGEN_CARPETA));
+    const ids = new Set(catalogo.map((p) => p.id));
+    expect(carpetas.every((c) => c.pictogramaId && ids.has(c.pictogramaId))).toBe(true);
   });
 
-  it('no repite palabras si dos carpetas abren el mismo tablero', () => {
-    const principal: Tablero = {
-      ...tableros[0],
-      celdas: [
-        ...tableros[0].celdas,
-        { id: 'otra', tipo: 'carpeta', textoMostrado: 'Otra', categoriaId: 'acciones', destinoTableroId: 'plantilla-general-acciones' },
-      ],
-    };
-    const palabras = aplanarTablero(principal, tableros).map((c) => c.pictogramaId);
-    expect(new Set(palabras).size).toBe(palabras.length);
+  it('si el dibujo no está en el catálogo, la carpeta se crea sin él', () => {
+    const sinAgua = construirPlantillaGeneral(catalogo.filter((p) => p.id !== 'pic-agua'))[0];
+    expect(sinAgua.celdas.find((c) => c.id === 'carpeta-necesidades')?.pictogramaId).toBeUndefined();
   });
 
-  it('no se cuelga con carpetas que se apuntan entre sí ni falla con un destino que no existe', () => {
-    const a: Tablero = { id: 'a', nombre: 'A', esPlantilla: false, principal: true, celdas: [{ id: 'ca', tipo: 'carpeta', textoMostrado: 'B', categoriaId: 'x', destinoTableroId: 'b' }, { id: 'rota', tipo: 'carpeta', textoMostrado: '?', categoriaId: 'x', destinoTableroId: 'no-existe' }] };
-    const b: Tablero = { id: 'b', nombre: 'B', esPlantilla: false, principal: false, celdas: [{ id: 'cb', tipo: 'carpeta', textoMostrado: 'A', categoriaId: 'x', destinoTableroId: 'a' }, { id: 'p', tipo: 'palabra', pictogramaId: 'pic-1', textoMostrado: 'uno', categoriaId: 'x' }] };
-    expect(aplanarTablero(a, [a, b]).map((c) => c.id)).toEqual(['p']);
+  const sinDibujo = { ...principal, celdas: principal.celdas.map((c) => (c.tipo === 'carpeta' ? { ...c, pictogramaId: undefined } : c)) };
+
+  it('conImagenesDeCarpeta rellena las carpetas guardadas antes de tener dibujo', () => {
+    const completo = conImagenesDeCarpeta(sinDibujo, catalogo);
+    expect(completo.celdas.filter((c) => c.tipo === 'carpeta').map((c) => c.pictogramaId)).toEqual(Object.values(IMAGEN_CARPETA));
+  });
+
+  it('no pisa el dibujo que la docente eligió', () => {
+    const elegida = { ...sinDibujo, celdas: sinDibujo.celdas.map((c) => (c.id === 'carpeta-acciones' ? { ...c, pictogramaId: 'pic-propio' } : c)) };
+    const completo = conImagenesDeCarpeta(elegida, catalogo);
+    expect(completo.celdas.find((c) => c.id === 'carpeta-acciones')?.pictogramaId).toBe('pic-propio');
+  });
+
+  it('devuelve el mismo tablero si no hay nada que rellenar', () => {
+    expect(conImagenesDeCarpeta(principal, catalogo)).toBe(principal);
   });
 });
