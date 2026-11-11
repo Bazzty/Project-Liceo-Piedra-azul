@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BookOpen, CreditCard, Gauge, GraduationCap, LayoutGrid, ListChecks, Menu, Users, X, type LucideIcon } from 'lucide-react';
+import { BookOpen, CreditCard, Gauge, GraduationCap, LayoutGrid, ListChecks, Menu, MessageSquare, Users, X, type LucideIcon } from 'lucide-react';
 import { ROUTES } from '@/app/routes';
 import { useAuthStore } from '@/shared/store/useAuthStore';
+import { BotonHablar } from '@/shared/components/BotonHablar';
 import { MarcaPiedra } from '@/features/docente/components/MarcaPiedra';
+import { useTableroStore } from '@/shared/store/useTableroStore';
 import { useThemeStore } from '@/shared/store/useThemeStore';
 
 export type AdminSection = 'dashboard' | 'alumnos' | 'actividades' | 'curriculo' | 'cuentos' | 'tarjetas' | 'aula';
@@ -28,6 +30,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activeSectio
   const [menuAbierto, setMenuAbierto] = useState(false);
   const { user, logout, terminarSupervision } = useAuthStore();
   const navigate = useNavigate();
+  const abrirTablero = useTableroStore((s) => s.abrir);
 
   // Paleta sobria del panel docente; devuelve la del alumno al salir.
   useEffect(() => {
@@ -55,14 +58,17 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activeSectio
           <MarcaPiedra className="w-8 h-8" />
           <span className="text-base font-medium text-primary">Leer para Todos</span>
         </div>
-        <button
-          type="button"
-          onClick={() => setMenuAbierto(!menuAbierto)}
-          className="min-h-12 min-w-12 flex items-center justify-center rounded-control border border-rail-line text-primary cursor-pointer"
-          aria-label={menuAbierto ? 'Cerrar menú' : 'Abrir menú'}
-        >
-          {menuAbierto ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-        </button>
+        <div className="flex items-center gap-2">
+          <BotonHablar variante="icono" />
+          <button
+            type="button"
+            onClick={() => setMenuAbierto(!menuAbierto)}
+            className="min-h-12 min-w-12 flex items-center justify-center rounded-control border border-rail-line text-primary cursor-pointer"
+            aria-label={menuAbierto ? 'Cerrar menú' : 'Abrir menú'}
+          >
+            {menuAbierto ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
+        </div>
       </div>
 
       <aside
@@ -101,6 +107,18 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activeSectio
                 </button>
               );
             })}
+            <button
+              type="button"
+              onClick={() => {
+                setMenuAbierto(false);
+                abrirTablero();
+              }}
+              aria-haspopup="dialog"
+              className="relative w-full min-h-12 flex items-center gap-3 px-3 py-2.5 rounded-lg text-left cursor-pointer transition-colors text-rail-text hover:bg-black/5"
+            >
+              <MessageSquare className="w-[1.125rem] h-[1.125rem] shrink-0 text-rail-muted" aria-hidden />
+              <span className="text-[0.9375rem]">Tablero de comunicaciones</span>
+            </button>
           </nav>
         </div>
 

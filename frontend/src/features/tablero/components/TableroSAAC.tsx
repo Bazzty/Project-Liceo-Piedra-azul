@@ -5,6 +5,7 @@ import { crearRegistro, usePictogramas } from '@/api';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { franjaDe, ordenarTablero } from '@/features/tablero/categoriasTablero';
 import { resolverYGuardarPictograma } from '@/features/tablero/arasaac';
+import { useTableroStore } from '@/shared/store/useTableroStore';
 import { audioDeTexto } from '@/shared/audio/audioDeTexto';
 import { decirSecuencia, type ElementoDeVoz } from '@/shared/audio/decirSecuencia';
 import { sonarAcierto, sonarToque } from '@/shared/audio/sonidos';
@@ -77,7 +78,8 @@ export const TableroSAAC: React.FC<{ onCerrar: () => void }> = ({ onCerrar }) =>
   const activeStudentId = useAuthStore((s) => s.activeStudentId);
   const supervision = useAuthStore((s) => s.supervision);
   const todos = usePictogramas();
-  const [frase, setFrase] = useState<Pictograma[]>([]);
+  const frase = useTableroStore((s) => s.frase);
+  const setFrase = useTableroStore((s) => s.setFrase);
   const [sonando, setSonando] = useState<number | null>(null);
   const [celebra, setCelebra] = useState(false);
   const corte = useRef(0);

@@ -9,7 +9,7 @@ import { ROUTES } from '@/app/routes';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { useTareasPendientes } from '@/features/tareas/useTareasPendientes';
 import { AlbumEstrellas } from '@/features/estrellas/AlbumEstrellas';
-import { TableroSAAC } from '@/features/tablero/components/TableroSAAC';
+import { useTableroStore } from '@/shared/store/useTableroStore';
 import { AgendaVisual } from '@/shared/components/AgendaVisual';
 import { LayoutEstudiante } from '@/shared/components/LayoutEstudiante';
 import { OsoBurbuja } from '@/shared/components/OsoBurbuja';
@@ -111,7 +111,7 @@ export const VistaPrincipal: React.FC = () => {
   const navigate = useNavigate();
   const { activeStudentId, logout, supervision } = useAuthStore();
   const alumno = useAlumno(activeStudentId);
-  const [hablarAbierto, setHablarAbierto] = useState(false);
+  const abrirTablero = useTableroStore((s) => s.abrir);
   const [estrellasAbierto, setEstrellasAbierto] = useState(false);
 
   const nombre = alumno?.nombre ?? 'amigo';
@@ -132,7 +132,7 @@ export const VistaPrincipal: React.FC = () => {
   const irAPaso = (paso: PasoAgenda) => {
     sonarToque();
     if (paso === 'leer') navigate(ROUTES.aprender);
-    else if (paso === 'hablar') setHablarAbierto(true);
+    else if (paso === 'hablar') abrirTablero();
     else setEstrellasAbierto(true);
   };
 
@@ -143,7 +143,7 @@ export const VistaPrincipal: React.FC = () => {
 
         <div className="flex items-start justify-center gap-3 sm:gap-10 lg:gap-16 w-full">
           <Globo orden={0} estilo="leer" titulo="Leer" clave="leer" icono={<BookOpen strokeWidth={1.8} />} onClick={() => navigate(ROUTES.aprender)} />
-          <Globo orden={1} estilo="hablar" titulo="Hablar" clave="hablar" icono={<MessageCircle strokeWidth={1.8} />} onClick={() => setHablarAbierto(true)} />
+          <Globo orden={1} estilo="hablar" titulo="Hablar" clave="hablar" icono={<MessageCircle strokeWidth={1.8} />} onClick={abrirTablero} />
           <Globo
             orden={2}
             estilo="estrellas"
@@ -168,8 +168,6 @@ export const VistaPrincipal: React.FC = () => {
         <LogOut className="w-8 h-8 sm:w-10 sm:h-10" strokeWidth={2} aria-hidden />
         <span className="text-base sm:text-lg font-black">Salir</span>
       </button>
-
-      {hablarAbierto && <TableroSAAC onCerrar={() => setHablarAbierto(false)} />}
 
       <Modal isOpen={estrellasAbierto} onClose={() => setEstrellasAbierto(false)} title="Mis estrellas" size="lg">
         <AlbumEstrellas alumnoId={activeStudentId} />
