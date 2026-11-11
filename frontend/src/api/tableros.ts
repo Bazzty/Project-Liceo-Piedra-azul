@@ -36,3 +36,28 @@ export async function tablerosDe(alumnoId: string | null): Promise<{ principal: 
 }
 
 export const useTablerosDe = (alumnoId: string | null) => useLiveQuery(() => tablerosDe(alumnoId), [alumnoId]);
+
+// --- Edición (la docente cambia tableros) ---
+
+/** Los tableros con esos ids; los que no existen se omiten. */
+export async function obtenerTableros(ids: string[]): Promise<Tablero[]> {
+  const encontrados = await db.tableros.bulkGet(ids);
+  return encontrados.filter((t): t is Tablero => Boolean(t));
+}
+
+/** Todos los tableros de un niño: su principal y sus carpetas. */
+export const tablerosDeAlumno = (alumnoId: string) => db.tableros.where('alumnoId').equals(alumnoId).toArray();
+
+/** Guarda (crea o reemplaza) y borra tableros en una sola operación: o se hace todo o nada. */
+export const guardarTableros = (guardar: Tablero[], borrar: string[] = []) =>
+  db.transaction('rw', db.tableros, async () => {
+    if (borrar.length > 0) await db.tableros.bulkDelete(borrar);
+    if (guardar.length > 0) await db.tableros.bulkPut(guardar);
+  });
+
+/** Borra todo lo que un niño tenía guardado: vuelve a usar la plantilla general. */
+export const borrarTablerosDeAlumno = (alumnoId: string) => db.tableros.where('alumnoId').equals(alumnoId).delete();
+
+/** Los tableros de entrada de las plantillas (la general y las que creó la docente). */
+export const listarPlantillas = () => db.tableros.filter((t) => t.esPlantilla && t.principal).toArray();
+export const usePlantillas = () => useLiveQuery(() => listarPlantillas(), []);
