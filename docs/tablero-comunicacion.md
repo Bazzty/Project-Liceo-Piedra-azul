@@ -1,7 +1,7 @@
 # Tablero de comunicación editable (estilo Asterics Grid)
 
 **Historia Jira:** PLPA-109 «Mejorar el tablero de comunicaciones con referencia a características de Asterics Grid».
-**Estado:** análisis y decisiones cerradas; implementación en curso: **T1, T2 y T3 hechas**. **No se crearán subtareas en Jira**: el trabajo avanza según las tareas T1–T8 de este documento y **todos los commits usan `PLPA-109`**.
+**Estado:** análisis y decisiones cerradas; implementación en curso: **T1 a T4 hechas**. **No se crearán subtareas en Jira**: el trabajo avanza según las tareas T1–T8 de este documento y **todos los commits usan `PLPA-109`**.
 **Origen:** pedido del cliente (la profesora): que el tablero se parezca a los de Asterics Grid, que ella pueda editar lo que ve cada niño y que exista un teclado para escribir.
 
 ## Cómo está hoy (antes del cambio)
@@ -100,7 +100,14 @@ TABLERO PRINCIPAL                      AL TOCAR «Comida»
   - **Guardado al instante**, sin botón. Un aviso anuncia lo hecho y **«Deshacer»** revierte el último cambio (también al quitar una carpeta con contenido o restablecer a un niño). Un niño sin tablero propio recibe su copia en su primer cambio; «Restablecer a la plantilla» se la quita.
   - **Agregar o editar:** se escribe la palabra, opcionalmente lo que dice el tablero si es distinto, la categoría (define el color) y el dibujo. El selector (`SelectorPictograma.tsx`) busca mientras se escribe en el **catálogo de la app** y en **ARASAAC**; un dibujo de ARASAAC se guarda como pictograma propio (`arasaac-<id>`) apuntando a su URL. Foto propia, descarga para uso sin internet y crédito de ARASAAC siguen en T5.
   - **El niño ve y oye lo editado:** el tablero muestra el texto de la celda y dice `textoHablado` si existe; la grabación del pictograma solo se usa si se dice su misma palabra. Las palabras nuevas suenan con la voz del navegador hasta T6. `Pictograma.categoria` pasó a ser abierta (`string`).
-  - **Accesibilidad:** cada acción tiene un único control con nombre propio («Mover «agua» antes», «Quitar «agua»»…); el arrastre tiene su alternativa con botones; los avisos van en una región `aria-live`. «Probar el tablero» abre el tablero real.
+  - **Plantillas, asignación y categorías (T4c, hecho):** el selector de arriba del editor lista todas las plantillas (la general primero) y los niños. Una barra de acciones cambia según lo que se edita:
+  - **Plantilla:** «Nueva plantilla» (copia otra y pasa a editarla), «Cambiar nombre» y «Eliminar plantilla» (no se aplican a la general; al eliminar, los niños que la recibieron conservan su copia), «Asignar a niños» y, en la general, «Restablecer de fábrica».
+  - **Niño:** «Cambiar de plantilla», y si ya tiene tablero propio, «Guardar como plantilla» y «Restablecer a la plantilla».
+  - **Asignar** (`DialogoAsignar.tsx`): se elige una plantilla y uno o varios niños («Todos» incluido); cada niño recibe su propia copia. Avisa cuántos ya tenían tablero propio y se reemplazan. `asignarPlantillaAVarios` devuelve cómo deshacerlo y devuelve a cada niño a lo que tenía.
+  - **Restablecer de fábrica** reconstruye la general con el catálogo base (`esDelCatalogoBase` deja fuera los dibujos `arasaac-*` y `foto-*` que la docente agregó, para que no aparezcan sueltos) y recupera las categorías de fábrica si las había borrado.
+  - **Categorías** (`DialogoCategorias.tsx`, `edicionCategorias.ts`): crear, renombrar (al salir del campo), cambiar de color (paleta de 6, con nombre del color), ordenar y quitar. **No se puede quitar** una categoría en uso (se indica en cuántas celdas) ni la última.
+  - Todo es **deshacible** salvo las categorías, que no son destructivas (lo que está en uso no se borra).
+- **Accesibilidad:** cada acción tiene un único control con nombre propio («Mover «agua» antes», «Quitar «agua»»…); el arrastre tiene su alternativa con botones; los avisos van en una región `aria-live`. «Probar el tablero» abre el tablero real.
 - **Accesibilidad:** el tablero es un `role="dialog"`; el editor debe usarse solo con teclado; todo pictograma o imagen lleva texto alternativo; no depender solo del color para distinguir carpetas.
 
 ## Tareas propuestas
@@ -112,13 +119,13 @@ Todas dentro de **PLPA-109**, sin subtareas en Jira: las ramas y los commits usa
 | T1 ✅ | **Botón global y estado del tablero** | Un solo botón en el encabezado visible en niño y docente; frase y estado de apertura en un store; quitar los botones sueltos. | — |
 | T2 ✅ | **Modelo de datos y plantilla general como datos** | Tablas de tableros, celdas y categorías abiertas; migración de Dexie con test; plantilla general (con carpetas) cargada desde datos; el tablero lee de ahí. | — |
 | T3 ✅ | **Tablero del niño con carpetas** | Celdas-carpeta, volver siempre visible, fila de palabras núcleo, regreso automático, nombre hablado de la carpeta. | T2 |
-| T4 (T4a ✅, T4b ✅) | **Editor del profesor** | Sección en el panel docente: crear/duplicar/editar/eliminar tableros y carpetas, celdas, categorías propias, reordenar (arrastrar y botones), asignar a cada niño, restablecer. | T2 |
+| T4 ✅ | **Editor del profesor** | Sección en el panel docente: crear/duplicar/editar/eliminar tableros y carpetas, celdas, categorías propias, reordenar (arrastrar y botones), asignar a cada niño, restablecer. | T2 |
 | T5 | **Selector de pictogramas** | Escribir la palabra y elegir de ARASAAC o subir foto; descarga para uso sin internet; crédito de ARASAAC. | T4 |
 | T6 | **Audio de palabras nuevas** | Generar el audio al guardar (`/audio`) con respaldo a la voz del navegador, sin datos de niños. | T4 |
 | T7 | **Teclado** | Botón dentro del tablero; teclado QWERTY simple; sonido de cada letra; Enter dice lo escrito; mezcla con pictogramas; registro sin el texto. | T1 |
 | T8 | **Sincronizar con el backend** | API y tablas en PostgreSQL para pasar los tableros del navegador al servidor. Posterior; se decide cuando se retome la conexión backend-frontend (PLPA-64). | T2 |
 
-Orden sugerido: **T1 y T2** primero (no dependen entre sí), luego T3, T4 y T7; después T5 y T6; T8 al final.
+Orden sugerido (T1 a T4 ya hechas): **T1 y T2** primero (no dependen entre sí), luego T3, T4 y T7; después T5 y T6; T8 al final.
 
 ## Pendientes
 

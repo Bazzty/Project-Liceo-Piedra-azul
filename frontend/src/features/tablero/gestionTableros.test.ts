@@ -3,6 +3,7 @@ import { catalogo } from '@/features/tablero/catalogoDePrueba';
 import { actualizarCelda, agregarCarpeta, armarConjunto, nuevaCeldaPalabra, agregarCelda, quitarCelda } from '@/features/tablero/edicionTablero';
 import {
   asignarPlantilla,
+  asignarPlantillaAVarios,
   cargarConjunto,
   crearPlantilla,
   eliminarPlantilla,
@@ -11,7 +12,7 @@ import {
   restablecerAlumno,
   restablecerPlantillaGeneral,
 } from '@/features/tablero/gestionTableros';
-import { construirPlantillaGeneral, ID_PLANTILLA_GENERAL } from '@/features/tablero/plantillaGeneral';
+import { construirPlantillaGeneral, esDelCatalogoBase, ID_PLANTILLA_GENERAL } from '@/features/tablero/plantillaGeneral';
 import type { Tablero } from '@/types';
 
 // Un almacén en memoria con las mismas firmas que la capa de datos real.
@@ -220,7 +221,50 @@ describe('asignar y restablecer', () => {
   });
 });
 
+describe('asignarPlantillaAVarios', () => {
+  it('da la plantilla a cada niño marcado y a nadie más', async () => {
+    const id = (await crearPlantilla('Para el curso')) as string;
+    await asignarPlantillaAVarios(['ana', 'luis'], id);
+    expect(deAlumno('ana')).toHaveLength(6);
+    expect(deAlumno('luis')).toHaveLength(6);
+    expect(deAlumno('maria')).toHaveLength(0);
+  });
+
+  it('al deshacer, cada niño vuelve a lo que tenía: su tablero propio o la plantilla general', async () => {
+    const mio = await cargarConjunto({ tipo: 'alumno', alumnoId: 'ana' });
+    if (!mio) throw new Error('sin conjunto');
+    await guardarCambio(mio.conjunto, actualizarCelda(mio.conjunto, mio.conjunto.principal.id, 'celda-pic-hola', { textoMostrado: 'Hola Ana' }));
+    const id = (await crearPlantilla('Otra')) as string;
+
+    const deshacer = await asignarPlantillaAVarios(['ana', 'luis'], id);
+    expect((await cargarConjunto({ tipo: 'alumno', alumnoId: 'ana' }))?.conjunto.principal.copiadoDe).toBe(id);
+
+    await deshacer();
+    const ana = await cargarConjunto({ tipo: 'alumno', alumnoId: 'ana' });
+    expect(ana?.copiaPropia).toBe(true);
+    expect(ana?.conjunto.principal.celdas.find((c) => c.id === 'celda-pic-hola')?.textoMostrado).toBe('Hola Ana');
+    expect(deAlumno('luis')).toHaveLength(0);
+  });
+
+  it('asignar la general a varios equivale a restablecerlos, y se puede deshacer', async () => {
+    const r = await cargarConjunto({ tipo: 'alumno', alumnoId: 'ana' });
+    if (!r) throw new Error('sin conjunto');
+    await guardarCambio(r.conjunto, r.conjunto);
+    const deshacer = await asignarPlantillaAVarios(['ana'], ID_PLANTILLA_GENERAL);
+    expect(deAlumno('ana')).toHaveLength(0);
+    await deshacer();
+    expect(deAlumno('ana')).toHaveLength(6);
+  });
+});
+
 describe('restablecerPlantillaGeneral', () => {
+  it('con el catálogo base no se cuelan los dibujos que la docente agregó', () => {
+    const conAjenos = [...catalogo, { id: 'arasaac-99', palabra: 'galleta', categoria: 'basicas', imagenUrl: 'x', esFotoReal: false }, { id: 'foto-1', palabra: 'liceo', categoria: 'objetos', imagenUrl: 'y', esFotoReal: true }];
+    const base = conAjenos.filter(esDelCatalogoBase);
+    expect(base).toHaveLength(catalogo.length);
+    expect(construirPlantillaGeneral(base).flatMap((t) => t.celdas).some((c) => c.pictogramaId === 'arasaac-99')).toBe(false);
+  });
+
   it('deja la general como vino de fábrica y no toca las demás plantillas', async () => {
     const otra = (await crearPlantilla('Mía')) as string;
     const general = armarConjunto(almacen.get(ID_PLANTILLA_GENERAL) as Tablero, guardados());

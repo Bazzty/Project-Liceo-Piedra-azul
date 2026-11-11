@@ -27,6 +27,12 @@ export const IMAGEN_CARPETA: Record<string, string> = {
   objetos: 'pic-libro',
 };
 
+/**
+ * Los pictogramas que vienen con la app, sin los que la docente fue sumando (dibujos de ARASAAC o fotos propias):
+ * con ellos se arma la plantilla «de fábrica», para que al restablecerla no aparezcan palabras sueltas ajenas.
+ */
+export const esDelCatalogoBase = (p: Pictograma): boolean => !/^(arasaac|foto)-/.test(p.id ?? '');
+
 export const idCarpetaGeneral = (categoriaId: string) => `${ID_PLANTILLA_GENERAL}-${categoriaId}`;
 
 type ConId = Pictograma & { id: string };

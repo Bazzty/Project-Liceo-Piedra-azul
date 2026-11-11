@@ -3,23 +3,49 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { catalogo } from '@/features/tablero/catalogoDePrueba';
 import { EditorTablero } from '@/features/tablero/editor/EditorTablero';
-import { construirPlantillaGeneral } from '@/features/tablero/plantillaGeneral';
+import { CATEGORIAS_INICIALES, construirPlantillaGeneral } from '@/features/tablero/plantillaGeneral';
 import type { Pictograma, Tablero } from '@/types';
 
 // Un almacén en memoria con las firmas de la capa de datos, y un aviso a quien está mirando cuando algo cambia.
-const { almacen, oyentes, guardados } = vi.hoisted(() => ({
+const { almacen, oyentes, guardados, categoriasGuardadas } = vi.hoisted(() => ({
   almacen: new Map<string, unknown>(),
   oyentes: new Set<() => void>(),
   guardados: [] as unknown[],
+  categoriasGuardadas: { lista: [] as unknown[] },
 }));
 const avisar = () => oyentes.forEach((f) => f());
 
 vi.mock('@/api', async () => {
-  const { CATEGORIAS_INICIALES } = await import('@/features/tablero/plantillaGeneral');
+  const { useEffect, useState } = await import('react');
   const { catalogo } = await import('@/features/tablero/catalogoDePrueba');
+  const alumnos = [
+    { id: 'ana', nombre: 'Ana', apellido: 'Pérez' },
+    { id: 'luis', nombre: 'Luis', apellido: 'Soto' },
+  ];
+  /** Una lectura que se vuelve a hacer cada vez que el almacén avisa de un cambio, como las consultas en vivo. */
+  const useReactivo = <T,>(leer: () => T): T => {
+    const [valor, setValor] = useState(leer);
+    useEffect(() => {
+      const volver = () => setValor(leer());
+      oyentes.add(volver);
+      return () => {
+        oyentes.delete(volver);
+      };
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+    return valor;
+  };
   return {
-    useAlumnos: () => [{ id: 'ana', nombre: 'Ana', apellido: 'Pérez' }],
-    useCategorias: () => CATEGORIAS_INICIALES,
+    useAlumnos: () => alumnos,
+    useCategorias: () => useReactivo(() => [...categoriasGuardadas.lista]),
+    useTodosLosTableros: () => useReactivo(() => [...almacen.values()]),
+    guardarCategorias: async (guardar: { id: string }[], borrar: string[] = []) => {
+      const mapa = new Map((categoriasGuardadas.lista as { id: string }[]).map((c) => [c.id, c]));
+      borrar.forEach((id) => mapa.delete(id));
+      guardar.forEach((c) => mapa.set(c.id, c));
+      categoriasGuardadas.lista = [...mapa.values()].sort((a, b) => (a as unknown as { orden: number }).orden - (b as unknown as { orden: number }).orden);
+      avisar();
+    },
     usePictogramas: () => catalogo,
     guardarPictograma: async (p: unknown) => void guardados.push(p),
     obtenerTablero: async (id: string) => almacen.get(id),
@@ -82,6 +108,7 @@ beforeEach(() => {
   almacen.clear();
   oyentes.clear();
   guardados.length = 0;
+  categoriasGuardadas.lista = structuredClone(CATEGORIAS_INICIALES);
   construirPlantillaGeneral(catalogo).forEach((t) => almacen.set(t.id, structuredClone(t)));
 });
 
@@ -302,5 +329,223 @@ describe('Editor del tablero: probar', () => {
     await userEvent.click(screen.getByRole('button', { name: /Probar el tablero/ }));
     expect(useTableroStore.getState().abierto).toBe(true);
     act(() => useTableroStore.setState({ abierto: false }));
+  });
+});
+
+const plantillasGuardadas = () => ([...almacen.values()] as Tablero[]).filter((t) => t.esPlantilla && t.principal);
+const elegirDestino = (valor: string) => userEvent.selectOptions(screen.getByLabelText('¿Qué tablero quieres editar?'), valor);
+const crearPlantillaNueva = async (nombre: string) => {
+  await userEvent.click(screen.getByRole('button', { name: 'Nueva plantilla' }));
+  await userEvent.type(screen.getByLabelText('Nombre de la plantilla'), nombre);
+  await userEvent.click(screen.getByRole('button', { name: 'Crear plantilla' }));
+  await screen.findByText(`Plantilla «${nombre}» creada.`);
+};
+
+describe('Editor del tablero: plantillas', () => {
+  it('lista las plantillas, la general primero', async () => {
+    await abrir();
+    const opciones = within(screen.getByRole('group', { name: 'Plantillas' })).getAllByRole('option');
+    expect(opciones.map((o) => o.textContent)).toEqual(['Plantilla general (la que trae la app)']);
+  });
+
+  it('crea una plantilla copiando la general, pasa a editarla y se puede deshacer', async () => {
+    await abrir();
+    await crearPlantillaNueva('Para el recreo');
+    expect(plantillasGuardadas().map((t) => t.nombre).sort()).toEqual(['Para el recreo', 'Plantilla general']);
+    expect(screen.getByLabelText('¿Qué tablero quieres editar?')).toHaveDisplayValue('Para el recreo');
+    expect(await within(carpetas()).findAllByRole('button', { name: /^Abrir la carpeta/ })).toHaveLength(5);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Deshacer' }));
+    await waitFor(() => expect(plantillasGuardadas()).toHaveLength(1));
+    expect(screen.getByLabelText('¿Qué tablero quieres editar?')).toHaveDisplayValue(/Plantilla general/);
+  });
+
+  it('editar una plantilla nueva no cambia la general', async () => {
+    await abrir();
+    await crearPlantillaNueva('Otra');
+    await userEvent.click(await within(tablaGrande()).findByRole('button', { name: 'Quitar «hola»' }));
+    await waitFor(() => expect(general().celdas.some((c) => c.id === 'celda-pic-hola')).toBe(true));
+    const otra = plantillasGuardadas().find((t) => t.nombre === 'Otra');
+    expect(otra?.celdas.some((c) => c.id === 'celda-pic-hola')).toBe(false);
+  });
+
+  it('no deja crear una plantilla sin nombre', async () => {
+    await abrir();
+    await userEvent.click(screen.getByRole('button', { name: 'Nueva plantilla' }));
+    expect(screen.getByRole('button', { name: 'Crear plantilla' })).toBeDisabled();
+  });
+
+  it('cambia el nombre de una plantilla, salvo la general', async () => {
+    await abrir();
+    expect(screen.queryByRole('button', { name: 'Cambiar nombre' })).toBeNull();
+    await crearPlantillaNueva('Vieja');
+    await userEvent.click(screen.getByRole('button', { name: 'Cambiar nombre' }));
+    const campo = screen.getByLabelText('Nombre de la plantilla');
+    expect(campo).toHaveValue('Vieja');
+    await userEvent.clear(campo);
+    await userEvent.type(campo, 'Nueva');
+    await userEvent.click(screen.getByRole('button', { name: 'Guardar nombre' }));
+    await waitFor(() => expect(plantillasGuardadas().map((t) => t.nombre)).toContain('Nueva'));
+    expect(plantillasGuardadas().map((t) => t.nombre)).not.toContain('Vieja');
+  });
+
+  it('elimina una plantilla con sus carpetas, vuelve a la general y se puede recuperar; la general no se elimina', async () => {
+    await abrir();
+    expect(screen.queryByRole('button', { name: 'Eliminar plantilla' })).toBeNull();
+    await crearPlantillaNueva('Borrar');
+    await userEvent.click(screen.getByRole('button', { name: 'Eliminar plantilla' }));
+    await screen.findByText(/«Borrar» eliminada/);
+    expect(plantillasGuardadas()).toHaveLength(1);
+    expect(([...almacen.values()] as Tablero[]).filter((t) => t.esPlantilla)).toHaveLength(6);
+    expect(screen.getByLabelText('¿Qué tablero quieres editar?')).toHaveDisplayValue(/Plantilla general/);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Deshacer' }));
+    await screen.findByText(/«Borrar» recuperada/);
+    expect(plantillasGuardadas()).toHaveLength(2);
+    expect(screen.getByLabelText('¿Qué tablero quieres editar?')).toHaveDisplayValue('Borrar');
+  });
+
+  it('restablece la plantilla general de fábrica y se puede deshacer', async () => {
+    await abrir();
+    await userEvent.click(within(tablaGrande()).getByRole('button', { name: 'Quitar «hola»' }));
+    await waitFor(() => expect(general().celdas.some((c) => c.id === 'celda-pic-hola')).toBe(false));
+    await userEvent.click(screen.getByRole('button', { name: 'Restablecer de fábrica' }));
+    await screen.findByText('La plantilla general volvió a como la trae la app.');
+    await waitFor(() => expect(general().celdas.some((c) => c.id === 'celda-pic-hola')).toBe(true));
+    await userEvent.click(screen.getByRole('button', { name: 'Deshacer' }));
+    await waitFor(() => expect(general().celdas.some((c) => c.id === 'celda-pic-hola')).toBe(false));
+  });
+
+  it('«Restablecer de fábrica» solo aparece en la general', async () => {
+    await abrir();
+    await crearPlantillaNueva('Otra');
+    expect(screen.queryByRole('button', { name: 'Restablecer de fábrica' })).toBeNull();
+  });
+});
+
+describe('Editor del tablero: asignar a niños', () => {
+  it('asigna una plantilla a los niños marcados, avisa y se puede deshacer', async () => {
+    await abrir();
+    await crearPlantillaNueva('Para Ana');
+    await userEvent.click(screen.getByRole('button', { name: 'Asignar a niños' }));
+    expect(screen.getByRole('radio', { name: 'Para Ana' })).toBeChecked();
+    expect(screen.getByRole('button', { name: 'Asignar' })).toBeDisabled();
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Ana Pérez' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Asignar' }));
+    await screen.findByText('Plantilla «Para Ana» asignada a 1 niño.');
+    expect(guardadosDeAna()).toHaveLength(6);
+    expect(guardadosDeAna().find((t) => t.principal)?.copiadoDe).toBe(plantillasGuardadas().find((t) => t.nombre === 'Para Ana')?.id);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Deshacer' }));
+    await waitFor(() => expect(guardadosDeAna()).toHaveLength(0));
+  });
+
+  it('«Todos» marca a todos los niños', async () => {
+    await abrir();
+    await userEvent.click(screen.getByRole('button', { name: 'Asignar a niños' }));
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Todos' }));
+    expect(screen.getByRole('checkbox', { name: 'Ana Pérez' })).toBeChecked();
+    expect(screen.getByRole('checkbox', { name: 'Luis Soto' })).toBeChecked();
+  });
+
+  it('avisa que reemplaza el tablero propio de un niño', async () => {
+    await abrir();
+    await elegirDestino('alumno:ana');
+    await userEvent.click(await within(tablaGrande()).findByRole('button', { name: 'Quitar «hola»' }));
+    await screen.findByText(/tiene su propio tablero/);
+    await userEvent.click(screen.getByRole('button', { name: 'Cambiar de plantilla' }));
+    expect(screen.getByRole('checkbox', { name: /Ana Pérez.*ya tiene tablero propio/ })).toBeChecked(); // parte con el niño que se está viendo
+    expect(screen.getByText(/Un niño ya tiene tablero propio: se reemplazará/)).toBeInTheDocument();
+  });
+
+  it('desde el tablero de un niño se le cambia la plantilla', async () => {
+    await abrir();
+    await crearPlantillaNueva('Otra');
+    await elegirDestino('alumno:ana');
+    await screen.findByText(/usa la plantilla general/);
+    await userEvent.click(screen.getByRole('button', { name: 'Cambiar de plantilla' }));
+    await userEvent.click(screen.getByRole('radio', { name: 'Otra' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Asignar' }));
+    await screen.findByText(/tiene su propio tablero/);
+    expect(guardadosDeAna().find((t) => t.principal)?.nombre).toBe('Otra');
+  });
+
+  it('guarda el tablero propio de un niño como una plantilla nueva', async () => {
+    await abrir();
+    await elegirDestino('alumno:ana');
+    expect(screen.queryByRole('button', { name: 'Guardar como plantilla' })).toBeNull(); // aún no tiene tablero propio
+    await userEvent.click(await within(tablaGrande()).findByRole('button', { name: 'Quitar «hola»' }));
+    await screen.findByText(/tiene su propio tablero/);
+    await userEvent.click(screen.getByRole('button', { name: 'Guardar como plantilla' }));
+    expect(screen.getByText(/el tablero de Ana Pérez/)).toBeInTheDocument();
+    await userEvent.type(screen.getByLabelText('Nombre de la plantilla'), 'Como el de Ana');
+    await userEvent.click(screen.getByRole('button', { name: 'Crear plantilla' }));
+    await screen.findByText('Plantilla «Como el de Ana» creada.');
+    const nueva = plantillasGuardadas().find((t) => t.nombre === 'Como el de Ana');
+    expect(nueva?.celdas.some((c) => c.id === 'celda-pic-hola')).toBe(false); // trae lo que Ana tenía
+    expect(nueva?.alumnoId).toBeUndefined();
+  });
+});
+
+describe('Editor del tablero: categorías', () => {
+  const abrirCategorias = async () => {
+    await abrir();
+    await userEvent.click(screen.getByRole('button', { name: 'Categorías' }));
+    return screen.getByRole('dialog', { name: 'Categorías' });
+  };
+
+  it('lista las categorías con su color', async () => {
+    const dialogo = await abrirCategorias();
+    expect(within(dialogo).getAllByRole('listitem')).toHaveLength(6);
+    expect(within(dialogo).getByLabelText('Color de Necesidades')).toHaveDisplayValue('Rojo');
+  });
+
+  it('crea una categoría, que luego se puede usar al agregar una palabra', async () => {
+    const dialogo = await abrirCategorias();
+    await userEvent.type(within(dialogo).getByLabelText('Nueva categoría'), 'Comida');
+    await userEvent.click(within(dialogo).getByRole('button', { name: 'Agregar' }));
+    await within(dialogo).findByLabelText('Nombre de la categoría Comida');
+    expect(categoriasGuardadas.lista).toHaveLength(7);
+    await userEvent.click(within(dialogo).getByRole('button', { name: 'Listo' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Agregar palabra' }));
+    expect(within(screen.getByLabelText(/Categoría/)).getByRole('option', { name: 'Comida' })).toBeInTheDocument();
+  });
+
+  it('renombra al salir del campo y no guarda un nombre vacío', async () => {
+    const dialogo = await abrirCategorias();
+    const campo = within(dialogo).getByLabelText('Nombre de la categoría Acciones');
+    await userEvent.clear(campo);
+    await userEvent.type(campo, 'Qué hago');
+    await userEvent.tab();
+    await waitFor(() => expect((categoriasGuardadas.lista as { nombre: string }[]).some((c) => c.nombre === 'Qué hago')).toBe(true));
+    const otro = within(dialogo).getByLabelText('Nombre de la categoría Objetos');
+    await userEvent.clear(otro);
+    await userEvent.tab();
+    expect(otro).toHaveValue('Objetos');
+  });
+
+  it('cambia el color de una categoría y las celdas lo toman', async () => {
+    const dialogo = await abrirCategorias();
+    await userEvent.selectOptions(within(dialogo).getByLabelText('Color de Objetos'), 'alerta');
+    await waitFor(() => expect((categoriasGuardadas.lista as { id: string; color: string }[]).find((c) => c.id === 'objetos')?.color).toBe('alerta'));
+  });
+
+  it('ordena las categorías con los botones', async () => {
+    const dialogo = await abrirCategorias();
+    expect(within(dialogo).getByRole('button', { name: 'Subir la categoría Necesidades' })).toBeDisabled();
+    await userEvent.click(within(dialogo).getByRole('button', { name: 'Bajar la categoría Necesidades' }));
+    await waitFor(() => expect((categoriasGuardadas.lista as { nombre: string }[])[0].nombre).toBe('Emociones'));
+  });
+
+  it('no deja quitar una categoría en uso, y explica por qué; una sin uso sí se quita', async () => {
+    const dialogo = await abrirCategorias();
+    const enUso = within(dialogo).getByRole('button', { name: 'Quitar la categoría Acciones' });
+    expect(enUso).toBeDisabled();
+    expect(within(dialogo).getAllByText(/En uso en \d+ celdas: no se puede quitar/).length).toBeGreaterThan(0);
+
+    await userEvent.type(within(dialogo).getByLabelText('Nueva categoría'), 'Vacía');
+    await userEvent.click(within(dialogo).getByRole('button', { name: 'Agregar' }));
+    await userEvent.click(await within(dialogo).findByRole('button', { name: 'Quitar la categoría Vacía' }));
+    await waitFor(() => expect(categoriasGuardadas.lista).toHaveLength(6));
   });
 });

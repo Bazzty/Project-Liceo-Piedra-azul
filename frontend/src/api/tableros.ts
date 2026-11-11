@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/db/db';
-import type { Tablero } from '@/types';
+import type { CategoriaTablero, Tablero } from '@/types';
 
 const ID_PLANTILLA_GENERAL = 'plantilla-general';
 
@@ -61,3 +61,13 @@ export const borrarTablerosDeAlumno = (alumnoId: string) => db.tableros.where('a
 /** Los tableros de entrada de las plantillas (la general y las que creó la docente). */
 export const listarPlantillas = () => db.tableros.filter((t) => t.esPlantilla && t.principal).toArray();
 export const usePlantillas = () => useLiveQuery(() => listarPlantillas(), []);
+
+/** Todos los tableros guardados (plantillas y de niños): para listar plantillas, saber quién tiene tablero propio y contar el uso de categorías. */
+export const useTodosLosTableros = () => useLiveQuery(() => db.tableros.toArray(), []);
+
+/** Guarda y borra categorías en una sola operación. */
+export const guardarCategorias = (guardar: CategoriaTablero[], borrar: string[] = []) =>
+  db.transaction('rw', db.categorias, async () => {
+    if (borrar.length > 0) await db.categorias.bulkDelete(borrar);
+    if (guardar.length > 0) await db.categorias.bulkPut(guardar);
+  });

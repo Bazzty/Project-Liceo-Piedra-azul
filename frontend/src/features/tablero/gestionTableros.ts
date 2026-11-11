@@ -104,3 +104,19 @@ export async function restablecerPlantillaGeneral(fabrica: Tablero[]): Promise<v
   const nuevos = new Set(fabrica.map((t) => t.id));
   await guardarTableros(fabrica, anteriores.filter((id) => !nuevos.has(id)));
 }
+
+/**
+ * Le da a varios niños una copia de una plantilla, en lugar de lo que tenían. Devuelve cómo deshacerlo: vuelve cada
+ * niño a lo que tenía antes (su tablero propio, o la plantilla general si no tenía).
+ */
+export async function asignarPlantillaAVarios(alumnoIds: string[], plantillaId: string): Promise<() => Promise<void>> {
+  const antes = new Map<string, Tablero[]>();
+  for (const id of alumnoIds) antes.set(id, await tablerosDeAlumno(id));
+  for (const id of alumnoIds) await asignarPlantilla(id, plantillaId);
+  return async () => {
+    for (const [id, tableros] of antes) {
+      await borrarTablerosDeAlumno(id);
+      if (tableros.length > 0) await guardarTableros(tableros);
+    }
+  };
+}

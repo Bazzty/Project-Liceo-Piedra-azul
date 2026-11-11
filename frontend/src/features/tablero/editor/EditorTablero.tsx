@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { FolderPlus, Play, Plus, RotateCcw, Undo2 } from 'lucide-react';
-import { guardarTableros, useAlumnos, useCategorias, usePictogramas } from '@/api';
+import { FolderPlus, Play, Plus } from 'lucide-react';
+import { guardarCategorias, guardarTableros, useAlumnos, useCategorias, usePictogramas, useTodosLosTableros } from '@/api';
 import { EncabezadoPagina, Hoja } from '@/features/docente/components/Hoja';
 import { franjaDeColor } from '@/features/tablero/coloresTablero';
+import { usoDeCategorias } from '@/features/tablero/edicionCategorias';
 import {
   actualizarCelda,
   agregarCarpeta,
@@ -12,29 +13,45 @@ import {
   nuevaCeldaPalabra,
   pasarCelda,
   quitarCelda,
+  renombrarTablero,
   tablerosDelConjunto,
   type Conjunto,
 } from '@/features/tablero/edicionTablero';
+import { BarraDeTableros } from '@/features/tablero/editor/BarraDeTableros';
 import { CeldaEditable } from '@/features/tablero/editor/CeldaEditable';
+import { DialogoAsignar } from '@/features/tablero/editor/DialogoAsignar';
+import { DialogoCategorias } from '@/features/tablero/editor/DialogoCategorias';
 import { DialogoCelda, type DatosDeCelda } from '@/features/tablero/editor/DialogoCelda';
-import { guardarCambio, restablecerAlumno, type Destino } from '@/features/tablero/gestionTableros';
-import { ID_PLANTILLA_GENERAL } from '@/features/tablero/plantillaGeneral';
+import { DialogoPlantilla } from '@/features/tablero/editor/DialogoPlantilla';
+import {
+  asignarPlantillaAVarios,
+  crearPlantilla,
+  eliminarPlantilla,
+  guardarCambio,
+  restablecerAlumno,
+  restablecerPlantillaGeneral,
+  type Destino,
+} from '@/features/tablero/gestionTableros';
+import { CATEGORIAS_INICIALES, construirPlantillaGeneral, esDelCatalogoBase, ID_PLANTILLA_GENERAL } from '@/features/tablero/plantillaGeneral';
 import { useConjuntoEditable } from '@/features/tablero/useConjuntoEditable';
 import { useTableroStore } from '@/shared/store/useTableroStore';
 import { Button } from '@/shared/ui';
-import type { CeldaTablero } from '@/types';
+import type { CategoriaTablero, CeldaTablero } from '@/types';
 
 type Dialogo =
   | { tipo: 'palabra-nueva'; tableroId: string; nucleo: boolean }
   | { tipo: 'carpeta-nueva' }
-  | { tipo: 'editar'; tableroId: string; celdaId: string };
+  | { tipo: 'editar'; tableroId: string; celdaId: string }
+  | { tipo: 'plantilla-nueva'; origenFijo?: { id: string; nombre: string } }
+  | { tipo: 'plantilla-renombrar' }
+  | { tipo: 'asignar' }
+  | { tipo: 'categorias' };
 
 interface Arrastre {
   tableroId: string;
   celdaId: string;
 }
 
-const claveDestino = (d: Destino) => (d.tipo === 'plantilla' ? `plantilla:${d.id}` : `alumno:${d.alumnoId}`);
 const desdeClave = (clave: string): Destino => {
   const [tipo, ...resto] = clave.split(':');
   return tipo === 'alumno' ? { tipo: 'alumno', alumnoId: resto.join(':') } : { tipo: 'plantilla', id: resto.join(':') };
@@ -52,6 +69,7 @@ export const EditorTablero: React.FC = () => {
   const alumnos = useAlumnos();
   const categorias = useCategorias();
   const pictogramas = usePictogramas();
+  const todos = useTodosLosTableros();
   const abrirTablero = useTableroStore((s) => s.abrir);
 
   const [destino, setDestino] = useState<Destino>({ tipo: 'plantilla', id: ID_PLANTILLA_GENERAL });
@@ -107,11 +125,84 @@ export const EditorTablero: React.FC = () => {
     setAviso(`El tablero de ${nombreAlumno} volvió a la plantilla general.`);
   };
 
+  /** Las plantillas: la general primero y luego las de la docente por nombre. */
+  const plantillas = useMemo(
+    () => (todos ?? []).filter((t) => t.esPlantilla && t.principal).sort((a, b) => Number(b.id === ID_PLANTILLA_GENERAL) - Number(a.id === ID_PLANTILLA_GENERAL) || a.nombre.localeCompare(b.nombre, 'es')),
+    [todos],
+  );
+  const conTablero = useMemo(() => new Set((todos ?? []).flatMap((t) => (t.alumnoId && t.principal ? [t.alumnoId] : []))), [todos]);
+  const uso = useMemo(() => usoDeCategorias(todos ?? []), [todos]);
+
   const colores = useMemo(() => new Map((categorias ?? []).map((c) => [c.id, c.color])), [categorias]);
   const franja = (celda: CeldaTablero) => franjaDeColor(colores.get(celda.categoriaId) ?? 'aprender');
   const dibujo = (celda: CeldaTablero) => pictogramas?.find((p) => p.id === celda.pictogramaId);
 
-  if (!editable || !categorias || !pictogramas) {
+  /** Crea una plantilla copiando otra y pasa a editarla. Se puede deshacer: la elimina y vuelve a donde estaba. */
+  const crearNueva = async ({ nombre, origenId }: { nombre: string; origenId: string }) => {
+    setDialogo(null);
+    const id = await crearPlantilla(nombre, origenId);
+    if (!id) return;
+    const anterior = destino;
+    setDestino({ tipo: 'plantilla', id });
+    setTableroId(null);
+    setDeshacer(() => async () => {
+      await eliminarPlantilla(id);
+      setDestino(anterior);
+      setAviso('Plantilla eliminada.');
+      setDeshacer(null);
+    });
+    setAviso(`Plantilla «${nombre}» creada.`);
+  };
+
+  const eliminarEsta = async () => {
+    if (destino.tipo !== 'plantilla' || destino.id === ID_PLANTILLA_GENERAL || !editable) return;
+    const antes = editable.conjunto;
+    const id = destino.id;
+    await eliminarPlantilla(id);
+    setDestino({ tipo: 'plantilla', id: ID_PLANTILLA_GENERAL });
+    setTableroId(null);
+    setDeshacer(() => async () => {
+      await guardarTableros(tablerosDelConjunto(antes));
+      setDestino({ tipo: 'plantilla', id });
+      setAviso(`Plantilla «${antes.principal.nombre}» recuperada.`);
+      setDeshacer(null);
+    });
+    setAviso(`Plantilla «${antes.principal.nombre}» eliminada. Los niños que la recibieron conservan su copia.`);
+  };
+
+  const asignar = async (plantillaId: string, alumnoIds: string[]) => {
+    setDialogo(null);
+    const deshacerAsignacion = await asignarPlantillaAVarios(alumnoIds, plantillaId);
+    const nombre = plantillas.find((p) => p.id === plantillaId)?.nombre ?? '';
+    setDeshacer(() => async () => {
+      await deshacerAsignacion();
+      setAviso('Asignación deshecha.');
+      setDeshacer(null);
+    });
+    setAviso(`Plantilla «${nombre}» asignada a ${alumnoIds.length} ${alumnoIds.length === 1 ? 'niño' : 'niños'}.`);
+  };
+
+  /** Deja la plantilla general como vino. Sus dibujos agregados por la docente quedan guardados pero fuera del tablero. */
+  const restablecerFabrica = async () => {
+    if (!editable || !pictogramas || !categorias) return;
+    const antes = editable.conjunto;
+    // Si borró alguna categoría de fábrica, vuelve: la plantilla la necesita
+    const faltan = CATEGORIAS_INICIALES.filter((c) => !categorias.some((x) => x.id === c.id));
+    if (faltan.length > 0) await guardarCategorias(faltan.map((c, i) => ({ ...c, orden: categorias.length + i + 1 })));
+    await restablecerPlantillaGeneral(construirPlantillaGeneral(pictogramas.filter(esDelCatalogoBase)));
+    setTableroId(null);
+    setDeshacer(() => async () => {
+      await restablecerPlantillaGeneral(tablerosDelConjunto(antes));
+      setAviso('Plantilla general recuperada.');
+      setDeshacer(null);
+    });
+    setAviso('La plantilla general volvió a como la trae la app.');
+  };
+
+  const cambiarCategorias = (nuevas: CategoriaTablero[]) =>
+    void guardarCategorias(nuevas, (categorias ?? []).filter((c) => !nuevas.some((n) => n.id === c.id)).map((c) => c.id));
+
+  if (!editable || !categorias || !pictogramas || !todos) {
     return <p role="status" className="text-secondary">Cargando el tablero…</p>;
   }
 
@@ -122,7 +213,8 @@ export const EditorTablero: React.FC = () => {
   const carpetas = conjunto.principal.celdas.filter((c) => c.tipo === 'carpeta');
   const grilla = enPrincipal ? conjunto.principal.celdas.filter((c) => c.tipo === 'palabra' && !c.esNucleo) : actual.celdas;
   const carpetaAbierta = carpetas.find((c) => c.destinoTableroId === actual.id);
-  const celdaEnEdicion = dialogo?.tipo === 'editar' ? [...conjunto.principal.celdas, ...conjunto.carpetas.flatMap((t) => t.celdas)].find((c) => c.id === dialogo.celdaId) : undefined;
+  const idEnEdicion = dialogo?.tipo === 'editar' ? dialogo.celdaId : undefined;
+  const celdaEnEdicion = idEnEdicion ? [...conjunto.principal.celdas, ...conjunto.carpetas.flatMap((t) => t.celdas)].find((c) => c.id === idEnEdicion) : undefined;
 
   const mover = (tablero: string, lista: CeldaTablero[], celda: CeldaTablero, paso: -1 | 1) =>
     aplicar(`«${celda.textoMostrado}» ${paso < 0 ? 'se movió antes' : 'se movió después'}`, (c) =>
@@ -151,11 +243,13 @@ export const EditorTablero: React.FC = () => {
     if (dialogo.tipo === 'carpeta-nueva') {
       void aplicar(`Carpeta «${datos.textoMostrado}» agregada`, (c) => agregarCarpeta(c, { nombre: datos.textoMostrado, categoriaId: datos.categoriaId, pictogramaId: datos.pictogramaId }));
     } else if (dialogo.tipo === 'palabra-nueva') {
+      const { tableroId: enTablero } = dialogo;
       const celda = nuevaCeldaPalabra({ pictogramaId: datos.pictogramaId as string, textoMostrado: datos.textoMostrado, textoHablado: datos.textoHablado, categoriaId: datos.categoriaId, esNucleo: datos.esNucleo });
-      void aplicar(`«${datos.textoMostrado}» agregada`, (c) => agregarCelda(c, dialogo.tableroId, celda));
-    } else {
+      void aplicar(`«${datos.textoMostrado}» agregada`, (c) => agregarCelda(c, enTablero, celda));
+    } else if (dialogo.tipo === 'editar') {
+      const { tableroId: enTablero, celdaId } = dialogo;
       const { esNucleo, ...resto } = datos;
-      void aplicar(`«${datos.textoMostrado}» guardada`, (c) => actualizarCelda(c, dialogo.tableroId, dialogo.celdaId, { ...resto, esNucleo: esNucleo || undefined }));
+      void aplicar(`«${datos.textoMostrado}» guardada`, (c) => actualizarCelda(c, enTablero, celdaId, { ...resto, esNucleo: esNucleo || undefined }));
     }
   };
 
@@ -197,44 +291,24 @@ export const EditorTablero: React.FC = () => {
         }
       />
 
-      <Hoja className="flex flex-wrap items-end gap-4">
-        <div className="flex flex-col gap-1 min-w-0 grow sm:grow-0">
-          <label htmlFor="destino-tablero" className="text-sm font-semibold text-primary">
-            ¿Qué tablero quieres editar?
-          </label>
-          <select id="destino-tablero" value={claveDestino(destino)} onChange={(e) => cambiarDestino(e.target.value)} className="min-h-12 rounded-control border border-borderStrong bg-surface px-3 text-base text-primary sm:min-w-72">
-            <optgroup label="Plantilla">
-              <option value={`plantilla:${ID_PLANTILLA_GENERAL}`}>Plantilla general (la que trae la app)</option>
-            </optgroup>
-            <optgroup label="Tablero de cada niño">
-              {(alumnos ?? []).map((a) => (
-                <option key={a.id} value={`alumno:${a.id}`}>
-                  {`${a.nombre} ${a.apellido}`.trim()}
-                </option>
-              ))}
-            </optgroup>
-          </select>
-        </div>
-
-        <p className="text-sm text-secondary grow min-w-60">
-          {destino.tipo === 'plantilla'
-            ? 'Los cambios a la plantilla general los reciben los niños que aún no tienen tablero propio.'
-            : copiaPropia
-              ? `${nombreAlumno} tiene su propio tablero: lo que cambies aquí solo lo ve él o ella.`
-              : `${nombreAlumno} usa la plantilla general. Al hacer el primer cambio se le crea su propio tablero.`}
-        </p>
-
-        <div className="flex gap-2">
-          {destino.tipo === 'alumno' && copiaPropia && (
-            <Button variant="secondary" onClick={() => void restablecer()}>
-              <RotateCcw className="w-4 h-4" aria-hidden /> Restablecer a la plantilla
-            </Button>
-          )}
-          <Button variant="secondary" onClick={() => void deshacer?.()} disabled={!deshacer}>
-            <Undo2 className="w-4 h-4" aria-hidden /> Deshacer
-          </Button>
-        </div>
-      </Hoja>
+      <BarraDeTableros
+        destino={destino}
+        plantillas={plantillas}
+        alumnos={alumnos ?? []}
+        nombreAlumno={nombreAlumno}
+        copiaPropia={copiaPropia}
+        hayDeshacer={Boolean(deshacer)}
+        alCambiarDestino={cambiarDestino}
+        alNuevaPlantilla={() => setDialogo({ tipo: 'plantilla-nueva' })}
+        alRenombrar={() => setDialogo({ tipo: 'plantilla-renombrar' })}
+        alAsignar={() => setDialogo({ tipo: 'asignar' })}
+        alEliminar={() => void eliminarEsta()}
+        alRestablecerFabrica={() => void restablecerFabrica()}
+        alGuardarComoPlantilla={() => setDialogo({ tipo: 'plantilla-nueva', origenFijo: { id: conjunto.principal.id, nombre: `el tablero de ${nombreAlumno}` } })}
+        alRestablecerNino={() => void restablecer()}
+        alCategorias={() => setDialogo({ tipo: 'categorias' })}
+        alDeshacer={() => void deshacer?.()}
+      />
 
       <p role="status" aria-live="polite" className={`text-sm ${aviso ? 'text-secondary' : 'sr-only'}`}>
         {aviso}
@@ -286,7 +360,42 @@ export const EditorTablero: React.FC = () => {
         </div>
       </Hoja>
 
-      {dialogo && (
+      {dialogo?.tipo === 'plantilla-nueva' && (
+        <DialogoPlantilla
+          modo="nueva"
+          plantillas={plantillas}
+          origenInicial={dialogo.origenFijo?.id ?? (destino.tipo === 'plantilla' ? destino.id : ID_PLANTILLA_GENERAL)}
+          origenFijo={dialogo.origenFijo?.nombre}
+          alGuardar={(datos) => void crearNueva(datos)}
+          alCerrar={() => setDialogo(null)}
+        />
+      )}
+      {dialogo?.tipo === 'plantilla-renombrar' && (
+        <DialogoPlantilla
+          modo="renombrar"
+          nombreInicial={conjunto.principal.nombre}
+          plantillas={plantillas}
+          alGuardar={({ nombre }) => {
+            setDialogo(null);
+            void aplicar(`Plantilla renombrada a «${nombre}»`, (c) => renombrarTablero(c, c.principal.id, nombre));
+          }}
+          alCerrar={() => setDialogo(null)}
+        />
+      )}
+      {dialogo?.tipo === 'asignar' && (
+        <DialogoAsignar
+          plantillas={plantillas}
+          alumnos={alumnos ?? []}
+          conTablero={conTablero}
+          plantillaInicial={destino.tipo === 'plantilla' ? destino.id : ID_PLANTILLA_GENERAL}
+          alumnosIniciales={destino.tipo === 'alumno' ? [destino.alumnoId] : []}
+          alAsignar={(plantillaId, ids) => void asignar(plantillaId, ids)}
+          alCerrar={() => setDialogo(null)}
+        />
+      )}
+      {dialogo?.tipo === 'categorias' && <DialogoCategorias categorias={categorias} uso={uso} alCambiar={cambiarCategorias} alCerrar={() => setDialogo(null)} />}
+
+      {dialogo && (dialogo.tipo === 'palabra-nueva' || dialogo.tipo === 'carpeta-nueva' || dialogo.tipo === 'editar') && (
         <DialogoCelda
           key={dialogo.tipo === 'editar' ? dialogo.celdaId : dialogo.tipo}
           tipo={dialogo.tipo === 'carpeta-nueva' || celdaEnEdicion?.tipo === 'carpeta' ? 'carpeta' : 'palabra'}
