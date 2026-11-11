@@ -1528,5 +1528,130 @@
   {
     "archivo": "textos/necesito_ayuda.mp3",
     "texto": "Necesito ayuda."
+  },
+  {
+    "archivo": "fonemas/b.mp3",
+    "texto": "Be.",
+    "para": []
+  },
+  {
+    "archivo": "fonemas/c.mp3",
+    "texto": "Ke.",
+    "para": []
+  },
+  {
+    "archivo": "fonemas/d.mp3",
+    "texto": "De.",
+    "para": []
+  },
+  {
+    "archivo": "fonemas/f.mp3",
+    "texto": "Ffff.",
+    "para": []
+  },
+  {
+    "archivo": "fonemas/g.mp3",
+    "texto": "Gue.",
+    "para": []
+  },
+  {
+    "archivo": "fonemas/h.mp3",
+    "texto": "Hache.",
+    "para": []
+  },
+  {
+    "archivo": "fonemas/j.mp3",
+    "texto": "Jjjj.",
+    "para": []
+  },
+  {
+    "archivo": "fonemas/k.mp3",
+    "texto": "Ke.",
+    "para": []
+  },
+  {
+    "archivo": "fonemas/l.mp3",
+    "texto": "Lll.",
+    "para": []
+  },
+  {
+    "archivo": "fonemas/n.mp3",
+    "texto": "Nnn.",
+    "para": []
+  },
+  {
+    "archivo": "fonemas/p.mp3",
+    "texto": "Pe.",
+    "para": []
+  },
+  {
+    "archivo": "fonemas/q.mp3",
+    "texto": "Ke.",
+    "para": []
+  },
+  {
+    "archivo": "fonemas/r.mp3",
+    "texto": "Rrr.",
+    "para": []
+  },
+  {
+    "archivo": "fonemas/s.mp3",
+    "texto": "Sss.",
+    "para": []
+  },
+  {
+    "archivo": "fonemas/t.mp3",
+    "texto": "Te.",
+    "para": []
+  },
+  {
+    "archivo": "fonemas/v.mp3",
+    "texto": "Be.",
+    "para": []
+  },
+  {
+    "archivo": "fonemas/w.mp3",
+    "texto": "Gu.",
+    "para": []
+  },
+  {
+    "archivo": "fonemas/x.mp3",
+    "texto": "Ks.",
+    "para": []
+  },
+  {
+    "archivo": "fonemas/y.mp3",
+    "texto": "Yyy.",
+    "para": []
+  },
+  {
+    "archivo": "fonemas/z.mp3",
+    "texto": "Sss.",
+    "para": []
+  },
+  {
+    "archivo": "fonemas/enie.mp3",
+    "texto": "Ñe.",
+    "para": []
+  },
+  {
+    "archivo": "textos/necesidades.mp3",
+    "texto": "Necesidades."
+  },
+  {
+    "archivo": "textos/emociones.mp3",
+    "texto": "Emociones."
+  },
+  {
+    "archivo": "textos/personas.mp3",
+    "texto": "Personas."
+  },
+  {
+    "archivo": "textos/acciones.mp3",
+    "texto": "Acciones."
+  },
+  {
+    "archivo": "textos/objetos.mp3",
+    "texto": "Objetos."
   }
 ]
