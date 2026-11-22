@@ -84,8 +84,8 @@ const MiCuentoEntrada: React.FC = () => {
         }}
         className="flex items-center gap-4 min-h-16 rounded-full bg-surface/95 border-4 border-brand shadow-card pl-3 pr-7 py-2 cursor-pointer hover:scale-105 active:scale-95 transition-transform"
       >
-        <span className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-app border-2 border-borderStrong overflow-hidden p-1.5 flex items-center justify-center">
-          <img src="/pictogramas/arasaac/libro.png" alt="" className="w-full h-full object-contain" />
+        <span aria-hidden className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-app border-2 border-borderStrong overflow-hidden p-1.5 flex items-center justify-center">
+          <img src="/pictogramas/arasaac/libro.png" alt="Libro" className="w-full h-full object-contain" />
         </span>
         <span className="inline-flex items-center gap-2 text-2xl sm:text-3xl font-black text-primary">
           <PencilLine className="w-7 h-7 text-brand" aria-hidden />
