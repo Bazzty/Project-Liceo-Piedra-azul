@@ -3,16 +3,13 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Home, Library, Plus, Volume2 } from 'lucide-react';
 import { useMiCuento, useMisCuentos } from '@/api';
 import { ROUTES } from '@/app/routes';
-import { opcionDe, partesDelCuento, PASOS, urlPictograma, type Eleccion } from '@/features/micuento/frases';
+import { opcionDe, partesDelCuento, PASOS, urlPictograma } from '@/features/micuento/frases';
 import { PaginaDelCuento } from '@/features/micuento/PaginaDelCuento';
 import { sonarToque } from '@/shared/audio/sonidos';
 import { LayoutEstudiante } from '@/shared/components/LayoutEstudiante';
 import { OsoBurbuja } from '@/shared/components/OsoBurbuja';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { Button } from '@/shared/ui';
-import type { MiCuento } from '@/types';
-
-const eleccionDe = (c: MiCuento): Eleccion => ({ quien: c.quien, donde: c.donde, accion: c.accion });
 
 /** Repisa: los cuentos que el niño armó, para volver a escucharlos. Cada uno se reconoce por sus tres pictogramas. */
 export const MisCuentosView: React.FC = () => {
@@ -77,7 +74,14 @@ export const MiCuentoGuardadoView: React.FC = () => {
   const activeStudentId = useAuthStore((s) => s.activeStudentId);
   const cuento = useMiCuento(activeStudentId, cuentoId === undefined ? undefined : Number(cuentoId));
   const [lecturas, setLecturas] = useState(0);
-  const partes = useMemo(() => (cuento ? partesDelCuento(eleccionDe(cuento)) : null), [cuento]);
+  // Por valores y no por el objeto: useLiveQuery lo devuelve con otra identidad en cada emisión de Dexie y el osito volvería a leer.
+  const quien = cuento?.quien;
+  const donde = cuento?.donde;
+  const accion = cuento?.accion;
+  const partes = useMemo(
+    () => (quien !== undefined && donde !== undefined && accion !== undefined ? partesDelCuento({ quien, donde, accion }) : null),
+    [quien, donde, accion],
+  );
 
   const volver = () => navigate(ROUTES.misCuentos);
 
