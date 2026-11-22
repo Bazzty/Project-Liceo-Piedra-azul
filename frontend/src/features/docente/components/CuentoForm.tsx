@@ -119,10 +119,11 @@ export const CuentoForm: React.FC<CuentoFormProps> = ({ nivelId, cuento, palabra
   const calentado = useRef(false);
   const esNuevo = !cuento;
   useEffect(() => {
-    if (!esNuevo || calentado.current) return;
+    // El revisor no ve «Crear con IA» y el servidor le respondería 403: no se calienta.
+    if (!esNuevo || esRevisor || calentado.current) return;
     calentado.current = true;
     calentarIaDeCuentos();
-  }, [esNuevo]);
+  }, [esNuevo, esRevisor]);
 
   const cambiarTexto = (nuevo: string) => {
     setTexto(nuevo);

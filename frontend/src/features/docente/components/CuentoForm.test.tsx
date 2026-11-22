@@ -494,6 +494,14 @@ describe('CuentoForm: crear con IA', () => {
 
     expect(screen.queryByRole('button', { name: /Crear borrador/ })).not.toBeInTheDocument();
   });
+
+  it('al abrir un cuento nuevo como revisor no carga el modelo de la IA', () => {
+    useAuthStore.setState({ user: { id: 'rev-1', nombre: 'Revisora', email: 'rev@piedraazul.cl', role: 'revisor' } });
+    calentarIaDeCuentos.mockClear();
+    renderNuevo();
+
+    expect(calentarIaDeCuentos).not.toHaveBeenCalled();
+  });
 });
 
 describe('CuentoForm: guardar', () => {
