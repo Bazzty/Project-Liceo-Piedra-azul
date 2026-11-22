@@ -7,10 +7,10 @@ use App\Cuentos\CuentoSinConfigurar;
 use App\Cuentos\GeneradorDeCuentos;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\GenerarCuentoRequest;
+use App\Jobs\CalentarModeloDeCuentos;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Throwable;
 
 class CuentoController extends Controller
 {
@@ -34,17 +34,13 @@ class CuentoController extends Controller
         return response()->json($cuento->toArray());
     }
 
-    /** Carga el modelo mientras la docente escribe. No responde nada ni avisa de fallos: es solo una ayuda. */
-    public function calentar(Request $request, GeneradorDeCuentos $generador): Response
+    /** Pide cargar el modelo mientras la docente escribe. Va a la cola y responde de inmediato: es solo una ayuda. */
+    public function calentar(Request $request): Response
     {
         // Igual que generar: solo docentes y admins.
         abort_unless(in_array($request->user()?->rol, ['docente', 'admin'], true), 403);
 
-        try {
-            $generador->calentar();
-        } catch (Throwable $e) {
-            report($e);
-        }
+        CalentarModeloDeCuentos::dispatch();
 
         return response()->noContent();
     }

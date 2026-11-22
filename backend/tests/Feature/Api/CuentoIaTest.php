@@ -1,9 +1,11 @@
 <?php
 
+use App\Jobs\CalentarModeloDeCuentos;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
 
@@ -292,4 +294,22 @@ it('calentar pide ingresar, no deja usarlo al revisor y tiene su propio cupo', f
     $this->postJson('/api/v1/cuentos/calentar')->assertTooManyRequests();
     // El cupo de los cuentos sigue intacto.
     $this->postJson('/api/v1/cuentos/generar', peticionDeCuento())->assertStatus(503)->assertJsonPath('message', 'La IA de cuentos aún no está activada en este servidor.');
+});
+
+it('calentar manda el trabajo a la cola y responde 204 sin esperar a la IA', function () {
+    Queue::fake();
+    Sanctum::actingAs(User::factory()->create());
+
+    $this->postJson('/api/v1/cuentos/calentar')->assertNoContent();
+
+    Queue::assertPushed(CalentarModeloDeCuentos::class, 1);
+});
+
+it('calentar no encola nada para el revisor', function () {
+    Queue::fake();
+    Sanctum::actingAs(User::factory()->create(['rol' => 'revisor']));
+
+    $this->postJson('/api/v1/cuentos/calentar')->assertForbidden();
+
+    Queue::assertNothingPushed();
 });
