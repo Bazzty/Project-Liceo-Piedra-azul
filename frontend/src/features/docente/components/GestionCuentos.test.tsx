@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, useLocation } from 'react-router-dom';
 import { GestionCuentos, TarjetaRevision } from '@/features/docente/components/GestionCuentos';
 import type { Cuento } from '@/types';
 
@@ -117,6 +117,19 @@ describe('GestionCuentos: palabras desde la ficha del estudiante', () => {
       </MemoryRouter>,
     );
 
+    expect(screen.getByLabelText('Palabras para practicar (opcional)')).toHaveValue('casa, perro');
+  });
+
+  it('limpia las palabras del historial tras leerlas, sin cerrar el formulario', () => {
+    const Estado = () => <output data-testid="estado">{JSON.stringify(useLocation().state)}</output>;
+    render(
+      <MemoryRouter initialEntries={[{ pathname: '/profesor/cuentos', state: { palabrasParaCuento: ['casa', 'perro'] } }]}>
+        <GestionCuentos />
+        <Estado />
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByTestId('estado')).toHaveTextContent('null');
     expect(screen.getByLabelText('Palabras para practicar (opcional)')).toHaveValue('casa, perro');
   });
 

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { actualizarCuento, eliminarCuento, useCuentos, useNiveles } from '@/api';
 import { useAuthStore } from '@/shared/store/useAuthStore';
@@ -177,10 +177,20 @@ export const GestionCuentos: React.FC = () => {
   const [pestana, setPestana] = useState<'cuentos' | 'niveles'>('cuentos');
   const [filtro, setFiltro] = useState<Filtro>('todos');
   // La ficha de un estudiante puede traer palabras para practicar: se abre el formulario con ellas cargadas
-  const palabrasDeLaFicha = (useLocation().state as { palabrasParaCuento?: string[] } | null)?.palabrasParaCuento;
+  const location = useLocation();
+  const navigate = useNavigate();
+  const palabrasDeLaFicha = (location.state as { palabrasParaCuento?: string[] } | null)?.palabrasParaCuento;
   const [palabrasIniciales] = useState(palabrasDeLaFicha);
   const [formulario, setFormulario] = useState<'nuevo' | Cuento | null>(palabrasDeLaFicha?.length ? 'nuevo' : null);
   const [abierto, setAbierto] = useState<string | null>(null);
+
+  // Ya leídas, las palabras se sacan del historial para que recargar o volver atrás no reabra el formulario.
+  const hayPalabrasEnLaNavegacion = palabrasDeLaFicha !== undefined;
+  useEffect(() => {
+    if (hayPalabrasEnLaNavegacion) navigate(location.pathname + location.search, { replace: true, state: null });
+    // Solo al llegar con palabras: después el estado queda en null y el efecto no vuelve a actuar.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hayPalabrasEnLaNavegacion]);
 
   if (!cuentos || !niveles) return <p className="text-secondary font-semibold">Cargando cuentos…</p>;
 
