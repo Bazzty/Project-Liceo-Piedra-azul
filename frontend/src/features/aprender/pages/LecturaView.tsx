@@ -83,6 +83,8 @@ export const LecturaView: React.FC = () => {
       });
 
     let paginaLeida = false;
+    // Última palabra resaltada por el temporizador: si el MP3 falla a mitad, el respaldo sigue desde ahí.
+    let palabraAlcanzada = 0;
     if (sonido && paginaData?.audioPaginaUrl) {
       // Narración de toda la página: se reparte el resaltado en partes iguales
       let temporizador: ReturnType<typeof setInterval> | undefined;
@@ -93,7 +95,10 @@ export const LecturaView: React.FC = () => {
         temporizador = setInterval(() => {
           indice += 1;
           if (ejecucion.current !== miId || indice >= palabras.length) clearInterval(temporizador);
-          else setPalabraActiva(indice);
+          else {
+            palabraAlcanzada = indice;
+            setPalabraActiva(indice);
+          }
         }, paso);
       });
       clearInterval(temporizador);
@@ -102,7 +107,7 @@ export const LecturaView: React.FC = () => {
 
     if (!paginaLeida) {
       // Palabra por palabra (también si el MP3 de la página falló: nunca queda en silencio)
-      for (let i = 0; i < palabras.length; i += 1) {
+      for (let i = palabraAlcanzada; i < palabras.length; i += 1) {
         if (ejecucion.current !== miId) return;
         setPalabraActiva(i);
         const url = palabras[i].audioUrl;

@@ -87,4 +87,36 @@ describe('LecturaView', () => {
     await vi.waitFor(() => expect(hablada).toContain('sol'));
     vi.unstubAllGlobals();
   });
+  it('si el MP3 falla a mitad de la página, la voz de respaldo sigue desde la última palabra resaltada', async () => {
+    cuentoDePrueba.paginas = [
+      { audioPaginaUrl: '/audio-generado/corto.mp3', palabras: [{ texto: 'uno', clave: 'uno' }, { texto: 'dos', clave: 'dos' }, { texto: 'tres', clave: 'tres' }] },
+    ];
+    const hablada: string[] = [];
+    vi.stubGlobal('SpeechSynthesisUtterance', class { constructor(texto: string) { hablada.push(texto); } });
+    vi.stubGlobal('speechSynthesis', { cancel: vi.fn(), speak: vi.fn() });
+    // Dura 120 ms (40 ms por palabra) y falla a los 100 ms: el resaltado ya llegó a la tercera palabra.
+    vi.stubGlobal(
+      'Audio',
+      class {
+        duration = 0.12;
+        playbackRate = 1;
+        onloadedmetadata: (() => void) | null = null;
+        onerror: (() => void) | null = null;
+        play() {
+          queueMicrotask(() => this.onloadedmetadata?.());
+          setTimeout(() => this.onerror?.(), 100);
+          return Promise.resolve();
+        }
+        pause() {}
+      },
+    );
+    renderLectura();
+
+    await userEvent.click(screen.getByRole('button', { name: /escuchar/i }));
+
+    await vi.waitFor(() => expect(hablada).toContain('tres'));
+    expect(hablada).not.toContain('uno');
+    expect(hablada).not.toContain('dos');
+    vi.unstubAllGlobals();
+  });
 });
