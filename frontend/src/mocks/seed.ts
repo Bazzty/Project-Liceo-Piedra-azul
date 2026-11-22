@@ -236,6 +236,7 @@ export async function resetDemoData() {
 		db.cuentos.clear(),
 		db.progresos.clear(),
 		db.registros.clear(),
+		db.misCuentos.clear(),
 	]);
 	await seedDatabase();
 }

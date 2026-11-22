@@ -25,7 +25,7 @@ export interface OsoBurbujaProps {
 const TAMANOS = {
   md: 'w-32 h-32 sm:w-40 sm:h-40',
   lg: 'w-28 h-28 sm:w-44 sm:h-44 lg:w-52 lg:h-52',
-  xl: 'w-36 h-36 sm:w-[min(13rem,26vh)] sm:h-[min(13rem,26vh)] sm:portrait:w-[min(40vw,21rem)] sm:portrait:h-[min(40vw,21rem)] lg:w-[min(19rem,36vh)] lg:h-[min(19rem,36vh)]',
+  xl: 'w-36 h-36 sm:w-[min(13rem,26vh)] sm:h-[min(13rem,26vh)] sm:portrait:w-[min(34vw,21rem)] sm:portrait:h-[min(34vw,21rem)] lg:w-[min(19rem,26vh)] lg:h-[min(19rem,26vh)]',
 };
 
 /** Osito guía con burbuja: al tocarlo dice el mensaje en voz alta. Pensado para quien aún no lee. */

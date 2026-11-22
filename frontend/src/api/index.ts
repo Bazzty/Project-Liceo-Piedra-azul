@@ -2,6 +2,7 @@
 // el backend basta con reescribir estos módulos (las firmas se mantienen).
 export * from './alumnos';
 export * from './cuentos';
+export * from './misCuentos';
 export * from './niveles';
 export * from './pictogramas';
 export * from './progresos';

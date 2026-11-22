@@ -4,6 +4,9 @@ import { olvidarSesionDelServidor } from '@/api/servidor';
 export type Role = 'docente' | 'estudiante' | null;
 export type SessionType = 'aula' | 'casa' | null;
 
+/** Dónde está el niño según cómo entró: en el aula del liceo o en casa. Es lo que queda en su registro. */
+export const lugarDeLaSesion = (tipo: SessionType): 'liceo' | 'casa' => (tipo === 'aula' ? 'liceo' : 'casa');
+
 export interface User {
   id: string;
   nombre: string;

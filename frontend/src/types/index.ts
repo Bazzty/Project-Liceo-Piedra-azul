@@ -108,7 +108,7 @@ export interface RegistroCalma {
 export interface Registro {
   id?: string;
   alumnoId: string;
-  tipo: 'sesion' | 'lectura' | 'tablero' | 'actividad' | 'calma';
+  tipo: 'sesion' | 'lectura' | 'tablero' | 'actividad' | 'calma' | 'mi_cuento';
   cuentoId?: string; // Solo para tipo 'actividad': cuento al que pertenecen los juegos
   aciertos?: number; // Solo para tipo 'actividad': juegos resueltos sin ayuda
   total?: number; // Solo para tipo 'actividad': juegos de la sesión
@@ -121,4 +121,14 @@ export interface Registro {
   palabrasEscuchadas?: number;
   pictogramaIds?: string[]; // Solo para tipo 'tablero'
   calma?: RegistroCalma; // Solo para tipo 'calma'
+}
+
+// 7. Cuento que el niño armó eligiendo pictogramas (Mi cuento). Solo ids de opciones: sin texto libre ni datos personales.
+export interface MiCuento {
+  id?: number;
+  alumnoId: string;
+  quien: string;
+  donde: string;
+  accion: string;
+  fecha: string; // ISO
 }

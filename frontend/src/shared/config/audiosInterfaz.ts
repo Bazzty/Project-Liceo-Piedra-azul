@@ -47,6 +47,16 @@ export const AUDIOS_INTERFAZ = {
   luciernagas: '/audio/interfaz/luciernagas.mp3',
   dibuja: '/audio/interfaz/dibuja.mp3',
   como_estas: '/audio/interfaz/como_estas.mp3',
+  // Mi cuento
+  mi_cuento: '/audio/interfaz/mi_cuento.mp3',
+  mis_cuentos: '/audio/interfaz/mis_cuentos.mp3',
+  quien: '/audio/interfaz/quien.mp3',
+  donde: '/audio/interfaz/donde.mp3',
+  que_hace: '/audio/interfaz/que_hace.mp3',
+  escuchar_otra_vez: '/audio/interfaz/escuchar_otra_vez.mp3',
+  guardar_cuento: '/audio/interfaz/guardar_cuento.mp3',
+  crear_otro: '/audio/interfaz/crear_otro.mp3',
+  cuento_guardado: '/audio/interfaz/cuento_guardado.mp3',
 } as const;
 
 export type ClaveAudio = keyof typeof AUDIOS_INTERFAZ;

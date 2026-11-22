@@ -17,6 +17,9 @@ export const ROUTES = {
   aulaAlumnos: '/aula/alumnos',
 
   menu: '/menu',
+  miCuento: '/mi-cuento',
+  misCuentos: '/mis-cuentos',
+  miCuentoGuardado: (id: number | string) => `/mis-cuentos/${id}`,
   aprender: '/aprender',
   catalogo: (nivelId: string) => `/aprender/${nivelId}`,
   lectura: (nivelId: string, cuentoId: string) => `/aprender/${nivelId}/${cuentoId}`,

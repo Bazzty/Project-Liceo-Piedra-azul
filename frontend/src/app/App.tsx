@@ -14,6 +14,8 @@ import { ActividadesView } from '@/features/aprender/actividades/ActividadesView
 import { ActividadesPage } from '@/features/docente/pages/ActividadesPage';
 import { CurriculoPage } from '@/features/docente/pages/CurriculoPage';
 import { InformePage } from '@/features/docente/pages/InformePage';
+import { MiCuentoView } from '@/features/micuento/MiCuentoView';
+import { MiCuentoGuardadoView, MisCuentosView } from '@/features/micuento/MisCuentosView';
 import { LecturaView } from '@/features/aprender/pages/LecturaView';
 import { ControlAulaView } from '@/features/docente/pages/ControlAulaView';
 import { AdminDashboard } from '@/features/docente/pages/AdminDashboard';
@@ -49,6 +51,9 @@ export const App: React.FC = () => (
     {/* Alumno */}
     <Route element={<RequireAlumno />}>
       <Route path={ROUTES.menu} element={<VistaPrincipal />} />
+      <Route path={ROUTES.miCuento} element={<MiCuentoView />} />
+      <Route path={ROUTES.misCuentos} element={<MisCuentosView />} />
+      <Route path={ROUTES.miCuentoGuardado(':cuentoId')} element={<MiCuentoGuardadoView />} />
       <Route path={ROUTES.aprender} element={<NivelesView />} />
       <Route path={`${ROUTES.aprender}/:nivelId`} element={<CatalogoCuentos />} />
       <Route path={`${ROUTES.aprender}/:nivelId/:cuentoId`} element={<LecturaView />} />

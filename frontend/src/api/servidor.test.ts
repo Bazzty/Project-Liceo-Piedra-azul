@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { ErrorDeServidor, generarAudio, generarCuentoConIa, iniciarSesionEnServidor, olvidarSesionDelServidor } from '@/api/servidor';
+import { calentarIaDeCuentos, ErrorDeServidor, fueCancelada, generarAudio, generarCuentoConIa, iniciarSesionEnServidor, olvidarSesionDelServidor } from '@/api/servidor';
 
 const responder = (cuerpo: unknown, estado = 200) =>
   vi.fn().mockResolvedValue(new Response(JSON.stringify(cuerpo), { status: estado, headers: { 'Content-Type': 'application/json' } }));
@@ -53,6 +53,41 @@ describe('servidor', () => {
     await expect(generarAudio('Hola')).rejects.toMatchObject({ estado: 401 });
   });
 
+  describe('calentarIaDeCuentos', () => {
+    it('avisa al servidor con la sesión y sin mandar datos', async () => {
+      vi.stubGlobal('fetch', responder({ token: '1|abc' }));
+      await iniciarSesionEnServidor('a@b.cl', 'x');
+      const fetchCalentar = vi.fn().mockResolvedValue(new Response(null, { status: 204 }));
+      vi.stubGlobal('fetch', fetchCalentar);
+
+      calentarIaDeCuentos();
+
+      const [url, opciones] = fetchCalentar.mock.calls[0];
+      expect(url).toBe('/api/v1/cuentos/calentar');
+      expect(opciones.method).toBe('POST');
+      expect(opciones.headers.Authorization).toBe('Bearer 1|abc');
+      expect(opciones.body).toBeUndefined();
+    });
+
+    it('sin sesión no llama al servidor', () => {
+      const fetchCalentar = vi.fn();
+      vi.stubGlobal('fetch', fetchCalentar);
+
+      calentarIaDeCuentos();
+
+      expect(fetchCalentar).not.toHaveBeenCalled();
+    });
+
+    it('si el servidor no responde, no lanza error', async () => {
+      vi.stubGlobal('fetch', responder({ token: '1|abc' }));
+      await iniciarSesionEnServidor('a@b.cl', 'x');
+      vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('sin red')));
+
+      expect(() => calentarIaDeCuentos()).not.toThrow();
+      await Promise.resolve();
+    });
+  });
+
   describe('generarCuentoConIa', () => {
     const PEDIDO = { tema: 'un gato', nivel: 'B', paginas: 4 } as const;
     const conSesion = async () => {
@@ -72,6 +107,29 @@ describe('servidor', () => {
       expect(url).toBe('/api/v1/cuentos/generar');
       expect(opciones.headers.Authorization).toBe('Bearer 1|abc');
       expect(JSON.parse(opciones.body)).toEqual(PEDIDO);
+    });
+
+    it('al cancelar corta la petición y no la trata como un error de conexión', async () => {
+      await conSesion();
+      vi.stubGlobal(
+        'fetch',
+        // Como el fetch real: rechaza al abortarse, o de inmediato si ya estaba abortada
+        vi.fn(
+          (_url: string, opciones: RequestInit) =>
+            new Promise((_ok, fallar) => {
+              if (opciones.signal?.aborted) fallar(new Error('abortado'));
+              opciones.signal?.addEventListener('abort', () => fallar(new Error('abortado')));
+            }),
+        ),
+      );
+      const control = new AbortController();
+
+      const pedido = generarCuentoConIa(PEDIDO, control.signal);
+      control.abort();
+
+      const error = await pedido.catch((e: unknown) => e);
+      expect(fueCancelada(error)).toBe(true);
+      expect(error).not.toBeInstanceOf(ErrorDeServidor);
     });
 
     it('sin sesión pide ingresar, sin llamar al servidor', async () => {

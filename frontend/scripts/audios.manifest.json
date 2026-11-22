@@ -1528,5 +1528,93 @@
   {
     "archivo": "textos/necesito_ayuda.mp3",
     "texto": "Necesito ayuda."
+  },
+  {
+    "archivo": "interfaz/mi_cuento.mp3",
+    "texto": "Mi cuento."
+  },
+  {
+    "archivo": "interfaz/mis_cuentos.mp3",
+    "texto": "Mis cuentos."
+  },
+  {
+    "archivo": "interfaz/quien.mp3",
+    "texto": "¿Quién?"
+  },
+  {
+    "archivo": "interfaz/donde.mp3",
+    "texto": "¿Dónde?"
+  },
+  {
+    "archivo": "interfaz/que_hace.mp3",
+    "texto": "¿Qué hace?"
+  },
+  {
+    "archivo": "interfaz/escuchar_otra_vez.mp3",
+    "texto": "Escuchar otra vez."
+  },
+  {
+    "archivo": "interfaz/guardar_cuento.mp3",
+    "texto": "Guardar en mis cuentos."
+  },
+  {
+    "archivo": "interfaz/crear_otro.mp3",
+    "texto": "Crear otro."
+  },
+  {
+    "archivo": "interfaz/cuento_guardado.mp3",
+    "texto": "Tu cuento está guardado."
+  },
+  {
+    "archivo": "textos/mi-cuento-quien-nina.mp3",
+    "texto": "Había una vez una niña."
+  },
+  {
+    "archivo": "textos/mi-cuento-quien-gato.mp3",
+    "texto": "Había una vez un gato."
+  },
+  {
+    "archivo": "textos/mi-cuento-quien-sapo.mp3",
+    "texto": "Había una vez un sapo."
+  },
+  {
+    "archivo": "textos/mi-cuento-quien-elefante.mp3",
+    "texto": "Había una vez un elefante."
+  },
+  {
+    "archivo": "textos/mi-cuento-donde-colegio.mp3",
+    "texto": "Estaba en el colegio."
+  },
+  {
+    "archivo": "textos/mi-cuento-donde-isla.mp3",
+    "texto": "Estaba en una isla."
+  },
+  {
+    "archivo": "textos/mi-cuento-donde-sala.mp3",
+    "texto": "Estaba en la sala."
+  },
+  {
+    "archivo": "textos/mi-cuento-donde-cama.mp3",
+    "texto": "Estaba en su cama."
+  },
+  {
+    "archivo": "textos/mi-cuento-accion-saltar.mp3",
+    "texto": "Allí saltó muy alto."
+  },
+  {
+    "archivo": "textos/mi-cuento-accion-sopa.mp3",
+    "texto": "Allí comió una sopa muy rica."
+  },
+  {
+    "archivo": "textos/mi-cuento-accion-jugar.mp3",
+    "texto": "Allí jugó con un amigo."
+  },
+  {
+    "archivo": "textos/mi-cuento-accion-dormir.mp3",
+    "texto": "Allí durmió una siesta."
+  },
+  {
+    "archivo": "textos/mi-cuento-final.mp3",
+    "texto": "Y fue un día muy feliz. Fin."
   }
 ]

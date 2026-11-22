@@ -7,7 +7,10 @@ use App\Cuentos\CuentoSinConfigurar;
 use App\Cuentos\GeneradorDeCuentos;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\GenerarCuentoRequest;
+use App\Jobs\CalentarModeloDeCuentos;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class CuentoController extends Controller
 {
@@ -18,6 +21,7 @@ class CuentoController extends Controller
                 $request->validated('tema'),
                 $request->validated('nivel'),
                 (int) $request->validated('paginas'),
+                $this->palabras($request->validated('palabras') ?? []),
             );
         } catch (CuentoSinConfigurar) {
             return response()->json(['message' => 'La IA de cuentos aún no está activada en este servidor.'], 503);
@@ -28,5 +32,31 @@ class CuentoController extends Controller
         }
 
         return response()->json($cuento->toArray());
+    }
+
+    /** Pide cargar el modelo mientras la docente escribe. Va a la cola y responde de inmediato: es solo una ayuda. */
+    public function calentar(Request $request): Response
+    {
+        // Igual que generar: solo docentes y admins.
+        abort_unless(in_array($request->user()?->rol, ['docente', 'admin'], true), 403);
+
+        CalentarModeloDeCuentos::dispatch();
+
+        return response()->noContent();
+    }
+
+    /**
+     * Sin repetidas ni espacios de más.
+     *
+     * @param  list<string>  $palabras
+     * @return list<string>
+     */
+    private function palabras(array $palabras): array
+    {
+        return collect($palabras)
+            ->map(fn (string $p) => trim((string) preg_replace('/\s+/u', ' ', $p)))
+            ->unique(fn (string $p) => mb_strtolower($p))
+            ->values()
+            ->all();
     }
 }

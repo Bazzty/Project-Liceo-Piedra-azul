@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef } from 'react';
 import { MousePointerClick } from 'lucide-react';
+import type { ClaveAudio } from '@/shared/config/audiosInterfaz';
 import { useHablar } from '@/shared/hooks/useHablar';
 import { usePlayerStore } from '@/shared/store/usePlayerStore';
 import { useAjustesStore, type VelocidadBarrido } from '@/shared/store/useAjustesStore';
@@ -58,7 +59,8 @@ export const BarridoUnBoton: React.FC<{ raiz: React.RefObject<HTMLElement | null
     marcado.current = el;
     el.scrollIntoView({ block: 'nearest', inline: 'nearest' });
     const nombre = nombreDe(el);
-    if (nombre) hablar(nombre);
+    // Un elemento con data-clave-voz se dice con su grabación (la voz del osito) en vez de la del navegador
+    if (nombre) hablar(nombre, el.dataset.claveVoz as ClaveAudio | undefined);
   }, [raiz, hablar, desmarcar]);
 
   const elegir = useCallback(() => {

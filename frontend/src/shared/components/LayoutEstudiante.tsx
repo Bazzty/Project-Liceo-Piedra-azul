@@ -5,7 +5,6 @@ import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@/app/routes';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { AjustesEstudiante } from '@/shared/components/AjustesEstudiante';
-import { AvisoInactividad } from '@/shared/components/AvisoInactividad';
 import { BarridoUnBoton } from '@/shared/components/BarridoUnBoton';
 import { CalmaOverlay } from '@/shared/components/CalmaOverlay';
 import { DecoracionJardin } from '@/shared/components/DecoracionJardin';
@@ -35,7 +34,7 @@ export interface LayoutEstudianteProps {
 
 /**
  * Marco común de las pantallas del estudiante: barra con su nombre, calma y ajustes,
- * fondo con paisaje, y el aviso amable de fin de sesión por inactividad.
+ * y fondo con paisaje. El aviso de inactividad (AvisoInactividad) está desactivado por ahora.
  */
 export const LayoutEstudiante: React.FC<LayoutEstudianteProps> = ({ children, onVolver, centro, fondo = 'paisaje', osito }) => {
   useAplicarTema();
@@ -116,7 +115,6 @@ export const LayoutEstudiante: React.FC<LayoutEstudianteProps> = ({ children, on
       <AjustesEstudiante isOpen={ajustesAbierto} onClose={() => setAjustesAbierto(false)} />
       <CalmaOverlay abierto={calmaAbierta} onCerrar={cerrarCalma} />
       {barrido && <BarridoUnBoton raiz={raiz} />}
-      {!supervision && <AvisoInactividad />}
     </div>
   );
 };
