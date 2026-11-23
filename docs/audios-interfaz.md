@@ -2,23 +2,24 @@
 
 La app busca primero una **grabación** (la voz suave del proyecto) y solo usa la voz del navegador si el archivo aún no existe. Cada frase tiene una clave (`frontend/src/shared/config/audiosInterfaz.ts`) y un archivo en `frontend/public/audio/interfaz/`.
 
-## ⚠ ADVERTENCIA: hay dos voces mezcladas (por corregir)
+## ⚠ PENDIENTE: faltan 26 audios con la voz del osito
 
-**Los audios de la app NO suenan todos con la misma voz.** Se debe corregir antes de usarla con niños.
+**Los 26 audios del tablero de comunicación se quitaron del repositorio** porque se habían generado con otra voz que la del osito (la voz predeterminada de ElevenLabs, id `hpp4J3VqNfWAUOO0d1Us`, la única disponible en el plan gratuito) y nadie los había escuchado. Mientras no existan, la app usa la **voz del navegador** (cae sola, sin errores):
 
-- **Voz del osito** (id `WOY6pnQ1WCg0mrOZ54lM`): es una voz de la *biblioteca* de ElevenLabs. Con el plan gratuito la API responde **402 `paid_plan_required`**, así que no se pueden generar audios nuevos con ella.
-- **Voz usada para lo nuevo** (id `hpp4J3VqNfWAUOO0d1Us`, predeterminada, sí disponible en el plan gratuito): se generaron con ella, el 2026-11-11, **26 audios** que antes no existían:
-  - Sonidos de las consonantes del teclado, en `frontend/public/audio/fonemas/`: `b c d f g h j k l n p q r s t v w x y z` y `enie` (Ñ).
-  - Nombres de las carpetas de la plantilla general, en `frontend/public/audio/textos/`: `necesidades`, `emociones`, `personas`, `acciones`, `objetos`.
-- **Además**, todo audio que la docente genere desde el editor del tablero (palabras nuevas y el botón «Generar audios que faltan») o desde el formulario de cuentos usa la voz que esté en `backend/.env`, hoy la segunda.
+- Sonidos de las consonantes del teclado, `frontend/public/audio/fonemas/`: `b c d f g h j k l n p q r s t v w x y z` y `enie` (Ñ). Con la voz del navegador suena el **nombre** de la letra («be», «ce»…), no su sonido.
+- Nombres de las carpetas de la plantilla general, `frontend/public/audio/textos/`: `necesidades`, `emociones`, `personas`, `acciones`, `objetos`.
 
-**Qué se nota:** al tocar una letra o una carpeta suena una voz distinta a la del resto de la app (vocales, sílabas, números, palabras, interfaz y personaje).
+**Quién y cómo los genera:** la voz del osito (id `WOY6pnQ1WCg0mrOZ54lM`) es de la *biblioteca* de ElevenLabs: con el plan gratuito la API responde **402 `paid_plan_required`**. Hace falta una cuenta con plan de pago, o con esa voz agregada a «Mis voces». Con ese id y la clave en `frontend/.env.local` (y en `backend/.env`):
 
-**Cómo corregirlo** (elegir una):
-1. **Volver a la voz del osito:** pasar a un plan de pago de ElevenLabs (o conseguir que esa voz esté en «Mis voces»), poner su id en `frontend/.env.local` y `backend/.env` y regenerar los 26 con `npm run audios -- --forzar --solo=fonemas` y `--solo=textos` (ojo: `--solo=textos` y `--solo=fonemas` regeneran **toda** la carpeta, también audios que ya eran del osito; es lo que se quiere: todos con la misma voz).
-2. **Unificar todo con la voz nueva:** `npm run audios -- --forzar` regenera los 334 audios del manifiesto (≈3.700 caracteres) y **reemplaza la voz del osito**. Conviene tener todo comiteado antes, para poder volver atrás.
+```
+cd frontend
+npm run audios:pendientes -- --dry-run   # muestra qué agregaría
+npm run audios:pendientes                # genera los 26, los agrega al manifiesto y al índice
+```
 
-**Además, revisar la pronunciación de los 26 audios nuevos** (nadie los escuchó aún): un TTS no dice bien una consonante suelta. Las alargadas se pidieron como «sss», «fff», «lll»…; las explosivas, con una e breve («pe», «te»); `h` dice «hache» (no tiene sonido) y `w` dice «gu». Los textos están en `frontend/scripts/audios-pendientes.mjs`. Para regenerar solo una letra: se corrige su texto allí, se borra su archivo (`frontend/public/audio/fonemas/<letra>.mp3`) y se corre `npm run audios`, que genera únicamente los que faltan.
+Después **hay que escucharlos**: un TTS no dice bien una consonante suelta. Las alargadas se piden como «sss», «fff», «lll»…; las explosivas, con una e breve («pe», «te»); `h` dice «hache» (no tiene sonido) y `w` dice «gu». Los textos están en `frontend/scripts/audios-pendientes.mjs`. Para corregir una letra: se cambia su texto allí, se borra su archivo y se vuelve a correr el comando, que genera solo los que faltan.
+
+**Además**, todo audio que la docente genere desde el editor del tablero (palabras nuevas y el botón «Generar audios que faltan») o desde el formulario de cuentos usa la voz que esté en `backend/.env`: cuando haya voz definitiva, hay que ponerla ahí también.
 
 ## Estado original: una sola voz, la del osito (ver la advertencia de arriba)
 
