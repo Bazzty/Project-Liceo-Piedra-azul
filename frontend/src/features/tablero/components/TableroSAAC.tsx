@@ -221,7 +221,8 @@ export const TableroSAAC: React.FC<{ onCerrar: () => void }> = ({ onCerrar }) =>
 
   /** Dice la frase; si el niño estaba escribiendo una palabra, la incluye. */
   const decirMiFrase = () => {
-    const completa = escritura.cerrarPalabra();
+    // Ya va a hablar el osito: con la frase llena no hace falta el aviso, y lo escrito se queda
+    const completa = escritura.cerrarPalabra({ avisar: false });
     void decir(completa);
     registrar(completa);
   };

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { MAXIMO_DE_CARACTERES, vozDePalabra, vozDeTecla } from '@/features/tablero/teclado';
 import { decirSecuencia } from '@/shared/audio/decirSecuencia';
+import { sonarLleno } from '@/shared/audio/sonidos';
 import type { PalabraDeFrase } from '@/shared/store/useTableroStore';
 
 let contador = 0;
@@ -41,10 +42,17 @@ export function useEscritura({ frase, setFrase, maximo, cortar }: Opciones) {
     decir(vozDeTecla(tecla));
   };
 
-  /** Pasa la palabra que se estaba escribiendo a la frase y devuelve la frase resultante. */
-  const cerrarPalabra = (): PalabraDeFrase[] => {
+  /**
+   * Pasa la palabra que se estaba escribiendo a la frase y devuelve la frase resultante.
+   * Con la frase llena la palabra NO se pierde: sigue en pantalla y, salvo que se pida lo contrario, suena un aviso sin texto.
+   */
+  const cerrarPalabra = ({ avisar = true }: { avisar?: boolean } = {}): PalabraDeFrase[] => {
     if (!escribiendo) return frase;
-    const nueva = frase.length < maximo ? [...frase, palabraEscrita(escribiendo)] : frase;
+    if (frase.length >= maximo) {
+      if (avisar) sonarLleno();
+      return frase;
+    }
+    const nueva = [...frase, palabraEscrita(escribiendo)];
     setFrase(nueva);
     setEscribiendo('');
     return nueva;
@@ -53,7 +61,8 @@ export function useEscritura({ frase, setFrase, maximo, cortar }: Opciones) {
   const espacio = () => {
     if (!escribiendo) return;
     const palabra = escribiendo;
-    cerrarPalabra();
+    const antes = frase.length;
+    if (cerrarPalabra().length === antes) return; // frase llena: ya sonó el aviso, la palabra sigue ahí
     decir(vozDePalabra(palabra));
   };
 

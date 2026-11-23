@@ -12,7 +12,8 @@ const { decir, estado, registro } = vi.hoisted(() => ({
 }));
 
 vi.mock('@/shared/audio/decirSecuencia', () => ({ decirSecuencia: decir }));
-vi.mock('@/shared/audio/sonidos', () => ({ sonarToque: vi.fn(), sonarAcierto: vi.fn() }));
+const sonarLleno = vi.hoisted(() => vi.fn());
+vi.mock('@/shared/audio/sonidos', () => ({ sonarToque: vi.fn(), sonarAcierto: vi.fn(), sonarLleno }));
 vi.mock('@/shared/components/LluviaEstrellas', () => ({ LluviaEstrellas: () => null }));
 // Los mocks se ejecutan antes que los imports de arriba: lo que necesitan se importa dentro de cada uno.
 vi.mock('@/api', async (original) => {
@@ -327,6 +328,25 @@ describe('Teclado', () => {
     await userEvent.click(screen.getByRole('button', { name: 'yo' }));
     expect(frasePalabras()).toHaveLength(8);
     expect(frasePalabras().at(-1)).toEqual({ palabra: 'hola', escrita: true });
+  });
+
+  it('con la frase llena, lo escrito no se borra: se conserva y suena un aviso sin texto', async () => {
+    await abrirTeclado();
+    await teclear('a b c d e f g h ');
+    expect(frasePalabras()).toHaveLength(8);
+    sonarLleno.mockClear();
+    await teclear('hola ');
+    expect(frasePalabras()).toHaveLength(8);
+    expect(screen.getByLabelText(/^Escribiendo/)).toHaveTextContent('hola');
+    expect(sonarLleno).toHaveBeenCalled();
+  });
+
+  it('con la frase llena, tocar un dibujo tampoco borra lo que se estaba escribiendo', async () => {
+    await abrirTeclado();
+    await teclear('a b c d e f g h ij');
+    await userEvent.click(screen.getByRole('button', { name: 'yo' }));
+    expect(frasePalabras()).toHaveLength(8);
+    expect(screen.getByLabelText(/^Escribiendo/)).toHaveTextContent('ij');
   });
 
   it('lo que el niño escribe no se guarda en el registro: solo cuántas palabras', async () => {
