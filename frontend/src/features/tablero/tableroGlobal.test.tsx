@@ -54,7 +54,16 @@ beforeEach(() => {
 });
 
 describe('tableroDisponible', () => {
-  it.each([ROUTES.menu, ROUTES.aprender, ROUTES.catalogo('nivel-a'), ROUTES.profesorPanel, ROUTES.profesorInforme('ana')])('está en %s', (ruta) => {
+  it.each([
+    ROUTES.menu,
+    ROUTES.aprender,
+    ROUTES.catalogo('nivel-a'),
+    ROUTES.miCuento,
+    ROUTES.misCuentos,
+    ROUTES.miCuentoGuardado(1),
+    ROUTES.profesorPanel,
+    ROUTES.profesorInforme('ana'),
+  ])('está en %s', (ruta) => {
     expect(tableroDisponible(ruta)).toBe(true);
   });
 
