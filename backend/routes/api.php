@@ -15,6 +15,7 @@ Route::prefix('v1')->group(function () {
         });
         Route::post('/auth/logout', [AutenticacionController::class, 'logout']);
         Route::post('/cuentos/generar', [CuentoController::class, 'generar'])->middleware('throttle:cuento-ia');
+        Route::post('/cuentos/calentar', [CuentoController::class, 'calentar'])->middleware('throttle:cuento-calentar');
         Route::post('/audio', [AudioController::class, 'store'])->middleware('throttle:audio');
     });
 });

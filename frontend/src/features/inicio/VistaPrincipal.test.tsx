@@ -21,6 +21,7 @@ const renderInicio = () =>
       <Routes>
         <Route path={ROUTES.menu} element={<VistaPrincipal />} />
         <Route path={ROUTES.aprender} element={<p>Pantalla de niveles</p>} />
+        <Route path={ROUTES.miCuento} element={<p>Pantalla de Mi cuento</p>} />
         <Route path={ROUTES.inicio} element={<p>Pantalla de ingreso</p>} />
       </Routes>
     </MemoryRouter>,
@@ -48,5 +49,14 @@ describe('VistaPrincipal', () => {
 
     expect(screen.getByText('Pantalla de ingreso')).toBeInTheDocument();
     expect(useAuthStore.getState().activeStudentId).toBeNull();
+  });
+
+  it('ofrece «Mi cuento» con su voz y lleva a armar el cuento', async () => {
+    renderInicio();
+
+    expect(screen.getByRole('button', { name: 'Escuchar: Mi cuento' })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Mi cuento' }));
+
+    expect(screen.getByText('Pantalla de Mi cuento')).toBeInTheDocument();
   });
 });

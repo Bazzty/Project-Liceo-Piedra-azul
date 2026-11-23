@@ -237,6 +237,7 @@ export async function resetDemoData() {
 		db.cuentos.clear(),
 		db.progresos.clear(),
 		db.registros.clear(),
+		db.misCuentos.clear(),
 		db.categorias.clear(),
 		db.tableros.clear(),
 	]);

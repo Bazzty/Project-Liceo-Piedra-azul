@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { idUnico } from '@/shared/idUnico';
 
 /** Tarea que la docente deja a todo el curso o a algunos niños: un cuento y sus actividades. */
 export interface Asignacion {
@@ -37,7 +38,7 @@ export const useAsignacionesStore = create<AsignacionesState>()(
       asignaciones: DEMO,
       asignar: (datos) =>
         set((s) => ({
-          asignaciones: [{ ...datos, id: `tarea-${crypto.randomUUID().slice(0, 8)}`, creada: new Date().toISOString() }, ...s.asignaciones],
+          asignaciones: [{ ...datos, id: `tarea-${idUnico().slice(0, 8)}`, creada: new Date().toISOString() }, ...s.asignaciones],
         })),
       quitar: (id) => set((s) => ({ asignaciones: s.asignaciones.filter((a) => a.id !== id) })),
     }),

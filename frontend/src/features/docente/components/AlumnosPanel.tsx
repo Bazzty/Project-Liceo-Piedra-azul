@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, ClipboardList, Eye, Palette, Printer, Volume2 } from 'lucide-react';
+import { ArrowLeft, BookPlus, ClipboardList, Eye, Palette, Printer, Volume2 } from 'lucide-react';
 import { actualizarAlumno } from '@/api';
 import { ROUTES } from '@/app/routes';
 import { useAuthStore } from '@/shared/store/useAuthStore';
@@ -12,6 +12,7 @@ import { GraficoEvolucion } from '@/features/docente/components/GraficoEvolucion
 import { EncabezadoPagina, Hoja } from '@/features/docente/components/Hoja';
 import { LibroDelCurso } from '@/features/docente/components/LibroDelCurso';
 import { formatearFecha } from '@/features/docente/components/format';
+import { esPalabraValida } from '@/features/docente/components/palabrasParaPracticar';
 import { useFichaAlumno } from '@/features/docente/components/useFichaAlumno';
 import { useLibroCurso } from '@/features/docente/components/useLibroCurso';
 import { THEMES_CONFIG } from '@/shared/config/themes';
@@ -41,6 +42,8 @@ const FichaAlumno: React.FC<{ alumnoId: string; onVolver: () => void }> = ({ alu
 
   if (!ficha) return <p className="text-secondary font-semibold">Cargando ficha…</p>;
   const { alumno } = ficha;
+  // Solo viajan las palabras: ni el nombre ni el id del niño llegan al formulario ni al servidor
+  const palabrasParaCuento = ficha.palabrasDificiles.map((p) => p.palabra).filter(esPalabraValida);
   const vozActual = VOCES_CONFIG.find((v) => v.id === alumno.vozId)?.id ?? VOZ_POR_DEFECTO;
 
   const entrarComoNino = () => {
@@ -171,6 +174,14 @@ const FichaAlumno: React.FC<{ alumnoId: string; onVolver: () => void }> = ({ alu
             </div>
             <div className="mt-3">
               <ResultadosActividades resultados={ficha.resultados} palabras={ficha.palabrasDificiles} />
+              {palabrasParaCuento.length > 0 && (
+                <div className="mt-4 flex flex-col items-start gap-1.5">
+                  <Button variant="secondary" onClick={() => navigate(ROUTES.profesorCuentos, { state: { palabrasParaCuento } })}>
+                    <BookPlus className="w-4 h-4" aria-hidden /> Crear cuento con estas palabras
+                  </Button>
+                  <p className="text-xs text-secondary">Solo se envían las palabras a la IA, nunca el nombre del niño.</p>
+                </div>
+              )}
             </div>
           </Hoja>
 

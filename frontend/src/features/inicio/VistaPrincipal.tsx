@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BookOpen, ClipboardList, LogOut, MessageCircle, Star, Volume2 } from 'lucide-react';
+import { BookOpen, ClipboardList, LogOut, MessageCircle, PencilLine, Star, Volume2 } from 'lucide-react';
 import { useAlumno } from '@/api';
 import { sonarToque } from '@/shared/audio/sonidos';
 import type { ClaveAudio } from '@/shared/config/audiosInterfaz';
@@ -44,7 +44,7 @@ const Globo: React.FC<GloboProps> = ({ orden, estilo, icono, titulo, clave, onCl
             sonarToque();
             onClick();
           }}
-          className={`group relative overflow-hidden w-[27vw] h-[27vw] max-w-[9.5rem] max-h-[9.5rem] sm:max-w-none sm:max-h-none sm:w-[min(13rem,24vh)] sm:h-[min(13rem,24vh)] sm:portrait:w-[min(27vw,19rem)] sm:portrait:h-[min(27vw,19rem)] lg:w-[min(16rem,27vh)] lg:h-[min(16rem,27vh)] rounded-full flex flex-col items-center justify-center gap-1 sm:gap-2 shadow-card cursor-pointer transition-transform hover:scale-110 active:scale-95 ${fondo}`}
+          className={`group relative overflow-hidden w-[27vw] h-[27vw] max-w-[9.5rem] max-h-[9.5rem] sm:max-w-none sm:max-h-none sm:w-[min(13rem,24vh)] sm:h-[min(13rem,24vh)] sm:portrait:w-[min(24vw,19rem)] sm:portrait:h-[min(24vw,19rem)] lg:w-[min(16rem,22vh)] lg:h-[min(16rem,22vh)] rounded-full flex flex-col items-center justify-center gap-1 sm:gap-2 shadow-card cursor-pointer transition-transform hover:scale-110 active:scale-95 ${fondo}`}
         >
           <span className="absolute top-[11%] left-[17%] w-[26%] h-[15%] rounded-full bg-white/35 -rotate-[35deg]" aria-hidden />
           <span className="group-hover:animate-girar [&>svg]:w-9 [&>svg]:h-9 sm:[&>svg]:w-16 sm:[&>svg]:h-16 lg:[&>svg]:w-24 lg:[&>svg]:h-24" aria-hidden>
@@ -66,6 +66,40 @@ const Globo: React.FC<GloboProps> = ({ orden, estilo, icono, titulo, clave, onCl
           <path d="M20 9 C 8 20 32 30 20 42 C 12 50 24 54 20 60" fill="none" stroke={cuerda} strokeWidth="2.5" strokeLinecap="round" />
         </svg>
       </div>
+    </div>
+  );
+};
+
+/** Entrada a «Mi cuento»: el niño arma su propio cuento con pictogramas. Botón grande con su voz al lado. */
+const MiCuentoEntrada: React.FC = () => {
+  const navigate = useNavigate();
+  const hablar = useHablar();
+  return (
+    <div className="animate-aparecer flex items-center gap-2" style={{ animationDelay: '450ms' }}>
+      <button
+        type="button"
+        onClick={() => {
+          sonarToque();
+          navigate(ROUTES.miCuento);
+        }}
+        className="flex items-center gap-4 min-h-16 rounded-full bg-surface/95 border-4 border-brand shadow-card pl-3 pr-7 py-2 cursor-pointer hover:scale-105 active:scale-95 transition-transform"
+      >
+        <span aria-hidden className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-app border-2 border-borderStrong overflow-hidden p-1.5 flex items-center justify-center">
+          <img src="/pictogramas/arasaac/libro.png" alt="Libro" className="w-full h-full object-contain" />
+        </span>
+        <span className="inline-flex items-center gap-2 text-2xl sm:text-3xl font-black text-primary">
+          <PencilLine className="w-7 h-7 text-brand" aria-hidden />
+          Mi cuento
+        </span>
+      </button>
+      <button
+        type="button"
+        onClick={() => hablar('Mi cuento', 'mi_cuento')}
+        aria-label="Escuchar: Mi cuento"
+        className="w-12 h-12 rounded-full bg-surface text-primary border-2 border-borderStrong flex items-center justify-center cursor-pointer hover:bg-app"
+      >
+        <Volume2 className="w-6 h-6" aria-hidden />
+      </button>
     </div>
   );
 };
@@ -138,7 +172,7 @@ export const VistaPrincipal: React.FC = () => {
 
   return (
     <LayoutEstudiante fondo="jardin" centro={<AgendaVisual onElegir={irAPaso} />}>
-      <main className="relative flex-1 w-full max-w-6xl mx-auto px-3 sm:px-6 pt-4 sm:pt-6 pb-6 flex flex-col items-center justify-between sm:portrait:justify-center sm:portrait:gap-[7vh] gap-4">
+      <main className="relative flex-1 w-full max-w-6xl mx-auto px-3 sm:px-6 pt-4 sm:pt-6 pb-6 flex flex-col items-center justify-between sm:portrait:justify-center sm:portrait:gap-[4vh] gap-4">
         <h1 className="sr-only">Menú de {nombre}</h1>
 
         <div className="flex items-start justify-center gap-3 sm:gap-10 lg:gap-16 w-full">
@@ -154,7 +188,10 @@ export const VistaPrincipal: React.FC = () => {
           />
         </div>
 
-        <TareaDeLaProfe alumnoId={activeStudentId} />
+        <div className="flex flex-wrap items-center justify-center gap-4">
+          <MiCuentoEntrada />
+          <TareaDeLaProfe alumnoId={activeStudentId} />
+        </div>
 
         <OsoBurbuja mensaje={`¡Hola, ${nombre}!`} voz={`Hola ${nombre}. ¿Qué quieres hacer?`} clave="hola" size="xl" />
       </main>

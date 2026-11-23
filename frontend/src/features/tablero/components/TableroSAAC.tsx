@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, Delete, FolderOpen, HandHelping, Keyboard, MousePointerClick, Volume2 } from 'lucide-react';
 import type { CeldaTablero, Pictograma } from '@/types';
 import { crearRegistro, usePictogramas } from '@/api';
-import { useAuthStore } from '@/shared/store/useAuthStore';
+import { lugarDeLaSesion, useAuthStore } from '@/shared/store/useAuthStore';
 import { audioVigente, textoHablado } from '@/features/tablero/audioDeCeldas';
 import { TecladoNino } from '@/features/tablero/components/TecladoNino';
 import { teclaDeEvento } from '@/features/tablero/teclado';
@@ -173,7 +173,7 @@ export const TableroSAAC: React.FC<{ onCerrar: () => void }> = ({ onCerrar }) =>
       alumnoId: activeStudentId,
       tipo: 'tablero',
       detalle: `Tablero: «${pics.map((p) => (p.esTexto ? '…' : p.palabra)).join(' ')}»${teclado}${extra}`,
-      lugar: 'casa',
+      lugar: lugarDeLaSesion(useAuthStore.getState().sessionType),
       fecha: new Date().toISOString(),
       pictogramaIds: pics.filter((p) => !p.esTexto).map((p) => p.id ?? '').filter(Boolean),
     });
