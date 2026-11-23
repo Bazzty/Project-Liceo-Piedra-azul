@@ -1530,13 +1530,6 @@
     "texto": "Necesito ayuda."
   },
   {
-    "archivo": "textos/con.mp3",
-    "texto": "Con.",
-    "para": [
-      "con"
-    ]
-  },
-  {
     "archivo": "interfaz/mi_cuento.mp3",
     "texto": "Mi cuento."
   },
