@@ -12,8 +12,8 @@ describe('esquema de la base local', () => {
       )?._cfg.storesSource ?? {},
     ).sort();
 
-  it('está en la versión 5', () => {
-    expect(base.verno).toBe(5);
+  it('está en la versión 6', () => {
+    expect(base.verno).toBe(6);
   });
 
   it('conserva las tablas anteriores y suma «misCuentos», categorías y tableros', () => {
@@ -35,6 +35,8 @@ describe('esquema de la base local', () => {
     // Un navegador que ya abrió la v4 solo crea tablas nuevas si están en una versión posterior.
     expect(declaradoPorVersion(4)).toEqual(['misCuentos']);
     expect(declaradoPorVersion(5)).toEqual(['categorias', 'tableros']);
+    // La v6 solo migra datos (dibujo de las carpetas, una vez): no cambia las tablas
+    expect(declaradoPorVersion(6)).toEqual([]);
   });
 
   it('los tableros se buscan por niño y por plantilla', () => {

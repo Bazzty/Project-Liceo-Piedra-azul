@@ -1,5 +1,5 @@
 import Dexie, { type Table } from 'dexie';
-import { silabasAntesQueVocales } from '@/db/migraciones';
+import { imagenesDeCarpetaUnaVez, silabasAntesQueVocales } from '@/db/migraciones';
 import type {
   Alumno,
   CategoriaTablero,
@@ -56,6 +56,12 @@ export class LeerParaTodosDB extends Dexie {
       categorias: 'id, orden',
       tableros: 'id, alumnoId, esPlantilla',
     });
+
+    // v6: el dibujo de las carpetas de la plantilla general que se guardaron sin él se rellena aquí, una sola vez,
+    // y no en cada inicio: así, si la docente le quita el dibujo a una carpeta, no reaparece al recargar.
+    this.version(6)
+      .stores({})
+      .upgrade((tx) => imagenesDeCarpetaUnaVez(tx.table('tableros'), tx.table('pictogramas')));
   }
 }
 
