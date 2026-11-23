@@ -315,6 +315,31 @@ describe('Editor del tablero: el tablero de un niño', () => {
     expect(within(tablaGrande()).queryByRole('button', { name: 'Editar «hola»' })).toBeNull();
   });
 
+  it('deshacer el primer cambio de un niño con plantilla general no le deja una copia propia idéntica', async () => {
+    await abrir();
+    await elegirANa();
+    await userEvent.click(within(tablaGrande()).getByRole('button', { name: 'Quitar «hola»' }));
+    await screen.findByText(/tiene su propio tablero/);
+    expect(guardadosDeAna()).toHaveLength(6);
+    await userEvent.click(screen.getByRole('button', { name: 'Deshacer' }));
+    await screen.findByText(/usa la plantilla general/);
+    expect(guardadosDeAna()).toHaveLength(0);
+    expect(within(tablaGrande()).getByRole('button', { name: 'Editar «hola»' })).toBeInTheDocument();
+  });
+
+  it('si ya tenía copia propia, deshacer un cambio solo revierte ese cambio y la copia se queda', async () => {
+    await abrir();
+    await elegirANa();
+    await userEvent.click(within(tablaGrande()).getByRole('button', { name: 'Quitar «hola»' }));
+    await screen.findByText(/tiene su propio tablero/);
+    await userEvent.click(within(carpetas()).getByRole('button', { name: 'Quitar «Acciones»' }));
+    await waitFor(() => expect(guardadosDeAna().some((t) => t.nombre === 'Acciones')).toBe(false));
+    await userEvent.click(screen.getByRole('button', { name: 'Deshacer' }));
+    await waitFor(() => expect(screen.getByText('Cambio deshecho.')).toBeInTheDocument());
+    expect(guardadosDeAna().some((t) => t.nombre === 'Acciones')).toBe(true);
+    expect(screen.getByText(/tiene su propio tablero/)).toBeInTheDocument();
+  });
+
   it('«Restablecer a la plantilla» le devuelve la plantilla general y se puede deshacer', async () => {
     await abrir();
     await elegirANa();

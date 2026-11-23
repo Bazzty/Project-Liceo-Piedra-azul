@@ -87,8 +87,11 @@ export const EditorTablero: React.FC = () => {
   const arrastre = useRef<Arrastre | null>(null);
   /** El conjunto más reciente: así dos cambios seguidos no parten de una versión vieja. */
   const ultimo = useRef<Conjunto | undefined>(undefined);
+  /** Si el niño ya tiene copia propia guardada. Se actualiza al guardar, para no depender de que la pantalla ya se haya vuelto a dibujar. */
+  const copiaGuardada = useRef(false);
   useEffect(() => {
     ultimo.current = editable?.conjunto;
+    copiaGuardada.current = editable?.copiaPropia ?? false;
   }, [editable]);
 
   const alumno = destino.tipo === 'alumno' ? alumnos?.find((a) => a.id === destino.alumnoId) : undefined;
@@ -108,9 +111,20 @@ export const EditorTablero: React.FC = () => {
     const despues = cambiar(antes);
     if (despues === antes) return;
     ultimo.current = despues;
+    // Un niño que todavía usaba la plantilla general (copia virtual) no tenía nada guardado: este cambio crea su copia
+    const alumnoId = destino.tipo === 'alumno' ? destino.alumnoId : undefined;
+    const eraVirtual = alumnoId !== undefined && !copiaGuardada.current;
     await guardarCambio(antes, despues);
+    if (alumnoId !== undefined) copiaGuardada.current = true;
     setDeshacer(() => async () => {
-      await guardarCambio(despues, antes);
+      // Deshacer ese primer cambio es volver a no tener copia, no guardar una copia idéntica a la general:
+      // así el niño sigue recibiendo las mejoras de la plantilla.
+      if (eraVirtual && alumnoId !== undefined) {
+        await restablecerAlumno(alumnoId);
+        copiaGuardada.current = false;
+      } else {
+        await guardarCambio(despues, antes);
+      }
       ultimo.current = antes;
       setAviso('Cambio deshecho.');
       setDeshacer(null);
