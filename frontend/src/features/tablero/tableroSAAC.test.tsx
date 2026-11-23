@@ -330,23 +330,54 @@ describe('Teclado', () => {
     expect(frasePalabras().at(-1)).toEqual({ palabra: 'hola', escrita: true });
   });
 
-  it('con la frase llena, lo escrito no se borra: se conserva y suena un aviso sin texto', async () => {
+  it('con la frase llena y nada escrito, las letras se apagan, no escriben y suenan el aviso', async () => {
     await abrirTeclado();
     await teclear('a b c d e f g h ');
     expect(frasePalabras()).toHaveLength(8);
+    const letra = screen.getByRole('button', { name: 'Letra A' });
+    expect(letra).toHaveAttribute('aria-disabled', 'true');
     sonarLleno.mockClear();
-    await teclear('hola ');
-    expect(frasePalabras()).toHaveLength(8);
-    expect(screen.getByLabelText(/^Escribiendo/)).toHaveTextContent('hola');
+    await userEvent.click(letra);
     expect(sonarLleno).toHaveBeenCalled();
+    expect(screen.queryByLabelText(/^Escribiendo/)).toBeNull();
+    expect(frasePalabras()).toHaveLength(8);
+    // Borrar una palabra devuelve el lugar y las letras vuelven a la normalidad
+    await userEvent.click(screen.getByRole('button', { name: 'Borrar' }));
+    expect(screen.getByRole('button', { name: 'Letra A' })).not.toHaveAttribute('aria-disabled');
+    await userEvent.click(screen.getByRole('button', { name: 'Letra A' }));
+    expect(screen.getByLabelText(/^Escribiendo/)).toHaveTextContent('a');
   });
 
-  it('con la frase llena, tocar un dibujo tampoco borra lo que se estaba escribiendo', async () => {
+  it('no se puede seleccionar texto al tocar o arrastrar (el niño no debe ver nada pintado de azul)', async () => {
     await abrirTeclado();
-    await teclear('a b c d e f g h ij');
-    await userEvent.click(screen.getByRole('button', { name: 'yo' }));
-    expect(frasePalabras()).toHaveLength(8);
-    expect(screen.getByLabelText(/^Escribiendo/)).toHaveTextContent('ij');
+    expect(screen.getByRole('dialog', { name: 'Hablar' })).toHaveClass('select-none');
+  });
+
+  describe('contador de palabras', () => {
+    const estados = () => [...screen.getByTestId('contador-de-palabras').children].map((c) => c.getAttribute('data-estado'));
+
+    it('no se ve con la frase vacía y aparece con la primera palabra', async () => {
+      await abrirTeclado();
+      expect(screen.queryByTestId('contador-de-palabras')).toBeNull();
+      await userEvent.click(screen.getByRole('button', { name: 'yo' }));
+      expect(screen.getByRole('img', { name: '1 de 8 palabras' })).toBeInTheDocument();
+      expect(estados()).toEqual(['lleno', ...Array(7).fill('vacio')]);
+    });
+
+    it('la palabra que se está escribiendo ocupa el siguiente círculo, punteado', async () => {
+      await abrirTeclado();
+      await teclear('ab ');
+      await teclear('c');
+      expect(estados()).toEqual(['lleno', 'en-curso', ...Array(6).fill('vacio')]);
+    });
+
+    it('con la frase llena están los 8 llenos, se anuncia y el botón de decir se destaca', async () => {
+      await abrirTeclado();
+      await teclear('a b c d e f g h ');
+      expect(estados()).toEqual(Array(8).fill('lleno'));
+      expect(screen.getByText(/La frase está completa/)).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Que el osito lo diga' })).toHaveClass('ring-4');
+    });
   });
 
   it('lo que el niño escribe no se guarda en el registro: solo cuántas palabras', async () => {

@@ -4,6 +4,7 @@ import type { CeldaTablero, Pictograma } from '@/types';
 import { crearRegistro, usePictogramas } from '@/api';
 import { lugarDeLaSesion, useAuthStore } from '@/shared/store/useAuthStore';
 import { audioVigente, textoHablado } from '@/features/tablero/audioDeCeldas';
+import { ContadorDePalabras } from '@/features/tablero/components/ContadorDePalabras';
 import { TecladoNino } from '@/features/tablero/components/TecladoNino';
 import { teclaDeEvento } from '@/features/tablero/teclado';
 import { useEscritura } from '@/features/tablero/useEscritura';
@@ -270,7 +271,7 @@ export const TableroSAAC: React.FC<{ onCerrar: () => void }> = ({ onCerrar }) =>
   });
 
   return (
-    <div role="dialog" aria-modal="true" aria-label="Hablar" className="fixed inset-0 z-50 flex flex-col bg-app text-primary overflow-hidden animate-fadeIn">
+    <div role="dialog" aria-modal="true" aria-label="Hablar" className="fixed inset-0 z-50 flex flex-col bg-app text-primary overflow-hidden select-none [-webkit-touch-callout:none] animate-fadeIn">
       {celebra && <LluviaEstrellas />}
 
       <header className="flex items-center justify-between gap-3 px-3 sm:px-6 py-2 sm:py-3">
@@ -322,7 +323,8 @@ export const TableroSAAC: React.FC<{ onCerrar: () => void }> = ({ onCerrar }) =>
           </span>
         </div>
 
-        <div className="relative flex-1 min-w-0 flex items-center gap-3 rounded-[2rem] border-4 border-borderStrong bg-surface p-2 sm:p-3">
+        <div className="flex-1 min-w-0 flex flex-col gap-2">
+        <div className={`relative flex items-center gap-3 rounded-[2rem] border-4 bg-surface p-2 sm:p-3 ${escritura.llena ? 'border-brand ring-4 ring-accent/60' : 'border-borderStrong'}`}>
           <span className="absolute -left-3 top-1/2 -mt-2.5 w-5 h-5 rotate-45 bg-surface border-l-4 border-b-4 border-borderStrong" aria-hidden />
           <div className="flex-1 min-w-0 flex items-center gap-2 sm:gap-3 overflow-x-auto min-h-20 sm:min-h-24" aria-label="Lo que dice el osito" aria-live="polite">
             {frase.length === 0 && !escritura.escribiendo ? (
@@ -362,11 +364,13 @@ export const TableroSAAC: React.FC<{ onCerrar: () => void }> = ({ onCerrar }) =>
               onClick={decirMiFrase}
               disabled={frase.length === 0 && !escritura.escribiendo}
               aria-label="Que el osito lo diga"
-              className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-4 border-borderStrong bg-accent text-onAccent flex items-center justify-center cursor-pointer hover:bg-accent-hover active:scale-90 transition-all disabled:opacity-35 disabled:cursor-not-allowed"
+              className={`w-16 h-16 sm:w-20 sm:h-20 rounded-full border-4 bg-accent text-onAccent flex items-center justify-center cursor-pointer hover:bg-accent-hover active:scale-90 transition-all disabled:opacity-35 disabled:cursor-not-allowed ${escritura.llena ? 'border-brand ring-4 ring-offset-2 ring-accent' : 'border-borderStrong'}`}
             >
               <Volume2 className={`w-9 h-9 sm:w-11 sm:h-11 ${sonando !== null ? 'animate-pulso' : ''}`} aria-hidden />
             </button>
           </div>
+        </div>
+        <ContadorDePalabras cantidad={frase.length} maximo={PALABRAS_POR_FRASE} enCurso={Boolean(escritura.escribiendo)} />
         </div>
       </section>
 
@@ -380,7 +384,7 @@ export const TableroSAAC: React.FC<{ onCerrar: () => void }> = ({ onCerrar }) =>
       {/* Lo grande es el tablero (principal o carpeta abierta) o el teclado; las carpetas van a su lado, o abajo en pantallas angostas */}
       {tecladoAbierto ? (
         <div className="flex-1 min-h-0 overflow-y-auto px-3 sm:px-6 py-4">
-          <TecladoNino alTecla={escritura.escribir} alEspacio={escritura.espacio} alBorrar={escritura.borrar} alEnter={decirMiFrase} />
+          <TecladoNino alTecla={escritura.escribir} alEspacio={escritura.espacio} alBorrar={escritura.borrar} alEnter={decirMiFrase} bloqueadas={escritura.bloqueada} />
         </div>
       ) : (
       <div className="flex-1 min-h-0 flex flex-col sm:flex-row">

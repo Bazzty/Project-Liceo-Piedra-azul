@@ -36,7 +36,13 @@ export function useEscritura({ frase, setFrase, maximo, cortar }: Opciones) {
     void decirSecuencia([elemento]);
   };
 
+  /** La frase está llena. */
+  const llena = frase.length >= maximo;
+  /** Con la frase llena y nada escrito no se puede empezar otra palabra: no cabría. */
+  const bloqueada = llena && !escribiendo;
+
   const escribir = (tecla: string) => {
+    if (bloqueada) return sonarLleno();
     if (escribiendo.length >= MAXIMO_DE_CARACTERES) return;
     setEscribiendo((e) => e + tecla);
     decir(vozDeTecla(tecla));
@@ -48,7 +54,7 @@ export function useEscritura({ frase, setFrase, maximo, cortar }: Opciones) {
    */
   const cerrarPalabra = ({ avisar = true }: { avisar?: boolean } = {}): PalabraDeFrase[] => {
     if (!escribiendo) return frase;
-    if (frase.length >= maximo) {
+    if (llena) {
       if (avisar) sonarLleno();
       return frase;
     }
@@ -73,5 +79,5 @@ export function useEscritura({ frase, setFrase, maximo, cortar }: Opciones) {
     else setFrase((f) => f.slice(0, -1));
   };
 
-  return { escribiendo, escribir, espacio, borrar, cerrarPalabra, limpiar: () => setEscribiendo('') };
+  return { escribiendo, llena, bloqueada, escribir, espacio, borrar, cerrarPalabra, limpiar: () => setEscribiendo('') };
 }
