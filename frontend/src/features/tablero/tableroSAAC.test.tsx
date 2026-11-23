@@ -319,6 +319,16 @@ describe('Teclado', () => {
     expect(frasePalabras()).toHaveLength(8);
   });
 
+  it('con 7 palabras, escribir una y tocar un dibujo no pasa de 8: la palabra escrita se queda y el dibujo no entra', async () => {
+    await abrirTeclado();
+    await teclear('a b c d e f g ');
+    expect(frasePalabras()).toHaveLength(7);
+    await teclear('hola');
+    await userEvent.click(screen.getByRole('button', { name: 'yo' }));
+    expect(frasePalabras()).toHaveLength(8);
+    expect(frasePalabras().at(-1)).toEqual({ palabra: 'hola', escrita: true });
+  });
+
   it('lo que el niño escribe no se guarda en el registro: solo cuántas palabras', async () => {
     useAuthStore.setState({ activeStudentId: 'ana', supervision: false });
     await abrirTeclado();

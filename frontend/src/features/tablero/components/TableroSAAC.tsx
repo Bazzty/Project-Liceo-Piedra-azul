@@ -196,8 +196,9 @@ export const TableroSAAC: React.FC<{ onCerrar: () => void }> = ({ onCerrar }) =>
   const tocarTecla = (pic: PalabraDeFrase) => {
     sonarToque();
     // Si estaba escribiendo una palabra, queda antes del dibujo: así la frase se lee en el orden en que se armó
-    escritura.cerrarPalabra();
-    if (frase.length < PALABRAS_POR_FRASE) setFrase((f) => [...f, pic]);
+    // Se cuenta sobre lo que devuelve cerrarPalabra: `frase` del render todavía no trae la palabra recién escrita
+    const actual = escritura.cerrarPalabra();
+    if (actual.length < PALABRAS_POR_FRASE) setFrase([...actual, pic]);
     corte.current += 1;
     // Cada palabra se dice al tocarla: el niño oye lo que eligió
     void decirSecuencia([aVoz(pic)]);
