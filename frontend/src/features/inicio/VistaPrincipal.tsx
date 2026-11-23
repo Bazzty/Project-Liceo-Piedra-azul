@@ -31,7 +31,7 @@ interface GloboProps {
   onClick: () => void;
 }
 
-/** Globo grande para elegir: flota, aparece con un pequeño salto y dice su nombre al tocar el parlante. */
+/** Globo grande para elegir (el icono y el título miden un porcentaje del globo, así nunca se salen del círculo): flota, aparece con un pequeño salto y dice su nombre al tocar el parlante. */
 const Globo: React.FC<GloboProps> = ({ orden, estilo, icono, titulo, clave, onClick }) => {
   const hablar = useHablar();
   const { fondo, cuerda } = ESTILOS_GLOBO[estilo];
@@ -44,13 +44,13 @@ const Globo: React.FC<GloboProps> = ({ orden, estilo, icono, titulo, clave, onCl
             sonarToque();
             onClick();
           }}
-          className={`group relative overflow-hidden w-[27vw] h-[27vw] max-w-[9.5rem] max-h-[9.5rem] sm:max-w-none sm:max-h-none sm:w-[min(13rem,24vh)] sm:h-[min(13rem,24vh)] sm:portrait:w-[min(24vw,19rem)] sm:portrait:h-[min(24vw,19rem)] lg:w-[min(16rem,22vh)] lg:h-[min(16rem,22vh)] rounded-full flex flex-col items-center justify-center gap-1 sm:gap-2 shadow-card cursor-pointer transition-transform hover:scale-110 active:scale-95 ${fondo}`}
+          className={`group relative overflow-hidden [container-type:inline-size] w-[27vw] h-[27vw] max-w-[9.5rem] max-h-[9.5rem] sm:max-w-none sm:max-h-none sm:w-[min(13rem,24vh)] sm:h-[min(13rem,24vh)] sm:portrait:w-[min(24vw,19rem)] sm:portrait:h-[min(24vw,19rem)] lg:w-[min(16rem,22vh)] lg:h-[min(16rem,22vh)] rounded-full flex flex-col items-center justify-center gap-1 sm:gap-2 pb-[10%] shadow-card cursor-pointer transition-transform hover:scale-110 active:scale-95 ${fondo}`}
         >
           <span className="absolute top-[11%] left-[17%] w-[26%] h-[15%] rounded-full bg-white/35 -rotate-[35deg]" aria-hidden />
-          <span className="group-hover:animate-girar [&>svg]:w-9 [&>svg]:h-9 sm:[&>svg]:w-16 sm:[&>svg]:h-16 lg:[&>svg]:w-24 lg:[&>svg]:h-24" aria-hidden>
+          <span className="group-hover:animate-girar [&>svg]:w-[32cqw] [&>svg]:h-[32cqw]" aria-hidden>
             {icono}
           </span>
-          <span className="text-base sm:text-2xl lg:text-3xl font-black leading-tight text-center px-2">{titulo}</span>
+          <span className="text-[clamp(1rem,16cqw,2.6rem)] font-black leading-tight text-center px-2">{titulo}</span>
         </button>
         <button
           type="button"
