@@ -3,6 +3,7 @@ import { sembrarCuentosKinder } from '@/mocks/cuentosKinder';
 import { sembrarNiveles } from '@/mocks/niveles';
 import { sembrarCuentosPalabras } from '@/mocks/cuentosPalabras';
 import { sembrarCuentosVocales } from '@/mocks/cuentosVocales';
+import { sembrarTableros } from '@/mocks/tableros';
 import type { ActividadCalma, Alumno, Cuento, Registro } from '@/types';
 
 // ---------------------------------------------------------------------------
@@ -237,6 +238,8 @@ export async function resetDemoData() {
 		db.progresos.clear(),
 		db.registros.clear(),
 		db.misCuentos.clear(),
+		db.categorias.clear(),
+		db.tableros.clear(),
 	]);
 	await seedDatabase();
 }
@@ -536,6 +539,7 @@ export async function seedDatabase() {
 		await sembrarNiveles();
 		await sembrarApoyosDemo();
 		await sembrarPalabrasNucleo();
+		await sembrarTableros();
 		await sembrarCalmaDemo();
 
 		console.log('✅ Base de datos inicializada correctamente.');

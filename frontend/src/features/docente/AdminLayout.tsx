@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BookOpen, CreditCard, Gauge, GraduationCap, LayoutGrid, ListChecks, Menu, Users, X, type LucideIcon } from 'lucide-react';
+import { BookOpen, CreditCard, Gauge, GraduationCap, LayoutGrid, ListChecks, Menu, MessageSquare, Users, X, type LucideIcon } from 'lucide-react';
 import { ROUTES } from '@/app/routes';
 import { useAuthStore } from '@/shared/store/useAuthStore';
+import { BotonHablar } from '@/shared/components/BotonHablar';
 import { MarcaPiedra } from '@/features/docente/components/MarcaPiedra';
 import { useThemeStore } from '@/shared/store/useThemeStore';
 
-export type AdminSection = 'dashboard' | 'alumnos' | 'actividades' | 'curriculo' | 'cuentos' | 'tarjetas' | 'aula';
+export type AdminSection = 'dashboard' | 'alumnos' | 'actividades' | 'curriculo' | 'cuentos' | 'tarjetas' | 'aula' | 'tablero';
 
 const NAV_ITEMS: { id: AdminSection; icono: LucideIcon; etiqueta: string; ruta: string }[] = [
   { id: 'dashboard', icono: LayoutGrid, etiqueta: 'Resumen', ruta: ROUTES.profesorPanel },
@@ -16,6 +17,7 @@ const NAV_ITEMS: { id: AdminSection; icono: LucideIcon; etiqueta: string; ruta: 
   { id: 'cuentos', icono: BookOpen, etiqueta: 'Cuentos', ruta: ROUTES.profesorCuentos },
   { id: 'tarjetas', icono: CreditCard, etiqueta: 'Tarjetas de acceso', ruta: ROUTES.profesorTarjetas },
   { id: 'aula', icono: Gauge, etiqueta: 'Control de aula', ruta: ROUTES.profesorAula },
+  { id: 'tablero', icono: MessageSquare, etiqueta: 'Tablero de comunicaciones', ruta: ROUTES.profesorTablero },
 ];
 
 interface AdminLayoutProps {
@@ -55,14 +57,17 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activeSectio
           <MarcaPiedra className="w-8 h-8" />
           <span className="text-base font-medium text-primary">Leer para Todos</span>
         </div>
-        <button
-          type="button"
-          onClick={() => setMenuAbierto(!menuAbierto)}
-          className="min-h-12 min-w-12 flex items-center justify-center rounded-control border border-rail-line text-primary cursor-pointer"
-          aria-label={menuAbierto ? 'Cerrar menú' : 'Abrir menú'}
-        >
-          {menuAbierto ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-        </button>
+        <div className="flex items-center gap-2">
+          <BotonHablar variante="icono" />
+          <button
+            type="button"
+            onClick={() => setMenuAbierto(!menuAbierto)}
+            className="min-h-12 min-w-12 flex items-center justify-center rounded-control border border-rail-line text-primary cursor-pointer"
+            aria-label={menuAbierto ? 'Cerrar menú' : 'Abrir menú'}
+          >
+            {menuAbierto ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
+        </div>
       </div>
 
       <aside

@@ -9,7 +9,7 @@ import { ROUTES } from '@/app/routes';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { useTareasPendientes } from '@/features/tareas/useTareasPendientes';
 import { AlbumEstrellas } from '@/features/estrellas/AlbumEstrellas';
-import { TableroSAAC } from '@/features/tablero/components/TableroSAAC';
+import { useTableroStore } from '@/shared/store/useTableroStore';
 import { AgendaVisual } from '@/shared/components/AgendaVisual';
 import { LayoutEstudiante } from '@/shared/components/LayoutEstudiante';
 import { OsoBurbuja } from '@/shared/components/OsoBurbuja';
@@ -31,7 +31,7 @@ interface GloboProps {
   onClick: () => void;
 }
 
-/** Globo grande para elegir: flota, aparece con un pequeño salto y dice su nombre al tocar el parlante. */
+/** Globo grande para elegir (el icono y el título miden un porcentaje del globo, así nunca se salen del círculo): flota, aparece con un pequeño salto y dice su nombre al tocar el parlante. */
 const Globo: React.FC<GloboProps> = ({ orden, estilo, icono, titulo, clave, onClick }) => {
   const hablar = useHablar();
   const { fondo, cuerda } = ESTILOS_GLOBO[estilo];
@@ -44,13 +44,13 @@ const Globo: React.FC<GloboProps> = ({ orden, estilo, icono, titulo, clave, onCl
             sonarToque();
             onClick();
           }}
-          className={`group relative overflow-hidden w-[27vw] h-[27vw] max-w-[9.5rem] max-h-[9.5rem] sm:max-w-none sm:max-h-none sm:w-[min(13rem,24vh)] sm:h-[min(13rem,24vh)] sm:portrait:w-[min(24vw,19rem)] sm:portrait:h-[min(24vw,19rem)] lg:w-[min(16rem,22vh)] lg:h-[min(16rem,22vh)] rounded-full flex flex-col items-center justify-center gap-1 sm:gap-2 shadow-card cursor-pointer transition-transform hover:scale-110 active:scale-95 ${fondo}`}
+          className={`group relative overflow-hidden [container-type:inline-size] w-[27vw] h-[27vw] max-w-[9.5rem] max-h-[9.5rem] sm:max-w-none sm:max-h-none sm:w-[min(13rem,24vh)] sm:h-[min(13rem,24vh)] sm:portrait:w-[min(24vw,19rem)] sm:portrait:h-[min(24vw,19rem)] lg:w-[min(16rem,22vh)] lg:h-[min(16rem,22vh)] rounded-full flex flex-col items-center justify-center gap-1 sm:gap-2 pb-[10%] shadow-card cursor-pointer transition-transform hover:scale-110 active:scale-95 ${fondo}`}
         >
           <span className="absolute top-[11%] left-[17%] w-[26%] h-[15%] rounded-full bg-white/35 -rotate-[35deg]" aria-hidden />
-          <span className="group-hover:animate-girar [&>svg]:w-9 [&>svg]:h-9 sm:[&>svg]:w-16 sm:[&>svg]:h-16 lg:[&>svg]:w-24 lg:[&>svg]:h-24" aria-hidden>
+          <span className="group-hover:animate-girar [&>svg]:w-[32cqw] [&>svg]:h-[32cqw]" aria-hidden>
             {icono}
           </span>
-          <span className="text-base sm:text-2xl lg:text-3xl font-black leading-tight text-center px-2">{titulo}</span>
+          <span className="text-[clamp(1rem,16cqw,2.6rem)] font-black leading-tight text-center px-2">{titulo}</span>
         </button>
         <button
           type="button"
@@ -145,7 +145,7 @@ export const VistaPrincipal: React.FC = () => {
   const navigate = useNavigate();
   const { activeStudentId, logout, supervision } = useAuthStore();
   const alumno = useAlumno(activeStudentId);
-  const [hablarAbierto, setHablarAbierto] = useState(false);
+  const abrirTablero = useTableroStore((s) => s.abrir);
   const [estrellasAbierto, setEstrellasAbierto] = useState(false);
 
   const nombre = alumno?.nombre ?? 'amigo';
@@ -166,7 +166,7 @@ export const VistaPrincipal: React.FC = () => {
   const irAPaso = (paso: PasoAgenda) => {
     sonarToque();
     if (paso === 'leer') navigate(ROUTES.aprender);
-    else if (paso === 'hablar') setHablarAbierto(true);
+    else if (paso === 'hablar') abrirTablero();
     else setEstrellasAbierto(true);
   };
 
@@ -177,7 +177,7 @@ export const VistaPrincipal: React.FC = () => {
 
         <div className="flex items-start justify-center gap-3 sm:gap-10 lg:gap-16 w-full">
           <Globo orden={0} estilo="leer" titulo="Leer" clave="leer" icono={<BookOpen strokeWidth={1.8} />} onClick={() => navigate(ROUTES.aprender)} />
-          <Globo orden={1} estilo="hablar" titulo="Hablar" clave="hablar" icono={<MessageCircle strokeWidth={1.8} />} onClick={() => setHablarAbierto(true)} />
+          <Globo orden={1} estilo="hablar" titulo="Hablar" clave="hablar" icono={<MessageCircle strokeWidth={1.8} />} onClick={abrirTablero} />
           <Globo
             orden={2}
             estilo="estrellas"
@@ -205,8 +205,6 @@ export const VistaPrincipal: React.FC = () => {
         <LogOut className="w-8 h-8 sm:w-10 sm:h-10" strokeWidth={2} aria-hidden />
         <span className="text-base sm:text-lg font-black">Salir</span>
       </button>
-
-      {hablarAbierto && <TableroSAAC onCerrar={() => setHablarAbierto(false)} />}
 
       <Modal isOpen={estrellasAbierto} onClose={() => setEstrellasAbierto(false)} title="Mis estrellas" size="lg">
         <AlbumEstrellas alumnoId={activeStudentId} />

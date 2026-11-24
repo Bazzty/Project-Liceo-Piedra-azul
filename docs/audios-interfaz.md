@@ -2,7 +2,26 @@
 
 La app busca primero una **grabación** (la voz suave del proyecto) y solo usa la voz del navegador si el archivo aún no existe. Cada frase tiene una clave (`frontend/src/shared/config/audiosInterfaz.ts`) y un archivo en `frontend/public/audio/interfaz/`.
 
-## Estado actual: una sola voz, la del osito
+## ⚠ PENDIENTE: faltan 26 audios con la voz del osito
+
+**Los 26 audios del tablero de comunicación se quitaron del repositorio** porque se habían generado con otra voz que la del osito (la voz predeterminada de ElevenLabs, id `hpp4J3VqNfWAUOO0d1Us`, la única disponible en el plan gratuito) y nadie los había escuchado. Mientras no existan, la app usa la **voz del navegador** (cae sola, sin errores):
+
+- Sonidos de las consonantes del teclado, `frontend/public/audio/fonemas/`: `b c d f g h j k l n p q r s t v w x y z` y `enie` (Ñ). Con la voz del navegador suena el **nombre** de la letra («be», «ce»…), no su sonido.
+- Nombres de las carpetas de la plantilla general, `frontend/public/audio/textos/`: `necesidades`, `emociones`, `personas`, `acciones`, `objetos`.
+
+**Quién y cómo los genera:** la voz del osito (id `WOY6pnQ1WCg0mrOZ54lM`) es de la *biblioteca* de ElevenLabs: con el plan gratuito la API responde **402 `paid_plan_required`**. Hace falta una cuenta con plan de pago, o con esa voz agregada a «Mis voces». Con ese id y la clave en `frontend/.env.local` (y en `backend/.env`):
+
+```
+cd frontend
+npm run audios:pendientes -- --dry-run   # muestra qué agregaría
+npm run audios:pendientes                # genera los 26, los agrega al manifiesto y al índice
+```
+
+Después **hay que escucharlos**: un TTS no dice bien una consonante suelta. Las alargadas se piden como «sss», «fff», «lll»…; las explosivas, con una e breve («pe», «te»); `h` dice «hache» (no tiene sonido) y `w` dice «gu». Los textos están en `frontend/scripts/audios-pendientes.mjs`. Para corregir una letra: se cambia su texto allí, se borra su archivo y se vuelve a correr el comando, que genera solo los que faltan.
+
+**Además**, todo audio que la docente genere desde el editor del tablero (palabras nuevas y el botón «Generar audios que faltan») o desde el formulario de cuentos usa la voz que esté en `backend/.env`: cuando haya voz definitiva, hay que ponerla ahí también.
+
+## Estado original: una sola voz, la del osito (ver la advertencia de arriba)
 
 Los audios de `frontend/scripts/audios.manifest.json` (interfaz, cuentos, pictogramas, palabras y fonemas) se generan con la **voz del osito** (ElevenLabs, voz masculina joven y alegre), con el modelo `eleven_turbo_v2_5` y `language_code: es`. Sin forzar el idioma, una palabra suelta puede leerse como inglés («Lana»); el modelo `eleven_multilingual_v2` no admite ese parámetro, por eso se usa turbo. La API del servidor envía los mismos ajustes.
 

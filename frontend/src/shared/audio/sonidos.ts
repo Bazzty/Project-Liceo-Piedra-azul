@@ -33,6 +33,15 @@ export const sonarToque = () => {
   if (ctx) tono(ctx, 520, 0, 0.09, 0.07);
 };
 
+/** «Ya no cabe más»: dos notas que bajan, claras pero suaves, sin texto. Lo escrito se conserva. */
+export const sonarLleno = () => {
+  if (!useAjustesStore.getState().sonido) return;
+  const ctx = obtenerContexto();
+  if (!ctx) return;
+  tono(ctx, 440, 0, 0.2, 0.1);
+  tono(ctx, 349, 0.16, 0.3, 0.1);
+};
+
 export const sonarAcierto = () => {
   if (!useAjustesStore.getState().sonido) return;
   const ctx = obtenerContexto();

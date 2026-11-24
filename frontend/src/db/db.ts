@@ -1,6 +1,16 @@
 import Dexie, { type Table } from 'dexie';
-import { silabasAntesQueVocales } from '@/db/migraciones';
-import type { Alumno, Cuento, MiCuento, Nivel, Pictograma, Progreso, Registro } from '@/types';
+import { imagenesDeCarpetaUnaVez, silabasAntesQueVocales } from '@/db/migraciones';
+import type {
+  Alumno,
+  CategoriaTablero,
+  Cuento,
+  MiCuento,
+  Nivel,
+  Pictograma,
+  Progreso,
+  Registro,
+  Tablero,
+} from '@/types';
 
 // Clases e Inicialización de Dexie.js
 export class LeerParaTodosDB extends Dexie {
@@ -11,6 +21,8 @@ export class LeerParaTodosDB extends Dexie {
   progresos!: Table<Progreso>;
   registros!: Table<Registro>;
   misCuentos!: Table<MiCuento>;
+  categorias!: Table<CategoriaTablero, string>;
+  tableros!: Table<Tablero, string>;
 
   constructor() {
     super('LeerParaTodosDB');
@@ -36,6 +48,20 @@ export class LeerParaTodosDB extends Dexie {
     this.version(4).stores({
       misCuentos: '++id, alumnoId, fecha',
     });
+
+    // v5: tableros de comunicación editables (plantilla general y copias por niño) y sus categorías.
+    // Va en una versión aparte de la v4 para que los navegadores que ya abrieron la v4 creen estas tablas.
+    // La plantilla se carga al iniciar (seedDatabase), así que no hace falta migrar datos.
+    this.version(5).stores({
+      categorias: 'id, orden',
+      tableros: 'id, alumnoId, esPlantilla',
+    });
+
+    // v6: el dibujo de las carpetas de la plantilla general que se guardaron sin él se rellena aquí, una sola vez,
+    // y no en cada inicio: así, si la docente le quita el dibujo a una carpeta, no reaparece al recargar.
+    this.version(6)
+      .stores({})
+      .upgrade((tx) => imagenesDeCarpetaUnaVez(tx.table('tableros'), tx.table('pictogramas')));
   }
 }
 
